@@ -219,7 +219,7 @@ export default function Search() {
       </div>
 
       {/* 모바일 버전 */}
-      <div className="md:hidden block bg-white rounded-full mx-4 animate-fade-slide">
+      <div className="md:hidden block mb-10 bg-white rounded-full mx-4 animate-fade-slide">
         <form className="w-full flex justify-between max-w-[1200px] mx-auto mt-4 py-2 px-4 border border-gray-300 rounded-full">
           <input type="text" placeholder="검색하세요" className="w-full  focus:outline-none"></input>
           <button type="submit" className="ml-2 h-12 px-6 w-24 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition">

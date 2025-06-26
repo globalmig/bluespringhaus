@@ -69,7 +69,7 @@ export default function CardItem({ slides }: CardItemProps) {
               {/* 카드 래퍼를 relative로 두어 하트 위치 기준점 제공 */}
               {/* TODO: 로그인 전용 기능으로 수정해야함 */}
               <div className="relative max-w-[354px]">
-                {/* 하트 버튼 */}
+                {/* 하트 버튼 TODO: 후순위 작업
                 <button
                   aria-label="좋아요"
                   onClick={(e) => {
@@ -80,7 +80,7 @@ export default function CardItem({ slides }: CardItemProps) {
                   className="absolute p-2 pl-10 pb-10 top-2 right-2 z-10 hover:scale-110 transition-transform duration-200"
                 >
                   <Image src={isLiked ? "/icon/heart_selected.svg" : "/icon/heart_default.svg"} alt="heart icon" width={24} height={24} />
-                </button>
+                </button> */}
 
                 {/* 카드 본문 */}
                 <Link href={`/speakers/${item.id}`} className="no-underline">

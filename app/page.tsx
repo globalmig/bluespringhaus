@@ -67,6 +67,7 @@ export default function Home() {
   return (
     <div>
       <div className="relative">
+        <Search />
         <HeroSlider />
         {/* <div className="absolute top-80 left-1/2 transform -translate-x-1/2 w-full z-20 ">
           <Search />

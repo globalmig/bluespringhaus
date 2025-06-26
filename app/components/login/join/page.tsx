@@ -7,7 +7,7 @@ interface LoginProps {
   onClose: () => void;
 }
 
-export default function Login({ onClose }: LoginProps) {
+export default function join() {
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [error, setError] = useState("");
@@ -15,7 +15,7 @@ export default function Login({ onClose }: LoginProps) {
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // 폼 기본 제출 동작 방지
     setLoading(true);
     setError("");
 
@@ -30,9 +30,6 @@ export default function Login({ onClose }: LoginProps) {
       } else {
         alert("로그인 성공!");
         onClose(); // 모달 닫기
-
-        // AuthContext가 자동으로 상태를 업데이트하므로
-        // 별도의 상태 관리 불필요
         router.push("/");
       }
     } catch (err) {
@@ -41,7 +38,6 @@ export default function Login({ onClose }: LoginProps) {
       setLoading(false);
     }
   };
-
   return (
     <>
       {/* 모바일 태블릿 버전 */}
