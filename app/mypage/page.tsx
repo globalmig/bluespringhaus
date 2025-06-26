@@ -1,6 +1,9 @@
-import React from "react";
+"use client";
+import React, { useEffect } from "react";
 import CardItem from "../components/common/CardItem";
 import ProgressItem from "../components/mypage/ProgressItem";
+import { useAuth } from "../contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 // TODO: 추후 API 연결
 const mockData = [
@@ -69,6 +72,34 @@ const progressText = [
 ];
 
 export default function mypage() {
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/login"); // 로그인 페이지로 리다이렉트
+      // 또는 router.push('/'); // 홈페이지로 리다이렉트
+    }
+  }, [user, loading, router]);
+
+  // // 로딩 중일 때
+  // if (loading) {
+  //   return (
+  //     <div className="flex justify-center items-center h-screen">
+  //       <p>로딩 중...</p>
+  //     </div>
+  //   );
+  // }
+
+  // 로그인하지 않은 경우
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p>로그인이 필요합니다. </p>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-4 mt-10 mb-40 gap-14 flex flex-col">
       <h1 className="text-center text-3xl mb-2">마이페이지</h1>
