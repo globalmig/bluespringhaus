@@ -30,8 +30,10 @@ export default function RootLayout({
     <html lang="ko">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AuthProvider>
-          <Gnb />
-          <div className=" w-full max-w-[1440px] mx-auto">{children}</div>
+          <div className=" w-full mx-auto bg-zinc-100">
+            <Gnb />
+            {children}
+          </div>
           <Footer />
         </AuthProvider>
       </body>

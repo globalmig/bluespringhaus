@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Search from "./components/common/Search";
-import HeroSlider from "./components/home/HeroSlider";
+
 import CardItem from "./components/common/CardItem";
+import HeroSlider from "./components/detail/HeroSlider";
 
 // TODO: 추후 API 연결
 const mockData = [
@@ -65,16 +66,16 @@ const mockData = [
 
 export default function Home() {
   return (
-    <div>
+    <div className="w-full max-w-[1440px] justify-center items-center mx-auto">
       <div className="relative">
         <Search />
-        <HeroSlider />
+
         {/* <div className="absolute top-80 left-1/2 transform -translate-x-1/2 w-full z-20 ">
           <Search />
         </div> */}
         {/* TODO: 중복 코드 수정 */}
         {/* TODO: 데이터 연결되게 수정 */}
-        <div className="my-10 md:my-20">
+        <div className="py-10 md:py-20">
           <CardItem slides={mockData} />
         </div>
       </div>

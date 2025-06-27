@@ -29,7 +29,7 @@ export default function Gnb() {
 
   // 로딩 상태일 때 전체 UI를 막지 말고 작은 로딩 표시만
   return (
-    <div className="py-4 flex md:flex-col ">
+    <div className="py-4 flex md:flex-col">
       <div className="w-full max-w-[1440px] h-16 md:h-24 mx-auto flex items-center justify-center md:justify-between">
         <Link href="/" className="md:block hidden">
           로고

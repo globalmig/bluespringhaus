@@ -24,4 +24,7 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  .swiper-slide-thumb-active {
+    @apply scale-150 border-2 border-white z-20;
+  }
 }

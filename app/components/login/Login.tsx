@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { div } from "framer-motion/client";
 
 interface LoginProps {
   onClose: () => void;
@@ -45,7 +46,7 @@ export default function Login({ onClose }: LoginProps) {
   };
 
   return (
-    <>
+    <div className="z-50">
       {/* 모바일 태블릿 버전 */}
       <div className="w-full max-w-[420px] h-[700px] rounded-2xl flex flex-col justify-start py-20 items-center bg-white md:relative lg:hidden ">
         <div className="w-full pb-10">
@@ -133,6 +134,6 @@ export default function Login({ onClose }: LoginProps) {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
