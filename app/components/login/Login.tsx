@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface LoginProps {
   onClose: () => void;
@@ -25,14 +26,15 @@ export default function Login({ onClose }: LoginProps) {
         password: pw,
       });
 
+      if (data?.user && !data.user.email_confirmed_at) {
+        alert("이메일 인증이 완료되지 않았습니다.");
+      }
+
       if (error) {
         setError(error.message);
       } else {
         alert("로그인 성공!");
         onClose(); // 모달 닫기
-
-        // AuthContext가 자동으로 상태를 업데이트하므로
-        // 별도의 상태 관리 불필요
         router.push("/");
       }
     } catch (err) {
@@ -70,7 +72,11 @@ export default function Login({ onClose }: LoginProps) {
           </button>
 
           <div className="flex justify-center gap-10 mb-10">
-            <button type="button">회원가입</button>
+            <Link href="/agree">
+              <button type="button" onClick={onClose}>
+                회원가입
+              </button>
+            </Link>
             <button type="button">아이디/비번찾기</button>
           </div>
         </form>
@@ -110,7 +116,12 @@ export default function Login({ onClose }: LoginProps) {
             </button>
 
             <div className="flex justify-center gap-10 mb-10">
-              <button type="button">회원가입</button>
+              <Link href="/agree">
+                <button type="button" onClick={onClose}>
+                  회원가입
+                </button>
+              </Link>
+
               <button type="button">아이디/비번찾기</button>
             </div>
           </form>

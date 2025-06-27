@@ -77,28 +77,9 @@ export default function mypage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/login"); // 로그인 페이지로 리다이렉트
-      // 또는 router.push('/'); // 홈페이지로 리다이렉트
+      router.push("/"); // 시작 화면으로 리다이렉트
     }
   }, [user, loading, router]);
-
-  // // 로딩 중일 때
-  // if (loading) {
-  //   return (
-  //     <div className="flex justify-center items-center h-screen">
-  //       <p>로딩 중...</p>
-  //     </div>
-  //   );
-  // }
-
-  // 로그인하지 않은 경우
-  if (!user) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <p>로그인이 필요합니다. </p>
-      </div>
-    );
-  }
 
   return (
     <div className="mx-4 mt-10 mb-40 gap-14 flex flex-col">
@@ -123,6 +104,8 @@ export default function mypage() {
             </div>
           </div>
         </div>
+      
+      
         <div className="edit w-[20%]  rounded-2xl border">
           <div className="flex flex-col gap-4 w-full h-full px-10">
             <button className="border-b w-full py-10">회원정보 수정 {">"}</button>
@@ -131,6 +114,7 @@ export default function mypage() {
             <p>답변 완료</p>
           </div>
         </div>
+        
       </section>
 
       {/* 문의 답변 섹션 */}
