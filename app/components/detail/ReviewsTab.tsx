@@ -8,7 +8,7 @@ interface ReviewItemProps {
 
 export default function ReviewsTab({ reviews }: ReviewItemProps) {
   return (
-    <div className="w-full flex flex-col gap-4">
+    <div className="w-full flex flex-col gap-4 mb-20">
       {reviews.map((item) => (
         <div className="flex flex-col gap-2">
           <div className="w-full bg-white py-10 rounded-xl flex flex-col gap-4 px-8" key={item.id}>
@@ -24,7 +24,7 @@ export default function ReviewsTab({ reviews }: ReviewItemProps) {
             </div>
             <div className="flex  gap-4 mt-4">
               <p>{item.reviewer}</p>
-              <p>{item.created_at}</p>
+              <p>{new Date(item.created_at).toLocaleDateString()}</p>
             </div>
           </div>
         </div>

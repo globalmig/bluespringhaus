@@ -89,7 +89,7 @@ export default function CardItem({ slides }: CardItemProps) {
                     <p>{item.name}</p>
                     <p>{item.short_desc}</p>
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {item.tags.map((t) => (
+                      {(item.tags ?? []).map((t) => (
                         <span key={t} className="bg-black text-white rounded-full px-3 py-1 text-sm">
                           #{t}
                         </span>
