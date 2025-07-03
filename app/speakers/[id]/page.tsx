@@ -7,6 +7,7 @@ import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 import Tab from "@/app/components/detail/Tab";
+import { Speaker } from "lucide-react";
 
 interface Speaker {
   id: string;
@@ -75,7 +76,7 @@ export default function SpeakerDetail() {
 
         <Tab total={reviews.length} reviews={reviews} />
       </div>
-      <Book />
+      {speaker?.id && <Book id={speaker.id} />}
     </div>
   );
 }

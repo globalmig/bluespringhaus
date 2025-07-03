@@ -74,6 +74,7 @@ interface Speaker {
   reviews: string[];
   career: string;
   tags: string[];
+  email: string;
 }
 
 export default function Home() {

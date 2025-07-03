@@ -3,7 +3,11 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
-export default function Book() {
+interface BookProps {
+  id: string;
+}
+
+export default function Book({ id }: BookProps) {
   const router = useRouter();
 
   const handleClick = async () => {
@@ -12,9 +16,9 @@ export default function Book() {
     } = await supabase.auth.getUser();
 
     if (user) {
-      router.push("/book"); // 로그인 O
+      router.push(`/book/${id}`); // 로그인 O
     } else {
-      //   router.push("/login"); // 로그인 X
+
       //   TODO: 로그인모달 뜨게
       alert("로그인 후 문의부탁드립니다");
     }
