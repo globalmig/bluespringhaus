@@ -11,11 +11,11 @@ import "swiper/css/pagination";
 import type { Swiper as SwiperClass } from "swiper";
 
 interface SlideData {
-  id: number | string;
+  id: string;
   name: string;
-  desc: string;
-  tag: string[];
-  image: string;
+  profile_image: string;
+  short_desc: string;
+  tags: string[];
 }
 interface CardItemProps {
   slides: SlideData[];
@@ -84,12 +84,12 @@ export default function CardItem({ slides }: CardItemProps) {
 
                 {/* 카드 본문 */}
                 <Link href={`/speakers/${item.id}`} className="no-underline">
-                  <Image src={item.image} alt={item.name} width={354} height={300} className="w-full rounded-2xl bg-black" />
+                  <Image src={item.profile_image} alt={item.name} width={354} height={300} className="w-full rounded-2xl bg-black" />
                   <div className="w-full px-2 flex flex-col gap-1 mt-2">
                     <p>{item.name}</p>
-                    <p>{item.desc}</p>
+                    <p>{item.short_desc}</p>
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {item.tag.map((t) => (
+                      {item.tags.map((t) => (
                         <span key={t} className="bg-black text-white rounded-full px-3 py-1 text-sm">
                           #{t}
                         </span>
