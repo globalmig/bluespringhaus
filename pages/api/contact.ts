@@ -21,17 +21,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Pages Router용 Supabase 클라이언트 생성
     const supabase = createPagesServerClient({ req, res });
 
-    // profiles에 로그인 유저 이메일 upsert
-    // const { error: profileError } = await supabase.from("profiles").upsert([{ email: loginEmail }], { onConflict: "email" });
-
-    // if (profileError) {
-    //   console.error("프로필 저장 실패:", profileError);
-    //   return res.status(500).json({
-    //     success: false,
-    //     error: "문의자 정보 저장에 실패했습니다.",
-    //   });
-    // }
-
     // inquiries 테이블에 문의 내용 저장
     const { error: insertError } = await supabase.from("inquiries").insert([
       {

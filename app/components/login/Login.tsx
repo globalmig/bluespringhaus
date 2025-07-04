@@ -35,7 +35,21 @@ export default function Login({ onClose }: LoginProps) {
         setError(error.message);
       } else {
         alert("로그인 성공!");
-        onClose(); // 모달 닫기
+        const userId = data.user?.id;
+        const trimmedEmail = email.trim();
+
+        if (userId) {
+          const { error: upsertError } = await supabase.from("profiles").upsert(
+            { id: userId, email: trimmedEmail },
+            { onConflict: "id" } // id 기준으로 이미 있으면 업데이트, 없으면 삽입
+          );
+          if (upsertError) {
+            console.error("❌ 프로필 upsert 실패:", upsertError);
+            alert("프로필 저장 중 문제가 발생했습니다.");
+          }
+        }
+
+        onClose();
         router.push("/");
       }
     } catch (err) {
