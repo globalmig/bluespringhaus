@@ -8,12 +8,14 @@ export default function BookPage() {
   const router = useRouter();
   const { user, loading } = useAuth();
   const id = params?.id as string | undefined;
+
+  if (!id) {
+    return <p className="text-center py-20 text-lg">잘못된 접근입니다. 페이지 ID가 없습니다.</p>;
+  }
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    
 
     if (loading) {
       alert("로그인 상태를 확인 중입니다. 잠시 후 다시 시도해주세요.");
