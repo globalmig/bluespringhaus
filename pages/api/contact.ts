@@ -1,6 +1,7 @@
 import { createPagesServerClient } from "@supabase/auth-helpers-nextjs";
 import { NextApiRequest, NextApiResponse } from "next";
 import nodemailer from "nodemailer";
+import crypto from "crypto";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
@@ -9,7 +10,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const { userEmail: formEmail, message, speakerId: id, user_id } = req.body;
-    // console.log("넘겨받은 user_id:", user_id);
 
     if (!formEmail || !message || !id) {
       return res.status(400).json({
@@ -18,21 +18,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Pages Router용 Supabase 클라이언트 생성
+    // Supabase 클라이언트 생성
     const supabase = createPagesServerClient({ req, res });
 
-    // inquiries 테이블에 문의 내용 저장
-    const { error: insertError } = await supabase.from("inquiries").insert([
-      {
-        user_id: user_id,
-        contact_email: formEmail, // 폼에 입력한 연락처 이메일 별도 저장
-        speaker_id: id,
-        message: message,
-        created_at: new Date().toISOString(),
-      },
-    ]);
+    // ① inquiries 테이블에 문의 내용 저장 + 삽입된 행 반환
+    const { data: insertedInquiry, error: insertError } = await supabase
+      .from("inquiries")
+      .insert([
+        {
+          user_id: user_id,
+          contact_email: formEmail,
+          speaker_id: id,
+          message: message,
+          created_at: new Date().toISOString(),
+        },
+      ])
+      .select() // 삽입된 행 반환
+      .single(); // 단일 행만 받음
 
-    if (insertError) {
+    if (insertError || !insertedInquiry) {
       console.error("문의 저장 실패:", insertError);
       return res.status(500).json({
         success: false,
@@ -40,7 +44,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // 스피커 이메일 조회
+    const inquiryId = insertedInquiry.id;
+
+    // ② inquiryId로 토큰 생성
+    const token = crypto.createHmac("sha256", process.env.SECRET_KEY!).update(`${inquiryId}-${Date.now()}`).digest("hex");
+
+    // ③ 토큰을 inquiries 테이블에 업데이트
+    const { error: updateError } = await supabase.from("inquiries").update({ token }).eq("id", inquiryId);
+
+    if (updateError) {
+      console.error("토큰 저장 실패:", updateError);
+      return res.status(500).json({
+        success: false,
+        error: "문의 토큰 저장에 실패했습니다.",
+      });
+    }
+
+    // ④ 스피커 이메일 조회
     const { data: speaker, error: speakerError } = await supabase.from("speakers").select("email").eq("id", id).single();
 
     if (speakerError || !speaker) {
@@ -51,7 +71,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // 메일 발송 설정 확인
+    // ⑤ 메일 발송 설정 확인
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
       console.error("SMTP 설정이 없습니다.");
       return res.status(500).json({
@@ -60,7 +80,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // 메일 발송
+    // ⑥ 메일 발송
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 587,
@@ -70,7 +90,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         pass: process.env.SMTP_PASS,
       },
     });
-    // TODO: 메일 폼 커스텀해야함
+
     await transporter.sendMail({
       from: `"Contact Form" <${process.env.SMTP_USER}>`,
       to: speaker.email,
@@ -78,10 +98,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       html: `
         <h3>새 문의가 도착했습니다</h3>
         <p><strong>문의자 연락처:</strong> ${formEmail}</p>
-         
         <hr>
         <p><strong>메시지:</strong></p>
         <p>${message.replace(/\n/g, "<br>")}</p>
+        <hr>
+        <p>
+          <a href="https://localhost:3000/api/inquiry/handle?inquiryId=${inquiryId}&action=accept&token=${token}"
+            style="padding:12px 20px;background-color:#4CAF50;color:white;text-decoration:none;border-radius:4px;">
+            수락
+          </a>
+          <a href="https://localhost:3000/api/inquiry/handle?inquiryId=${inquiryId}&action=reject&token=${token}"
+            style="padding:12px 20px;background-color:#f44336;color:white;text-decoration:none;border-radius:4px;margin-left:10px;">
+            거절
+          </a>
+        </p>
       `,
     });
 

@@ -13,6 +13,8 @@ export default function BookPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    
+
     if (loading) {
       alert("로그인 상태를 확인 중입니다. 잠시 후 다시 시도해주세요.");
       return;
