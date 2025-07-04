@@ -24,7 +24,7 @@ export default function Tab({ total, reviews }: tabProps) {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="information" className="">
-          <InformationTab />
+          <InformationTab reviews={reviews} />
         </TabsContent>
         <TabsContent value="reviews">
           <ReviewsTab reviews={reviews} />

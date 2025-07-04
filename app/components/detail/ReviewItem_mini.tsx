@@ -1,10 +1,14 @@
 import React from "react";
 import { mockReviews } from "@/mock/mockReviews";
 
-export default function ReviewItem_mini() {
+interface ReviewItemProps {
+  reviews: any[];
+}
+
+export default function ReviewItem_mini({ reviews }: ReviewItemProps) {
   return (
     <div className="flex flex-col md:flex-row gap-2 mt-4">
-      {mockReviews.map((item) => (
+      {reviews.map((item) => (
         <div className="relative w-full md:w-80 border bg-white py-10 rounded-xl flex flex-col gap-4 px-8" key={item.id}>
           <div className="flex items-center gap-4">
             <p className="font-bold text-lg">별점 {item.rating}</p>

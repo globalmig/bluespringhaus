@@ -65,6 +65,8 @@ const mockData = [
   },
 ];
 
+
+
 const progressText = [
   { icon: "", title: "시작", sub: "문의완료" },
   { icon: "", title: "확인", sub: "확" },

@@ -81,7 +81,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         pass: process.env.SMTP_PASS,
       },
     });
-
+    // TODO: 메일 폼 커스텀해야함
     await transporter.sendMail({
       from: `"Contact Form" <${process.env.SMTP_USER}>`,
       to: speaker.email,

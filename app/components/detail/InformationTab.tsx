@@ -3,8 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Accordiond from "@/app/components/detail/Accordiond";
-import ReviewItem from "./ReviewItem";
-import { mockReviews } from "@/mock/mockReviews";
+
 import ReviewItem_mini from "./ReviewItem_mini";
 import VideoList from "./VideoList";
 
@@ -21,7 +20,11 @@ interface Speaker {
   tags: string[];
 }
 
-export default function InformationTab() {
+interface ReviewItemProps {
+  reviews: any[];
+}
+
+export default function InformationTab({ reviews }: ReviewItemProps) {
   const router = useRouter();
   const { id } = useParams();
   const [speaker, setSpeaker] = useState<Speaker | null>(null);
@@ -69,7 +72,7 @@ export default function InformationTab() {
       <section className="flex flex-col  p-10 bg-white rounded-lg">
         <h2 className="font-bold text-2xl">행사 진행 리뷰</h2>
         <p>고객분들의 만족도를 한눈에 봐요!</p>
-        <ReviewItem_mini />
+        <ReviewItem_mini reviews={reviews} />
       </section>
 
       <section className="flex flex-col  p-10 bg-white rounded-lg">
