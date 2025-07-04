@@ -26,7 +26,9 @@ interface ReviewItemProps {
 
 export default function InformationTab({ reviews }: ReviewItemProps) {
   const router = useRouter();
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id as string | undefined;
+
   const [speaker, setSpeaker] = useState<Speaker | null>(null);
 
   useEffect(() => {
