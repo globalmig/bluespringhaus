@@ -4,6 +4,7 @@ import "./globals.css";
 import Gnb from "./components/common/Gnb";
 import Footer from "./components/common/Footer";
 import { AuthProvider } from "./contexts/AuthContext";
+import Providers from "./providers";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
