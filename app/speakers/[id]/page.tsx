@@ -24,7 +24,8 @@ interface Speaker {
 
 export default function SpeakerDetail() {
   const router = useRouter();
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id as string | undefined;
   const [speaker, setSpeaker] = useState<Speaker | null>(null);
   const [reviews, setReviews] = useState<any[]>([]);
 
