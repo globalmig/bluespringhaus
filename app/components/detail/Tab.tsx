@@ -9,6 +9,13 @@ interface tabProps {
   reviews: Review[];
 }
 
+interface Review {
+  id: string;
+  rating: number;
+  comment: string;
+  tags: string[];
+}
+
 export default function Tab({ total, reviews }: tabProps) {
   const [selectedTab, setSelectedTab] = useState("information");
   return (
