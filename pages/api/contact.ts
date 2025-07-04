@@ -90,7 +90,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         pass: process.env.SMTP_PASS,
       },
     });
-
+    // TODO:도메인 변경 후 수정해야함 토근 링크
     await transporter.sendMail({
       from: `"Contact Form" <${process.env.SMTP_USER}>`,
       to: speaker.email,
@@ -103,11 +103,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         <p>${message.replace(/\n/g, "<br>")}</p>
         <hr>
         <p>
-          <a href="https://localhost:3000/api/inquiry/handle?inquiryId=${inquiryId}&action=accept&token=${token}"
+          <a href="https://bluespringhaus-rbt5.vercel.app/api/inquiry/handle?inquiryId=${inquiryId}&action=accept&token=${token}"
             style="padding:12px 20px;background-color:#4CAF50;color:white;text-decoration:none;border-radius:4px;">
             수락
           </a>
-          <a href="https://localhost:3000/api/inquiry/handle?inquiryId=${inquiryId}&action=reject&token=${token}"
+          <a href="https://bluespringhaus-rbt5.vercel.app/api/inquiry/handle?inquiryId=${inquiryId}&action=reject&token=${token}"
             style="padding:12px 20px;background-color:#f44336;color:white;text-decoration:none;border-radius:4px;margin-left:10px;">
             거절
           </a>

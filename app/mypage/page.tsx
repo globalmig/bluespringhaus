@@ -48,7 +48,7 @@ export default function mypage() {
         </div>
 
         <div className="edit w-[20%]  rounded-2xl border bg-white">
-          <div className="flex flex-col gap-4 w-full h-full px-10">
+          <div className="flex flex-col gap-4 w-full h-full px-10">https://bluespringhaus-rbt5.vercel.app/
             <button className="border-b w-full py-10">회원정보 수정 {">"}</button>
             {/* TODO: user 예약 신청 데이터 연결 */}
             <button className="border-b w-full py-10">예약 신청 {">"}</button>
