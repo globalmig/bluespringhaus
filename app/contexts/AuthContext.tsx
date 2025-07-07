@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("✅ AuthProvider 초기화");
+    // console.log("✅ AuthProvider 초기화");
 
     const init = async () => {
       const {
@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("🔄 Auth 상태 변경:", event, session);
+      // console.log("🔄 Auth 상태 변경:", event, session);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);

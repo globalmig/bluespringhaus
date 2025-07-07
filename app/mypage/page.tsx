@@ -42,10 +42,11 @@ export default function Mypage() {
             },
           })
           .then((response) => {
-            console.log(response.data);
+            // console.log(response.data);
             setInquiries(response.data.inquiries);
           })
           .catch((error) => {
+            alert("잠시후 다시 이용해주세요");
             console.error("❌ API 호출 에러:", error);
           });
       };
