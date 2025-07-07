@@ -55,6 +55,10 @@ export default function Mypage() {
     }
   }, [user]);
 
+  const pendingInquiries = inquiries.filter((inq) => inq.status === null);
+  const acceptedInquiries = inquiries.filter((inq) => inq.status === "accepted");
+  const rejectedInquiries = inquiries.filter((inq) => inq.status === "rejected");
+
   return (
     <div className="mx-4 mt-10 pb-40 gap-14 flex flex-col">
       <h1 className="text-center text-3xl mb-2 font-bold">마이페이지</h1>
@@ -86,21 +90,16 @@ export default function Mypage() {
         </div>
       </section>
 
-      {inquiries.length > 0 ? (
-        <ul>
-          {inquiries.map((inquiry) => (
-            <li key={inquiry.id}>
-              <p>문의 제목: {inquiry.message}</p>
-              <p>상태: {inquiry.status}</p>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>문의 내역이 없습니다.</p>
-      )}
+      <section className="bg-white rounded-lg p-10">
+        {pendingInquiries.length > 0 ? <CardItem slides={pendingInquiries.map((inq) => inq.speakers)} title="진행중인 문의" /> : <p>진행중인 문의 내역이 없습니다.</p>}
+      </section>
 
       <section className="bg-white rounded-lg p-10">
-        <CardItem slides={inquiries} title={"문의중인 연사"} />
+        {acceptedInquiries.length > 0 ? <CardItem slides={acceptedInquiries.map((inq) => inq.speakers)} title="수락된 문의" /> : <p>수락된 문의 내역이 없습니다.</p>}
+      </section>
+
+      <section className="bg-white rounded-lg p-10">
+        {rejectedInquiries.length > 0 ? <CardItem slides={rejectedInquiries.map((inq) => inq.speakers)} title="거절된 문의" /> : <p>거절된 문의 내역이 없습니다.</p>}
       </section>
 
       {/* 문의 신청한 리스트 섹션

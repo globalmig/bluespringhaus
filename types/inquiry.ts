@@ -1,9 +1,19 @@
+export interface Speaker {
+  id: number;
+  name: string;
+  profile_image: string | null;
+  short_desc: string;
+  tags: string[];
+}
+
 export interface Inquiry {
-  id: string;
-  user_id: string;
-  speaker_id: string;
-  contact_email: string;
+  id: number;
+  speaker_id: number;
   message: string;
-  status: string;
   created_at: string;
+  contact_email: string;
+  user_id: string;
+  status: "accepted" | "rejected" | null;
+  token: string | null;
+  speakers: Speaker; // ✅ 여기 추가
 }

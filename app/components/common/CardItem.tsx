@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -9,10 +9,8 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 
 import type { Swiper as SwiperClass } from "swiper";
-import type { Inquiry } from "@/types/inquiry";
-import { supabase } from "@/lib/supabase";
 
-interface SlideData {
+interface Speaker {
   id: number;
   name: string;
   profile_image: string | null;
@@ -21,13 +19,12 @@ interface SlideData {
 }
 
 interface CardItemProps {
-  slides: Inquiry[];
+  slides: Speaker[];
   title: string;
 }
 
 export default function CardItem({ slides, title }: CardItemProps) {
   const swiperRef = useRef<SwiperClass | null>(null);
-  const [speakers, setSpeakers] = useState<SlideData[]>([]);
   const [liked, setLiked] = useState<Set<number | string>>(new Set());
 
   const toggleLike = (id: number | string) => {
@@ -37,25 +34,6 @@ export default function CardItem({ slides, title }: CardItemProps) {
       return next;
     });
   };
-
-  useEffect(() => {
-    const fetchSpeakers = async () => {
-      if (!slides || slides.length === 0) return;
-
-      try {
-        const speakerIds = [...new Set(slides.map((inquiry) => inquiry.speaker_id))];
-
-        const { data, error } = await supabase.from("speakers").select("id, name, profile_image, short_desc, tags").in("id", speakerIds);
-
-        if (error) throw error;
-        setSpeakers(data || []);
-      } catch (error) {
-        console.error("❌ 강사 정보 불러오기 실패:", error);
-      }
-    };
-
-    fetchSpeakers();
-  }, [slides]);
 
   return (
     <div className="px-4 transform">
@@ -84,14 +62,20 @@ export default function CardItem({ slides, title }: CardItemProps) {
         modules={[Navigation]}
         className="mySwiper"
       >
-        {speakers.map((speaker) => {
+        {slides.map((speaker) => {
           const isLiked = liked.has(speaker.id);
           return (
             <SwiperSlide key={speaker.id}>
               <div className="relative max-w-[354px]">
                 {/* 카드 본문 */}
                 <Link href={`/speakers/${speaker.id}`} className="no-underline">
-                  <Image src={speaker.profile_image ?? ""} alt={speaker.name} width={354} height={300} className="w-full rounded-2xl bg-black" />
+                  <Image
+                    src={speaker.profile_image ?? "/default.png"} // 이미지 없을 때 대체 이미지 권장
+                    alt={speaker.name}
+                    width={354}
+                    height={300}
+                    className="w-full rounded-2xl bg-black object-cover"
+                  />
                   <div className="w-full px-2 flex flex-col gap-1 mt-2">
                     <p>{speaker.name}</p>
                     <p>{speaker.short_desc}</p>
