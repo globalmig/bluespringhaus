@@ -7,16 +7,9 @@ import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+import type { Speaker } from "@/types/inquiry";
 
 import type { Swiper as SwiperClass } from "swiper";
-
-interface Speaker {
-  id: number;
-  name: string;
-  profile_image: string | null;
-  short_desc: string;
-  tags: string[];
-}
 
 interface CardItemProps {
   slides: Speaker[];

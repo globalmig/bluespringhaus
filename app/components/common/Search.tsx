@@ -2,69 +2,59 @@
 import { useState, useRef, useEffect } from "react";
 
 export default function Search() {
-  // 각 드롭다운 상태 관리
   const [isOpenMenuLocation, setOpenMenuLocation] = useState(false);
   const [isOpenMenuCategory, setOpenMenuCategory] = useState(false);
-  const [isOpenMenuTime, setOpenMenuTime] = useState(false);
+  const [isOpenMenuBudget, setOpenMenuBudget] = useState(false);
 
-  // 각 입력값 상태 관리
   const [isLocation, setLocation] = useState<string>("추천리스트");
   const [isCategory, setCategory] = useState<string>("분야 선택");
-  const [isTime, setTime] = useState<string>("시간 선택");
+  const [isBudget, setBudget] = useState<string>("섭외비 선택");
 
-  // 각 드롭다운 ref
   const locationRef = useRef<HTMLDivElement>(null);
   const categoryRef = useRef<HTMLDivElement>(null);
-  const timeRef = useRef<HTMLDivElement>(null);
+  const budgetRef = useRef<HTMLDivElement>(null);
 
-  // 지역 드롭다운 토글
-  const toggleMenuLocation = () => {
-    setOpenMenuLocation(!isOpenMenuLocation);
+  const toggleMenuLocation = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    setOpenMenuLocation((prev) => !prev);
     setOpenMenuCategory(false);
-    setOpenMenuTime(false);
+    setOpenMenuBudget(false);
   };
 
-  // 분야 드롭다운 토글
-  const toggleMenuCategory = () => {
-    setOpenMenuCategory(!isOpenMenuCategory);
+  const toggleMenuCategory = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    setOpenMenuCategory((prev) => !prev);
     setOpenMenuLocation(false);
-    setOpenMenuTime(false);
+    setOpenMenuBudget(false);
   };
 
-  // 시간 드롭다운 토글
-  const toggleMenuTime = () => {
-    setOpenMenuTime(!isOpenMenuTime);
+  const toggleMenuBudget = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    setOpenMenuBudget((prev) => !prev);
     setOpenMenuLocation(false);
     setOpenMenuCategory(false);
   };
 
-  // 지역 선택
   const selectedLocation = (value: string) => {
     setLocation(value);
     setOpenMenuLocation(false);
   };
 
-  // 분야 선택
   const selectedCategory = (value: string) => {
     setCategory(value);
     setOpenMenuCategory(false);
   };
 
-  // 시간 선택
-  const selectedTime = (value: string) => {
-    setTime(value);
-    setOpenMenuTime(false);
+  const selectedBudget = (value: string) => {
+    setBudget(value);
+    setOpenMenuBudget(false);
   };
 
-  // 지역만 직접 입력 가능
   const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocation(e.target.value);
     setOpenMenuLocation(true);
-    setOpenMenuCategory(false);
-    setOpenMenuTime(false);
   };
 
-  // 컴포넌트 외부 클릭 감지
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
@@ -75,157 +65,106 @@ export default function Search() {
       if (categoryRef.current && !categoryRef.current.contains(target)) {
         setOpenMenuCategory(false);
       }
-      if (timeRef.current && !timeRef.current.contains(target)) {
-        setOpenMenuTime(false);
+      if (budgetRef.current && !budgetRef.current.contains(target)) {
+        setOpenMenuBudget(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("click", handleClickOutside);
     };
   }, []);
 
   return (
-    <div className="">
-      {/* PC,Tablet 버전 */}
-      <div className="w-full max-w-[1440px] mx-auto mb-8 shadow-xl rounded-full md:grid grid-cols-3 justify-center items-center bg-white relative border hidden fade-out-slide ">
-        {/* 지역 */}
+    <div>
+      <div className="w-full max-w-[1440px] mx-auto mb-8 shadow-xl rounded-full md:grid grid-cols-3 justify-center items-center bg-white relative border hidden fade-out-slide">
+        {/* 추천 키워드 */}
         <div ref={locationRef} className="relative group flex flex-col text-start gap-1 border-r pr-6 py-2 hover:bg-slate-300 bg-white rounded-full pl-10" onClick={toggleMenuLocation}>
-          <label className="text-sm font-medium">지역</label>
-          <input type="text" placeholder="검색하세요" value={isLocation} className="h-10 focus:outline-none group-hover:bg-slate-300" onChange={handleLocationChange} />
-        </div>{" "}
-        {/* 지역 선택 드롭다운 */}
+          <label className="text-sm font-medium">키워드 검색</label>
+          <input
+            type="text"
+            placeholder="키워드를 입력하세요"
+            value={isLocation}
+            className="h-10 focus:outline-none group-hover:bg-slate-300"
+            onChange={handleLocationChange}
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpenMenuLocation(true);
+            }}
+          />
+        </div>
         {isOpenMenuLocation && (
           <div className="absolute top-20 z-10 bg-white shadow-lg rounded-xl mt-2 w-full max-w-[380px]">
             <ul className="my-4 mx-4">
-              <li className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md" onClick={() => selectedLocation("추천리스트")}>
-                <div className="bg-black w-10 h-10 rounded"></div>
-                <div className="flex flex-col text-sm">
-                  <p className="font-bold">추천리스트</p>
-                  <p className="text-slate-500">전국에서 인기 있는 곳</p>
-                </div>
-              </li>
-              <li className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md" onClick={() => selectedLocation("서울")}>
-                <div className="bg-blue-500 w-10 h-10 rounded"></div>
-                <div className="flex flex-col text-sm">
-                  <p className="font-bold">서울</p>
-                  <p className="text-slate-500">수도권 지역</p>
-                </div>
-              </li>
-              <li className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md" onClick={() => selectedLocation("부산")}>
-                <div className="bg-green-500 w-10 h-10 rounded"></div>
-                <div className="flex flex-col text-sm">
-                  <p className="font-bold">부산</p>
-                  <p className="text-slate-500">해운대, 광안리 등</p>
-                </div>
-              </li>
-              <li className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md" onClick={() => selectedLocation("제주")}>
-                <div className="bg-orange-500 w-10 h-10 rounded"></div>
-                <div className="flex flex-col text-sm">
-                  <p className="font-bold">제주</p>
-                  <p className="text-slate-500">제주도 전 지역</p>
-                </div>
-              </li>
+              {["추천리스트", "서울", "부산", "제주"].map((loc) => (
+                <li key={loc} className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md" onClick={() => selectedLocation(loc)}>
+                  <div className="bg-black w-10 h-10 rounded"></div>
+                  <div className="flex flex-col text-sm">
+                    <p className="font-bold">{loc}</p>
+                    <p className="text-slate-500">{loc === "추천리스트" ? "전국 인기 장소" : `${loc} 지역`}</p>
+                  </div>
+                </li>
+              ))}
             </ul>
           </div>
         )}
-        {/* 분야 */}
+
+        {/* 대상 */}
         <div ref={categoryRef} className="relative group flex flex-col text-start gap-1 py-2 px-4 hover:bg-slate-300 rounded-full border-r pr-6 cursor-pointer" onClick={toggleMenuCategory}>
-          <label className="text-sm font-medium">분야</label>
+          <label className="text-sm font-medium">대상</label>
           <div className="h-10 flex items-center text-gray-700">{isCategory}</div>
         </div>
-        {/* 분야 선택 드롭다운 */}
         {isOpenMenuCategory && (
-          <div className="absolute top-20 z-10 bg-white shadow-lg rounded-xl mt-2 w-full max-w-[1440px] ">
+          <div className="absolute top-20 z-10 bg-white shadow-lg rounded-xl mt-2 w-full max-w-[1440px]">
             <ul className="my-4 mx-4">
-              <li className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md" onClick={() => selectedCategory("맛집")}>
-                <div className="bg-red-500 w-10 h-10 rounded flex items-center justify-center text-white font-bold">🍽️</div>
-                <div className="flex flex-col text-sm">
-                  <p className="font-bold">맛집</p>
-                  <p className="text-slate-500">레스토랑, 카페 등</p>
-                </div>
-              </li>
-              <li className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md" onClick={() => selectedCategory("관광지")}>
-                <div className="bg-purple-500 w-10 h-10 rounded flex items-center justify-center text-white font-bold">🏛️</div>
-                <div className="flex flex-col text-sm">
-                  <p className="font-bold">관광지</p>
-                  <p className="text-slate-500">명소, 박물관 등</p>
-                </div>
-              </li>
-              <li className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md" onClick={() => selectedCategory("숙박")}>
-                <div className="bg-indigo-500 w-10 h-10 rounded flex items-center justify-center text-white font-bold">🏨</div>
-                <div className="flex flex-col text-sm">
-                  <p className="font-bold">숙박</p>
-                  <p className="text-slate-500">호텔, 펜션 등</p>
-                </div>
-              </li>
-              <li className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md" onClick={() => selectedCategory("액티비티")}>
-                <div className="bg-yellow-500 w-10 h-10 rounded flex items-center justify-center text-white font-bold">🎯</div>
-                <div className="flex flex-col text-sm">
-                  <p className="font-bold">액티비티</p>
-                  <p className="text-slate-500">체험, 레저 등</p>
-                </div>
-              </li>
+              {[
+                { label: "맛집", icon: "🍽️", desc: "레스토랑, 카페 등" },
+                { label: "관광지", icon: "🏛️", desc: "명소, 박물관 등" },
+                { label: "숙박", icon: "🏨", desc: "호텔, 펜션 등" },
+                { label: "액티비티", icon: "🎯", desc: "체험, 레저 등" },
+              ].map(({ label, icon, desc }) => (
+                <li key={label} className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md" onClick={() => selectedCategory(label)}>
+                  <div className="bg-gray-500 w-10 h-10 rounded flex items-center justify-center text-white font-bold">{icon}</div>
+                  <div className="flex flex-col text-sm">
+                    <p className="font-bold">{label}</p>
+                    <p className="text-slate-500">{desc}</p>
+                  </div>
+                </li>
+              ))}
             </ul>
           </div>
         )}
-        {/* 시간 */} {/* 시간 선택 드롭다운 */}
-        {isOpenMenuTime && (
-          <div className="absolute top-20 z-10 bg-white shadow-lg rounded-xl mt-2 w-full ">
-            <ul className="my-4 mx-4">
-              <li className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md" onClick={() => selectedTime("오전 (09:00-12:00)")}>
-                <div className="bg-yellow-400 w-10 h-10 rounded flex items-center justify-center text-white font-bold">🌅</div>
-                <div className="flex flex-col text-sm">
-                  <p className="font-bold">오전</p>
-                  <p className="text-slate-500">09:00 - 12:00</p>
-                </div>
-              </li>
-              <li className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md" onClick={() => selectedTime("점심 (12:00-14:00)")}>
-                <div className="bg-orange-400 w-10 h-10 rounded flex items-center justify-center text-white font-bold">☀️</div>
-                <div className="flex flex-col text-sm">
-                  <p className="font-bold">점심</p>
-                  <p className="text-slate-500">12:00 - 14:00</p>
-                </div>
-              </li>
-              <li className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md" onClick={() => selectedTime("오후 (14:00-18:00)")}>
-                <div className="bg-blue-400 w-10 h-10 rounded flex items-center justify-center text-white font-bold">🌤️</div>
-                <div className="flex flex-col text-sm">
-                  <p className="font-bold">오후</p>
-                  <p className="text-slate-500">14:00 - 18:00</p>
-                </div>
-              </li>
-              <li className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md" onClick={() => selectedTime("저녁 (18:00-22:00)")}>
-                <div className="bg-purple-400 w-10 h-10 rounded flex items-center justify-center text-white font-bold">🌆</div>
-                <div className="flex flex-col text-sm">
-                  <p className="font-bold">저녁</p>
-                  <p className="text-slate-500">18:00 - 22:00</p>
-                </div>
-              </li>
-            </ul>
-          </div>
-        )}
+
+        {/* 섭외비 */}
         <div className="group flex items-center justify-center h-full hover:bg-slate-300 rounded-full px-4">
-          <div ref={timeRef} className="relative flex flex-col text-start gap-1 group-hover:bg-slate-300 group flex-1 cursor-pointer rounded-full" onClick={toggleMenuTime}>
-            <label className="text-sm font-medium">시간</label>
-            <div className="h-10 flex items-center text-gray-700">{isTime}</div>
-          </div>{" "}
-          {/* 필터 검색 기능 연결 */}
-          {/* 검색 버튼 */}
-          <div className="flex justify-center items-center h-full group-hover:bg-slate-300 group rounded-full ml-4">
+          <div ref={budgetRef} className="relative flex flex-col text-start gap-1 group-hover:bg-slate-300 flex-1 cursor-pointer rounded-full" onClick={toggleMenuBudget}>
+            <label className="text-sm font-medium">섭외비</label>
+            <div className="h-10 flex items-center text-gray-700">{isBudget}</div>
+          </div>
+          {isOpenMenuBudget && (
+            <div className="absolute top-20 z-10 bg-white shadow-lg rounded-xl mt-2 w-full">
+              <ul className="my-4 mx-4">
+                {[
+                  { label: "~300만원", icon: "💸" },
+                  { label: "300~500만원", icon: "💰" },
+                  { label: "500~1000만원", icon: "🏆" },
+                  { label: "1000만원 이상", icon: "👑" },
+                ].map(({ label, icon }) => (
+                  <li key={label} className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md" onClick={() => selectedBudget(label)}>
+                    <div className="bg-gray-500 w-10 h-10 rounded flex items-center justify-center text-white font-bold">{icon}</div>
+                    <div className="flex flex-col text-sm">
+                      <p className="font-bold">{label}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <div className="flex justify-center items-center h-full group-hover:bg-slate-300 rounded-full ml-4">
             <button className="h-10 px-6 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition">검색</button>
           </div>
         </div>
-      </div>
-
-      {/* 모바일 버전 */}
-      <div className="md:hidden block mb-10 bg-white rounded-full mx-4 animate-fade-slide">
-        <form className="w-full flex justify-between max-w-[1200px] mx-auto mt-4 py-2 px-4 border border-gray-300 rounded-full">
-          <input type="text" placeholder="검색하세요" className="w-full  focus:outline-none"></input>
-          <button type="submit" className="ml-2 h-12 px-6 w-24 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition">
-            검색
-          </button>
-        </form>
       </div>
     </div>
   );

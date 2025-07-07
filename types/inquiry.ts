@@ -1,9 +1,16 @@
 export interface Speaker {
-  id: number;
+  id: string;
   name: string;
-  profile_image: string | null;
+  profile_image: string;
+  gallery_images: string;
   short_desc: string;
+  full_desc: string;
+  intro_video: string[];
+  reviews: string[];
+  career: string;
   tags: string[];
+  email: string;
+  is_recommended: string[];
 }
 
 export interface Inquiry {

@@ -1,111 +1,84 @@
 "use client";
 import { useEffect, useState } from "react";
+import axios from "axios";
 import CardItem from "./components/common/CardItem";
-import HeroSlider from "./components/detail/HeroSlider";
-import Search2 from "./components/common/Search2";
-
-// TODO: 추후 API 연결
-// const mockData = [
-//   {
-//     id: 1,
-//     name: "김은하",
-//     desc: "IT 스타트업 창업가 / UX 전문가",
-//     tag: ["리더십", "I윤리"],
-//     image: "/images/speaker01.jpg",
-//   },
-//   {
-//     id: 2,
-//     name: "박지훈",
-//     desc: "청소년 심리상담사 / 강연 200회 이상",
-//     tag: ["리더십", "AI윤리"],
-//     image: "/images/speaker02.jpg",
-//   },
-//   {
-//     id: 3,
-//     name: "이유정",
-//     desc: "전직 아나운서 / 커뮤니케이션 코치",
-//     tag: ["리더십", "AI윤리"],
-//     image: "/images/speaker03.jpg",
-//   },
-//   {
-//     id: 4,
-//     name: "최민수",
-//     desc: "전직 프로게이머 / 게임 리더십 전문가",
-//     tag: ["리더십", "AI윤리"],
-//     image: "/images/speaker04.jpg",
-//   },
-//   {
-//     id: 5,
-//     name: "홍다은",
-//     desc: "비영리단체 활동가 / 환경 교육 강사",
-//     tag: ["지속가능성", "AI윤리"],
-//     image: "/images/speaker05.jpg",
-//   },
-//   {
-//     id: 6,
-//     name: "정재형",
-//     desc: "인공지능 연구원 / AI 윤리 강연자",
-//     tag: ["해외취업", "AI윤리"],
-//     image: "/images/speaker06.jpg",
-//   },
-//   {
-//     id: 7,
-//     name: "서윤지",
-//     desc: "디지털 노마드 / 글로벌 커리어 강연가",
-//     tag: ["해외취업", "AI윤리", "리더십"],
-//     image: "/images/speaker07.jpg",
-//   },
-//   {
-//     id: 8,
-//     name: "안도현",
-//     desc: "작가 / 시인 / 창작 워크숍 진행",
-//     tag: ["해외취업", "글쓰기"],
-//     image: "/images/speaker08.jpg",
-//   },
-// ];
-interface Speaker {
-  id: string;
-  name: string;
-  profile_image: string;
-  gallery_images: string;
-  short_desc: string;
-  full_desc: string;
-  intro_video: string[];
-  reviews: string[];
-  career: string;
-  tags: string[];
-  email: string;
-}
+import Search from "./components/common/Search";
+import type { Speaker } from "@/types/inquiry";
 
 export default function Home() {
-  const [speakers, setSpeakers] = useState<Speaker[]>([]);
+  const [isSpeakers, setSpeakers] = useState<Speaker[]>([]);
 
   useEffect(() => {
     const fetchSpeakers = async () => {
-      const res = await fetch("/api/speakers");
-      if (!res.ok) {
-        console.error("API 호출 실패!");
-        return;
+      try {
+        const res = await axios.get<Speaker[]>("/api/speakers");
+        setSpeakers(res.data);
+      } catch (error) {
+        console.error("API 호출 실패!", error);
       }
-      const data = await res.json();
-      setSpeakers(data);
     };
+
     fetchSpeakers();
   }, []);
+
+  const popularSpeaker = isSpeakers.filter((spk) => spk.is_recommended?.includes("popularSpeaker"));
+  const topClassSpeaker = isSpeakers.filter((spk) => spk.is_recommended?.includes("topClassSpeaker"));
+  const risingNewSpeaker = isSpeakers.filter((spk) => spk.is_recommended?.includes("risingNewSpeaker "));
+
+  const trendInsightMaker = isSpeakers.filter((spk) => spk.is_recommended?.includes("trendInsightMaker"));
+
+  const mindsetExpert = isSpeakers.filter((spk) => spk.is_recommended?.includes("mindsetExpert"));
+
+  const culturalArtSpeaker = isSpeakers.filter((spk) => spk.is_recommended?.includes("culturalArtSpeaker"));
+
+  const youthInspiringSpeaker = isSpeakers.filter((spk) => spk.is_recommended?.includes("youthInspiringSpeaker"));
+
+  const selfImprovementSpeaker = isSpeakers.filter((spk) => spk.is_recommended?.includes("selfImprovementSpeaker"));
+
+  const globalSpeaker = isSpeakers.filter((spk) => spk.is_recommended?.includes("globalSpeaker"));
+
+  const businessGrowthExpert = isSpeakers.filter((spk) => spk.is_recommended?.includes("businessGrowthExpert"));
+
   return (
     <div className="w-full max-w-[1440px] justify-center items-center mx-auto">
       <div className="relative">
-        <Search2 />
-
-        {/* <div className="absolute top-80 left-1/2 transform -translate-x-1/2 w-full z-20 ">
-          <Search />
-        </div> */}
-        {/* TODO: 중복 코드 수정 */}
-        {/* TODO: 데이터 연결되게 수정 */}
-        <div className="py-10 md:py-20">
-          <CardItem slides={speakers} />
-        </div>
+        <Search />
       </div>
+
+      {/* 지금 인기있는 연사 섹션 */}
+      <section className="py-10 md:py-20">{popularSpeaker.length > 0 ? <CardItem slides={popularSpeaker} title="지금 인기있는 연사" /> : <p>추천 연사가 없습니다.</p>}</section>
+
+      <section className="py-10 md:py-20">{topClassSpeaker.length > 0 ? <CardItem slides={topClassSpeaker} title="탑 클래스 연사" /> : <p>탑 클래스 연사가 없습니다.</p>}</section>
+
+      <section className="py-10 md:py-20">{risingNewSpeaker.length > 0 ? <CardItem slides={risingNewSpeaker} title="떠오르는 신규연사" /> : <p>탑 클래스 연사가 없습니다.</p>}</section>
+
+      <section className="py-10 md:py-20">
+        {trendInsightMaker.length > 0 ? <CardItem slides={trendInsightMaker} title="트렌드 읽는 인사이트메이커" /> : <p>트렌드 읽는 인사이트메이커 연사가 없습니다.</p>}
+      </section>
+
+      <section className="py-10 md:py-20">
+        {mindsetExpert.length > 0 ? <CardItem slides={mindsetExpert} title="마음과 삶을 변화시키는 마인드 전문가" /> : <p>마음과 삶을 변화시키는 마인드 전문가 연사가 없습니다.</p>}
+      </section>
+
+      <section className="py-10 md:py-20">
+        {culturalArtSpeaker.length > 0 ? <CardItem slides={culturalArtSpeaker} title="영감을 주는 문화 예술 연사" /> : <p>영감을 주는 문화 예술 연사가 없습니다.</p>}
+      </section>
+
+      <section className="py-10 md:py-20">
+        {youthInspiringSpeaker.length > 0 ? <CardItem slides={youthInspiringSpeaker} title="청춘에게 영감을 주는 연사" /> : <p>청춘에게 영감을 주는 연사가 없습니다.</p>}
+      </section>
+
+      <section className="py-10 md:py-20">
+        {selfImprovementSpeaker.length > 0 ? <CardItem slides={selfImprovementSpeaker} title="꿈에 더 가까워지는 자기계발연사" /> : <p>꿈에 더 가까워지는 자기계발 연사가 없습니다.</p>}
+      </section>
+
+      <section className="py-10 md:py-20">
+        {globalSpeaker.length > 0 ? <CardItem slides={globalSpeaker} title="전 세계가 주목하는 글로벌 스피커" /> : <p>전 세계가 주목하는 글로벌 스피커가 없습니다.</p>}
+      </section>
+
+      <section className="py-10 md:py-20">
+        {businessGrowthExpert.length > 0 ? <CardItem slides={businessGrowthExpert} title="성장을 설계하는 비즈니스 전문가 " /> : <p>성장을 설계하는 비즈니스 전문가가 없습니다.</p>}
+      </section>
     </div>
   );
 }
