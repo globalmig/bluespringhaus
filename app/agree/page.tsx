@@ -47,20 +47,6 @@ export default function Agree() {
       return;
     }
 
-    // // 3️⃣ 가입 성공 시 profiles 테이블에 추가 -> TODO: login 화면으로 이동
-    // const userId = data.user?.id;
-    // if (userId) {
-    //   const { error: insertError } = await supabase.from("profiles").insert({
-    //     id: userId,
-    //     email: trimmedEmail,
-    //   });
-
-    //   if (insertError) {
-    //     console.error("❌ 프로필 삽입 실패:", insertError.message);
-    //     alert("프로필 저장 중 문제가 발생했습니다.");
-    //   }
-    // }
-
     // TODO:이메일인증활성화해야함마지막에
     // 4️⃣ 완료
     alert("회원가입이 완료되었습니다! 이메일을 확인해주세요.");

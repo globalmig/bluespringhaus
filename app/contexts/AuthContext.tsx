@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  console.log("🔍 렌더링 상태:", { user: !!user, loading });
+  // console.log("🔍 렌더링 상태:", { user: !!user, loading });
 
   return <AuthContext.Provider value={{ user, session, loading, signOut }}>{children}</AuthContext.Provider>;
 };

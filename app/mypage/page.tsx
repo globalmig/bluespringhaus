@@ -1,11 +1,12 @@
 "use client";
-import React, { useEffect } from "react";
-import CardItem from "../components/common/CardItem";
-import ProgressItem from "../components/mypage/ProgressItem";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useRouter } from "next/navigation";
-
-// TODO: 추후 API 연결
+import type { Inquiry } from "@/types/inquiry";
+import axios from "axios";
+import { supabase } from "@/lib/supabase";
+import ProgressItem from "../components/mypage/ProgressItem";
+import CardItem from "../components/common/CardItem";
 
 const progressText = [
   { icon: "", title: "시작", sub: "문의완료" },
@@ -13,54 +14,93 @@ const progressText = [
   { icon: "", title: "완료", sub: "메일 확인해주세요!" },
 ];
 
-export default function mypage() {
+export default function Mypage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/"); // 시작 화면으로 리다이렉트
+      router.push("/"); // 로그인 안된 경우 홈으로 리다이렉트
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    if (user) {
+      const fetchInquiries = async () => {
+        const { data: session } = await supabase.auth.getSession();
+
+        if (!session?.session?.access_token) {
+          console.error("로그인 정보 없음");
+          return;
+        }
+
+        axios
+          .get("/api/inquiry", {
+            headers: {
+              Authorization: `Bearer ${session.session.access_token}`,
+            },
+          })
+          .then((response) => {
+            console.log(response.data);
+            setInquiries(response.data.inquiries);
+          })
+          .catch((error) => {
+            console.error("❌ API 호출 에러:", error);
+          });
+      };
+
+      fetchInquiries();
+    }
+  }, [user]);
 
   return (
     <div className="mx-4 mt-10 pb-40 gap-14 flex flex-col">
       <h1 className="text-center text-3xl mb-2 font-bold">마이페이지</h1>
-      {/* 진행사항, 수정 섹션 */}
-      <section className="w-full mx-auto gap-10 flex h-[360px] ">
+
+      <section className="w-full mx-auto gap-10 flex h-[360px]">
         <div className="progress w-[80%] rounded-2xl border bg-white">
-          <div className="textBox flex gap-4 w-full h-[40%] justify-center items-center ">
+          <div className="textBox flex gap-4 w-full h-[40%] justify-center items-center">
             <span>문의하신</span>
-            {/* 강사이름 드롭다운 */}
             <span>현재 진행 상황을 확인해보세요!</span>
           </div>
-
-          <div className="progressbar w-full h-[60%] flex justify-between items-center ">
-            <div className="baseBg w-[80%] h-7 bg-slate-200 rounded-full mx-auto ">
-              <div className="baseBg w-[80%] h-7 bg-slate-200 rounded-full mx-auto "></div>
+          <div className="progressbar w-full h-[60%] flex justify-between items-center">
+            <div className="baseBg w-[80%] h-7 bg-slate-200 rounded-full mx-auto">
+              <div className="baseBg w-[80%] h-7 bg-slate-200 rounded-full mx-auto"></div>
               <div className="flex w-full justify-between">
-                {progressText.map((item) => (
-                  <ProgressItem title={item.title} sub={item.sub} icon={undefined} />
+                {progressText.map((item, index) => (
+                  <ProgressItem key={index} title={item.title} sub={item.sub} icon={undefined} />
                 ))}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="edit w-[20%]  rounded-2xl border bg-white">
-          <div className="flex flex-col gap-4 w-full h-full px-10">https://bluespringhaus-rbt5.vercel.app/
+        <div className="edit w-[20%] rounded-2xl border bg-white">
+          <div className="flex flex-col gap-4 w-full h-full px-10">
             <button className="border-b w-full py-10">회원정보 수정 {">"}</button>
-            {/* TODO: user 예약 신청 데이터 연결 */}
-            <button className="border-b w-full py-10">예약 신청 {">"}</button>
+            <button className="border-b w-full py-10">문의 리스트 {">"}</button>
             <p>답변 완료</p>
           </div>
         </div>
       </section>
 
-      {/* 문의 답변 섹션
+      {inquiries.length > 0 ? (
+        <ul>
+          {inquiries.map((inquiry) => (
+            <li key={inquiry.id}>
+              <p>문의 제목: {inquiry.message}</p>
+              <p>상태: {inquiry.status}</p>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>문의 내역이 없습니다.</p>
+      )}
+
       <section className="bg-white rounded-lg p-10">
-        <CardItem slides={mockData} />
-      </section> */}
+        <CardItem slides={inquiries} title={"문의중인 연사"} />
+      </section>
 
       {/* 문의 신청한 리스트 섹션
       <section className="bg-white rounded-lg p-10">
