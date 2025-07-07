@@ -6,7 +6,7 @@ import type { Inquiry } from "@/types/inquiry";
 import axios from "axios";
 import { supabase } from "@/lib/supabase";
 import ProgressItem from "../components/mypage/ProgressItem";
-import CardItem from "../components/common/CardItem";
+import CardList from "../components/common/CardList";
 
 const progressText = [
   { icon: "", title: "시작", sub: "문의완료" },
@@ -92,15 +92,15 @@ export default function Mypage() {
       </section> */}
 
       <section className="bg-white rounded-lg p-10">
-        {acceptedInquiries.length > 0 ? <CardItem slides={acceptedInquiries.map((inq) => inq.speakers)} title="수락된 문의" /> : <p>수락된 문의 내역이 없습니다.</p>}
+        {acceptedInquiries.length > 0 ? <CardList slides={acceptedInquiries.map((inq) => inq.speakers)} title="수락된 문의" /> : <p>수락된 문의 내역이 없습니다.</p>}
       </section>
 
       <section className="bg-white rounded-lg p-10">
-        {pendingInquiries.length > 0 ? <CardItem slides={pendingInquiries.map((inq) => inq.speakers)} title="진행중인 문의" /> : <p>진행중인 문의 내역이 없습니다.</p>}
+        {pendingInquiries.length > 0 ? <CardList slides={pendingInquiries.map((inq) => inq.speakers)} title="진행중인 문의" /> : <p>진행중인 문의 내역이 없습니다.</p>}
       </section>
 
       <section className="bg-white rounded-lg p-10">
-        {rejectedInquiries.length > 0 ? <CardItem slides={rejectedInquiries.map((inq) => inq.speakers)} title="거절된 문의" /> : <p>거절된 문의 내역이 없습니다.</p>}
+        {rejectedInquiries.length > 0 ? <CardList slides={rejectedInquiries.map((inq) => inq.speakers)} title="거절된 문의" /> : <p>거절된 문의 내역이 없습니다.</p>}
       </section>
 
       {/* 문의 신청한 리스트 섹션

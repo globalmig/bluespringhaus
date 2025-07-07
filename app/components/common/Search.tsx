@@ -1,7 +1,11 @@
 "use client";
+import { Link } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 
 export default function Search() {
+  const router = useRouter();
+
   const [isOpenMenuLocation, setOpenMenuLocation] = useState(false);
   const [isOpenMenuCategory, setOpenMenuCategory] = useState(false);
   const [isOpenMenuBudget, setOpenMenuBudget] = useState(false);
@@ -53,6 +57,15 @@ export default function Search() {
   const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocation(e.target.value);
     setOpenMenuLocation(true);
+  };
+
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    params.append("location", isLocation);
+    params.append("category", isCategory);
+    params.append("budget", isBudget);
+
+    router.push(`/s?${params.toString()}`);
   };
 
   useEffect(() => {
@@ -162,7 +175,9 @@ export default function Search() {
             </div>
           )}
           <div className="flex justify-center items-center h-full group-hover:bg-slate-300 rounded-full ml-4">
-            <button className="h-10 px-6 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition">검색</button>
+            <button className="h-10 px-6 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition" onClick={handleSearch}>
+              검색
+            </button>
           </div>
         </div>
       </div>
