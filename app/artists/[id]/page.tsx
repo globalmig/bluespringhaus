@@ -2,12 +2,12 @@
 import React, { useEffect, useState } from "react";
 
 import HeroSlider from "@/app/components/detail/HeroSlider";
-import Book from "@/app/components/detail/Book";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 import type { Artists } from "@/types/inquiry";
 import Tab_artist from "@/app/components/detail/Tab_artist";
+import Book_artist from "@/app/components/detail/Book_artist";
 
 export default function SpeakerDetail() {
   const router = useRouter();
@@ -64,7 +64,7 @@ export default function SpeakerDetail() {
 
         {artists ? <Tab_artist total={reviews.length} reviews={reviews} artist={artists} /> : <p>아티스트 정보를 불러오는 중입니다...</p>}
       </div>
-      {artists?.id && <Book id={artists.id} />}
+      {artists?.id && <Book_artist id={artists.id} />}
     </div>
   );
 }

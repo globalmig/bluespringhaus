@@ -9,12 +9,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { userEmail: formEmail, message, speakerId: id, user_id } = req.body;
-
+    console.log("👉 [LOG] 받은 req.body:", req.body);
+    const { userEmail: formEmail, message, artistId: id, user_id } = req.body;
+    console.log("👉 [LOG] 구조분해 후 값:", {
+      formEmail,
+      message,
+      id,
+      user_id,
+    });
     if (!formEmail || !message || !id) {
       return res.status(400).json({
         success: false,
-
         error: "이메일, 메시지, 강연자 ID를 모두 입력해주세요.",
       });
     }
@@ -24,12 +29,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // ① inquiries 테이블에 문의 내용 저장 + 삽입된 행 반환
     const { data: insertedInquiry, error: insertError } = await supabase
-      .from("inquiries")
+      .from("inquiries_artist")
       .insert([
         {
           user_id: user_id,
           contact_email: formEmail,
-          speaker_id: id,
+          artist_id: id,
           message: message,
           created_at: new Date().toISOString(),
         },
@@ -51,7 +56,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const token = crypto.createHmac("sha256", process.env.SECRET_KEY!).update(`${inquiryId}-${Date.now()}`).digest("hex");
 
     // ③ 토큰을 inquiries 테이블에 업데이트
-    const { error: updateError } = await supabase.from("inquiries").update({ token }).eq("id", inquiryId);
+    const { error: updateError } = await supabase.from("inquiries_artist").update({ token }).eq("id", inquiryId);
 
     if (updateError) {
       console.error("토큰 저장 실패:", updateError);
@@ -62,10 +67,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // ④ 스피커 이메일 조회
-    const { data: speaker, error: speakerError } = await supabase.from("speakers").select("email").eq("id", id).single();
+    const { data: artist, error: artistError } = await supabase.from("artists").select("email").eq("id", id).single();
 
-    if (speakerError || !speaker) {
-      console.error("강연자 이메일 조회 실패:", speakerError);
+    if (artistError || !artist) {
+      console.error("강연자 이메일 조회 실패:", artistError);
       return res.status(404).json({
         success: false,
         error: "강연자 정보를 찾을 수 없습니다.",
@@ -95,7 +100,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // TODO: 메일 받은 디자인 변경해야함
     await transporter.sendMail({
       from: `"Contact Form" <${process.env.SMTP_USER}>`,
-      to: speaker.email,
+      to: artist.email,
       subject: "[마이크임팩트] 새 문의가 도착했습니다",
       html: `
         <h3>새 문의가 도착했습니다</h3>
@@ -105,11 +110,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         <p>${message.replace(/\n/g, "<br>")}</p>
         <hr>
         <p>
-          <a href="https://bluespringhaus-rbt5.vercel.app/api/inquiry/handle?inquiryId=${inquiryId}&action=accept&token=${token}"
+          <a href="https://bluespringhaus-rbt5.vercel.app/api/inquiry_artist/handle?inquiryId=${inquiryId}&action=accept&token=${token}"
             style="padding:12px 20px;background-color:#4CAF50;color:white;text-decoration:none;border-radius:4px;">
             수락
           </a>
-          <a href="https://bluespringhaus-rbt5.vercel.app/api/inquiry/handle?inquiryId=${inquiryId}&action=reject&token=${token}"
+          <a href="https://bluespringhaus-rbt5.vercel.app/api/inquiry_artist/handle?inquiryId=${inquiryId}&action=reject&token=${token}"
             style="padding:12px 20px;background-color:#f44336;color:white;text-decoration:none;border-radius:4px;margin-left:10px;">
             거절
           </a>

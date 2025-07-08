@@ -43,10 +43,10 @@ export default function BookPage() {
       console.log("보내는 값 확인:", {
         userEmail,
         message,
-        speakerId: id,
+        artistId: id,
         user_id: user?.id,
       });
-      const res = await fetch("/api/contact", {
+      const res = await fetch("/api/contact_artist", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -55,7 +55,7 @@ export default function BookPage() {
         body: JSON.stringify({
           userEmail,
           message,
-          speakerId: id,
+          artistId: id,
           user_id: user.id, // 안전하게 접근 가능
         }),
       });
@@ -70,13 +70,12 @@ export default function BookPage() {
       if (res.ok && result.success) {
         alert("문의가 성공적으로 전송되었습니다!");
         form.reset();
-        router.push(`/book/${id}`);
+        router.push(`/artists/${id}`);
       } else {
         alert(result.error || "문의 전송에 실패했습니다. 다시 시도해주세요.");
       }
     } catch (error) {
       console.error("문의 전송 오류:", error);
-
       alert("서버 오류가 발생했습니다. 나중에 다시 시도해주세요.");
     } finally {
       setIsSubmitting(false);

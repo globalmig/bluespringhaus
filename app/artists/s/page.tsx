@@ -117,7 +117,8 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
   useEffect(() => {
     const fetchSpeakers = async () => {
       try {
-        const res = await axios.get<Speaker[]>("/api/speakers");
+        // TODO: 명 아티스트로 변경해야함 지금 일단 db만 artists 연결 해둠
+        const res = await axios.get<Speaker[]>("/api/artists");
         setSpeakers(res.data);
       } catch (error) {
         console.error("API 호출 실패!", error);
