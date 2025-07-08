@@ -37,12 +37,12 @@ export default function Gnb() {
         {user ? (
           <nav className="flex gap-20 pl-0 md:pl-52">
             <Link href="/">연사</Link>
-            <Link href="/about">인플루언서</Link>
+            <Link href="/artists">인플루언서</Link>
           </nav>
         ) : (
           <nav className="flex gap-20">
             <Link href="/">연사</Link>
-            <Link href="/about">인플루언서</Link>
+            <Link href="/artists">인플루언서</Link>
           </nav>
         )}
 
