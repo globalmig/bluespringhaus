@@ -94,7 +94,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // TODO:도메인 변경 후 수정해야함 토근 링크
     // TODO: 메일 받은 디자인 변경해야함
     await transporter.sendMail({
-      from: `"Contact Form" <${process.env.SMTP_USER}>`,
+      from: `"마이크임팩트" <${process.env.SMTP_USER}>`,
       to: speaker.email,
       subject: "[마이크임팩트] 새 문의가 도착했습니다",
       html: `
