@@ -1,14 +1,15 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { supabase } from "@/lib/supabase";
-import { User, Session } from "@supabase/supabase-js";
+import { User, Session, AuthError } from "@supabase/supabase-js";
+import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs"; // ✅ 추가
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  signIn: (email: string, password: string) => Promise<{ error: AuthError | null; user: User | null }>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -16,6 +17,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   signOut: async () => {},
+  signIn: async () => ({ error: null, user: null }),
 });
 
 export const useAuth = () => {
@@ -31,9 +33,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // console.log("✅ AuthProvider 초기화");
+  const supabase = createBrowserSupabaseClient(); // ✅ 수정
 
+  useEffect(() => {
     const init = async () => {
       const {
         data: { session },
@@ -48,7 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      // console.log("🔄 Auth 상태 변경:", event, session);
+      console.log("🔄 Auth 상태 변경:", event, session);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -57,7 +59,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [supabase]);
+
+  const signIn = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error, user: data?.user };
+  };
 
   const signOut = async () => {
     try {
@@ -71,7 +78,5 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // console.log("🔍 렌더링 상태:", { user: !!user, loading });
-
-  return <AuthContext.Provider value={{ user, session, loading, signOut }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, session, loading, signOut, signIn }}>{children}</AuthContext.Provider>;
 };

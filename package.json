@@ -12,9 +12,8 @@
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-tabs": "^1.1.12",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
-    "@supabase/auth-helpers-react": "^0.5.0",
     "@supabase/ssr": "^0.6.1",
-    "@supabase/supabase-js": "^2.50.2",
+    "@supabase/supabase-js": "^2.50.4",
     "@tanstack/react-query": "^5.81.5",
     "@tanstack/react-query-devtools": "^5.81.5",
     "axios": "^1.10.0",
@@ -27,6 +26,7 @@
     "nodemailer": "^7.0.4",
     "react": "^18",
     "react-dom": "^18",
+    "react-icons": "^5.5.0",
     "swiper": "^11.2.8",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7"

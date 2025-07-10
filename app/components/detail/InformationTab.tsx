@@ -61,7 +61,7 @@ export default function InformationTab({ reviews }: ReviewItemProps) {
 
       <section className="flex flex-col  p-10 bg-white rounded-lg">
         <h2 className="font-bold text-2xl">소개영상</h2>
-        <p>이용석님의 영상 포트폴리오입니다!</p>
+        <p>포트폴리오를 확인해보세요!</p>
         {/* TODO: 유튜브영상 */}
         {Array.isArray(speaker?.intro_video) &&
           speaker!.intro_video.map((video, index) => (

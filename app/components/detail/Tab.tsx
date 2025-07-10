@@ -5,18 +5,21 @@ import InformationTab from "./InformationTab";
 import ReviewsTab from "./ReviewsTab";
 
 interface tabProps {
+  id: string;
   total: number;
   reviews: Review[];
 }
 
-interface Review {
-  id: string;
+export interface Review {
+  id: number;
+  speaker_id: number;
+  reviewer_name: string;
   rating: number;
   comment: string;
-  tags: string[];
+  created_at: string;
 }
 
-export default function Tab({ total, reviews }: tabProps) {
+export default function Tab({ total, reviews, id }: tabProps) {
   const [selectedTab, setSelectedTab] = useState("information");
   return (
     <div>
@@ -34,7 +37,7 @@ export default function Tab({ total, reviews }: tabProps) {
           <InformationTab reviews={reviews} />
         </TabsContent>
         <TabsContent value="reviews">
-          <ReviewsTab reviews={reviews} />
+          <ReviewsTab reviews={reviews} speakerId={parseInt(id)} />
         </TabsContent>
       </Tabs>
     </div>

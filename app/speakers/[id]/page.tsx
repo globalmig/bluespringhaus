@@ -74,8 +74,7 @@ export default function SpeakerDetail() {
             </span>
           ))}
         </div>
-
-        <Tab total={reviews.length} reviews={reviews} />
+        {speaker && <Tab total={reviews.length} reviews={reviews} id={speaker.id} />}
       </div>
       {speaker?.id && <Book id={speaker.id} />}
     </div>

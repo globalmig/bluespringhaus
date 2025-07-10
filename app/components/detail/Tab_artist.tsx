@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import ReviewsTab from "./ReviewsTab";
 import InformationTab_artist from "./InformationTab_artist";
 import type { Artists } from "@/types/inquiry";
+import ReviewsTab_artist from "./ReviewsTab_artist";
 
 interface tabProps {
   total: number;
@@ -12,11 +13,13 @@ interface tabProps {
   artist: Artists;
 }
 
-interface Review {
-  id: string;
+export interface Review {
+  id: number;
+  artist_id: number;
+  reviewer_name: string;
   rating: number;
   comment: string;
-  tags: string[];
+  created_at: string; // ISO timestamp
 }
 
 export default function Tab_artist({ total, reviews, artist }: tabProps) {
@@ -37,7 +40,7 @@ export default function Tab_artist({ total, reviews, artist }: tabProps) {
           <InformationTab_artist reviews={reviews} artist={artist} />
         </TabsContent>
         <TabsContent value="reviews">
-          <ReviewsTab reviews={reviews} />
+          <ReviewsTab_artist reviews={reviews} artistId={artist.id} />
         </TabsContent>
       </Tabs>
     </div>

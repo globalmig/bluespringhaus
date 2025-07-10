@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { div } from "framer-motion/client";
+import { useAuth } from "@/app/contexts/AuthContext";
 
 interface LoginProps {
   onClose: () => void;
@@ -14,6 +14,7 @@ export default function Login({ onClose }: LoginProps) {
   const [pw, setPw] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { signIn } = useAuth();
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -22,27 +23,22 @@ export default function Login({ onClose }: LoginProps) {
     setError("");
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password: pw,
-      });
-
-      if (data?.user && !data.user.email_confirmed_at) {
-        alert("이메일 인증이 완료되지 않았습니다.");
-      }
+      const { error, user } = await signIn(email, pw); // ✅ pw로 맞춤
 
       if (error) {
         setError(error.message);
       } else {
+        // 이메일 인증 확인 (선택)
+        if (user && !user.email_confirmed_at) {
+          alert("이메일 인증이 완료되지 않았습니다.");
+        }
+
         alert("로그인 성공!");
-        const userId = data.user?.id;
+        const userId = user?.id;
         const trimmedEmail = email.trim();
 
         if (userId) {
-          const { error: upsertError } = await supabase.from("profiles").upsert(
-            { id: userId, email: trimmedEmail },
-            { onConflict: "id" } // id 기준으로 이미 있으면 업데이트, 없으면 삽입
-          );
+          const { error: upsertError } = await supabase.from("profiles").upsert({ id: userId, email: trimmedEmail }, { onConflict: "id" });
           if (upsertError) {
             console.error("❌ 프로필 upsert 실패:", upsertError);
             alert("프로필 저장 중 문제가 발생했습니다.");
@@ -50,7 +46,7 @@ export default function Login({ onClose }: LoginProps) {
         }
 
         onClose();
-        router.push("/");
+        router.refresh();
       }
     } catch (err) {
       setError("로그인 중 오류가 발생했습니다.");

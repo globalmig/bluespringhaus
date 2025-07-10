@@ -8,7 +8,7 @@ export default async function handle(req: NextApiRequest, res: NextApiResponse) 
 
   try {
     const token = req.headers.authorization?.split(" ")[1];
-    // console.log("🔑 전달받은 토큰:", token);
+    console.log("🔑 전달받은 토큰:", token);
 
     if (!token) {
       // console.error("❌ 토큰이 없습니다.");

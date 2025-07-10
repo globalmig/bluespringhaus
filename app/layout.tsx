@@ -3,7 +3,6 @@ import localFont from "next/font/local";
 import "./globals.css";
 import Gnb from "./components/common/Gnb";
 import Footer from "./components/common/Footer";
-import { AuthProvider } from "./contexts/AuthContext";
 import Providers from "./providers";
 
 const geistSans = localFont({
@@ -22,21 +21,17 @@ export const metadata: Metadata = {
   description: "연사, 인플루언서를 손쉽게 연결해드리는 마이크임팩트 사이트입니다",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <AuthProvider>
-          <div className=" w-full mx-auto bg-zinc-100">
+        <Providers>
+          <div className="w-full mx-auto bg-zinc-100">
             <Gnb />
             {children}
           </div>
           <Footer />
-        </AuthProvider>
+        </Providers>
       </body>
     </html>
   );
