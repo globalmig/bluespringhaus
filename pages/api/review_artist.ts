@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   // ✅ inquiries에서 status 확인
-  const { data: inquiries, error: inquiryError } = await supabase.from("inquiries").select("*").eq("user_id", user.id).eq("artist_id", artist_id).eq("status", "accepted");
+  const { data: inquiries, error: inquiryError } = await supabase.from("inquiries_artist").select("*").eq("user_id", user.id).eq("artist_id", artist_id).eq("status", "accepted");
 
   if (inquiryError) {
     console.error("inquiry fetch 실패:", inquiryError);
@@ -46,6 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       rating,
       comment,
       artist_id,
+      user_id: user.id,
       reviewer_name,
       created_at: new Date().toISOString(),
     },

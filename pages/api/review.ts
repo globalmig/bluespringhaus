@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ success: false, error: "필수 정보가 누락되었습니다." });
   }
 
-  console.log("📍 POST 요청 도착");
+//   console.log("📍 POST 요청 도착");
 
   // ✅ 로그인된 유저 확인
   const {
@@ -22,8 +22,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     error: userError,
   } = await supabase.auth.getUser();
 
-  console.log("📍 인증 정보 확인:", user);
-  console.log("📍 인증 에러:", userError);
+  //   console.log("📍 인증 정보 확인:", user);
+  //   console.log("📍 인증 에러:", userError);
 
   if (userError || !user) {
     return res.status(401).json({ success: false, error: "로그인이 필요합니다." });

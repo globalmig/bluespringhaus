@@ -36,52 +36,29 @@ export default function ReviewsTab_artist({ reviews, artistId }: ReviewItemProps
       return;
     }
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+    try {
+      const res = await fetch("/api/review_artist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating, comment, artist_id: artistId }),
+        credentials: "include",
+      });
 
-    if (userError || !user) {
-      alert("로그인이 필요합니다.");
-      return;
+      const result = await res.json();
+
+      if (!res.ok || !result.success) {
+        alert(result.error || "리뷰 작성 실패");
+        return;
+      }
+
+      alert("리뷰가 등록되었습니다!");
+      setRating(0);
+      setComment("");
+    } catch (err) {
+      console.error("리뷰 등록 에러:", err);
+      alert("서버 오류가 발생했습니다.");
     }
-
-    //  사용자의 inquiries 상태 확인
-    const { data: inquiries, error: inquiryError } = await supabase.from("inquiries_artist").select("*").eq("user_id", user.id).eq("artist_id", artistId).eq("status", "accepted");
-
-    if (inquiryError) {
-      console.error("inquiries 조회 실패:", inquiryError);
-      alert("리뷰 권한 확인 중 오류가 발생했습니다.");
-      return;
-    }
-
-    if (!inquiries || inquiries.length === 0) {
-      alert("해당 아티스트와의 섭외가 수락된 경우에만 리뷰를 작성할 수 있습니다.");
-      return;
-    }
-
-    const { error } = await supabase.from("reviews_artists").insert([
-      {
-        rating,
-        comment,
-        artist_id: artistId,
-        reviewer_name: user.user_metadata?.name || "익명",
-        created_at: new Date().toISOString(),
-      },
-    ]);
-
-    if (error) {
-      console.error("리뷰 작성 실패:", error);
-      alert("리뷰 작성에 실패했습니다.");
-      return;
-    }
-
-    alert("리뷰가 등록되었습니다!");
-    setRating(0);
-    setComment("");
-    // ✅ 필요 시 새로고침 or fetchReviews 다시 호출
   };
-
   return (
     <div className="w-full flex flex-col gap-4 mb-20">
       {/* 리뷰 작성 폼 */}

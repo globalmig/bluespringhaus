@@ -35,7 +35,7 @@ export default function SpeakerDetail() {
     };
 
     const fetchReviews = async (artistId: number) => {
-      const { data, error } = await supabase.from("reviews_artists").select("*").eq("artist_id", artistId).order("created_at", { ascending: false });
+      const { data, error } = await supabase.from("reviews_artist").select("*").eq("artist_id", artistId).order("created_at", { ascending: false });
 
       if (error) {
         console.error("리뷰 불러오기 실패:", error);
