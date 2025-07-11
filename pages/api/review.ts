@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ success: false, error: "필수 정보가 누락되었습니다." });
   }
 
-//   console.log("📍 POST 요청 도착");
+  //   console.log("📍 POST 요청 도착");
 
   // ✅ 로그인된 유저 확인
   const {
@@ -44,6 +44,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
+  const { data: existingReview, error: reviewCheckError } = await supabase.from("reviews").select("id").eq("user_id", user.id).eq("speaker_id", speaker_id).maybeSingle(); // 리뷰가 없을 수도 있으니까
+
+  if (reviewCheckError) {
+    console.error("이미 리뷰 등록을 하셨습니다.:", reviewCheckError);
+    return res.status(500).json({ success: false, error: "이미 리뷰 등록을 하셨습니다." });
+  }
+
+  if (existingReview) {
+    return res.status(409).json({ success: false, error: "이미 이 아티스트에 리뷰를 작성하셨습니다." });
+  }
+
   const reviewer_name = user.user_metadata?.name?.trim() || "익명";
 
   const { error } = await supabase.from("reviews").insert([
@@ -62,5 +73,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ success: false, error: "리뷰 등록 실패" });
   }
 
-  return res.status(200).json({ success: true });
+  const { data: updatedReviews, error: fetchError } = await supabase.from("reviews").select("*").eq("speaker_id", speaker_id).order("created_at", { ascending: false });
+
+  if (fetchError) {
+    console.error("리뷰 목록 불러오기 실패:", fetchError);
+    return res.status(500).json({ success: false, error: "리뷰 목록 갱신 실패" });
+  }
+
+  return res.status(200).json({ success: true, reviews: updatedReviews });
 }

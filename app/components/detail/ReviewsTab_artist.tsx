@@ -23,6 +23,7 @@ export interface Review {
 export default function ReviewsTab_artist({ reviews, artistId }: ReviewItemProps) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [reviewsState, setReviewsState] = useState<Review[]>(reviews);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +55,7 @@ export default function ReviewsTab_artist({ reviews, artistId }: ReviewItemProps
       alert("리뷰가 등록되었습니다!");
       setRating(0);
       setComment("");
+      setReviewsState(result.reviews);
     } catch (err) {
       console.error("리뷰 등록 에러:", err);
       alert("서버 오류가 발생했습니다.");
@@ -74,7 +76,7 @@ export default function ReviewsTab_artist({ reviews, artistId }: ReviewItemProps
       </form>
 
       {/* 리뷰 리스트 */}
-      {reviews.map((item) => (
+      {reviewsState.map((item) => (
         <div key={item.id} className="w-full bg-white py-10 rounded-xl flex flex-col gap-4 px-8">
           <p>별점 {item.rating}</p>
           <div>{item.comment}</div>
