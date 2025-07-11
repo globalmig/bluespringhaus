@@ -1,7 +1,8 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
+import axios from "axios";
 
 export default function BookPage() {
   const params = useParams();
@@ -9,25 +10,78 @@ export default function BookPage() {
   const { user, loading } = useAuth();
   const id = params?.id as string | undefined;
 
+  const [isAllowed, setIsAllowed] = useState<boolean | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+
+  useEffect(() => {
+    const checkEligibility = async () => {
+      if (!id || !user) return;
+
+      try {
+        const res = await axios.get(`/api/inquiry/check?speakerId=${id}`);
+
+        // ✅ API 응답 형식에 맞춘 처리
+        if (res.data.canApply) {
+          setIsAllowed(true);
+          setErrorMessage("");
+        } else {
+          setIsAllowed(false);
+          setErrorMessage(res.data.reason || "이미 진행중인 문의가 있습니다.");
+        }
+      } catch (error: any) {
+        console.error("🚫 문의 제한:", error);
+        setIsAllowed(false);
+
+        // ✅ 서버에서 반환된 에러 메시지 사용
+        if (error.response?.data?.error) {
+          setErrorMessage(error.response.data.error);
+        } else {
+          setErrorMessage("문의 권한을 확인할 수 없습니다.");
+        }
+      }
+    };
+
+    if (!loading && user) {
+      checkEligibility();
+    }
+  }, [id, user, loading]);
+
+  // ✅ 로딩 중이거나 로그인하지 않은 경우
   if (!id) {
     return <p className="text-center py-20 text-lg">잘못된 접근입니다. 페이지 ID가 없습니다.</p>;
   }
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (loading || isAllowed === null) {
+    return <p className="text-center py-20 text-lg">접근 가능 여부 확인 중...</p>;
+  }
+
+  if (!user) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-lg mb-4">로그인 후 문의를 이용하실 수 있습니다.</p>
+        <button onClick={() => router.push("/login")} className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors">
+          로그인하러 가기
+        </button>
+      </div>
+    );
+  }
+
+  // ✅ 문의 불가능한 경우 (이미 처리 중인 문의가 있는 경우)
+  if (isAllowed === false) {
+    return (
+      <div className="text-center py-20">
+        <p className="text-lg mb-4">{errorMessage}</p>
+        <button onClick={() => router.push(`/speakers/${id}`)} className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors">
+          아티스트 페이지로 돌아가기
+        </button>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (loading) {
-      alert("로그인 상태를 확인 중입니다. 잠시 후 다시 시도해주세요.");
-      return;
-    }
-
-    if (!user) {
-      alert("로그인 후 문의하실 수 있습니다!");
-      return;
-    }
-
-    if (isSubmitting) return; // 중복 제출 방지
+    if (isSubmitting) return;
 
     const form = e.currentTarget;
     const userEmail = (form.elements.namedItem("userEmail") as HTMLInputElement | null)?.value;
@@ -35,62 +89,49 @@ export default function BookPage() {
 
     if (!userEmail) return alert("이메일을 입력해주세요!");
     if (!message) return alert("메시지를 입력해주세요!");
-    if (!id) return alert("잘못된 접근입니다. 강연자 정보가 없습니다.");
 
     setIsSubmitting(true);
 
     try {
-      console.log("보내는 값 확인:", {
-        userEmail,
-        message,
-        speakerId: id,
-        user_id: user?.id,
-      });
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          userEmail,
-          message,
-          speakerId: id,
-          user_id: user.id, // 안전하게 접근 가능
-        }),
-      });
+      // ✅ 문의 전송 전 다시 한 번 권한 확인
+      const checkRes = await axios.get(`/api/inquiry/check_speaker?speakerId=${id}`);
 
-      const contentType = res.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("서버에서 올바르지 않은 응답을 받았습니다.");
+      if (!checkRes.data.canApply) {
+        alert(checkRes.data.reason || "이미 처리 중인 문의가 있습니다.");
+        window.location.reload();
+        return;
       }
 
-      const result = await res.json();
+      const res = await axios.post(
+        "/api/contact_speaker",
+        { userEmail, message, speakerId: id },
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
 
-      if (res.ok && result.success) {
+      if (res.status === 200 && res.data.success) {
         alert("문의가 성공적으로 전송되었습니다!");
         form.reset();
-        router.push(`/book/${id}`);
+        router.push(`/speakers/${id}`);
       } else {
-        alert(result.error || "문의 전송에 실패했습니다. 다시 시도해주세요.");
+        alert(res.data.error || "문의 전송에 실패했습니다.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("문의 전송 오류:", error);
 
-      alert("서버 오류가 발생했습니다. 나중에 다시 시도해주세요.");
+      // ✅ 권한 체크 실패 시 특별 처리
+      if (error.response?.status === 403) {
+        alert("이미 처리 중인 문의가 있습니다. 페이지를 새로고침합니다.");
+        window.location.reload();
+      } else {
+        alert("서버 오류가 발생했습니다. 나중에 다시 시도해주세요.");
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  // ✅ 렌더링 단계에서 로그인 상태 체크
-  if (loading) {
-    return <p className="text-center py-20 text-lg">로그인 상태를 확인 중입니다...</p>;
-  }
-
-  if (!user) {
-    return <p className="text-center py-20 text-lg">로그인 후 문의를 이용하실 수 있습니다.</p>;
-  }
 
   return (
     <div className="mx-4 mt-10 pb-40 gap-10 flex flex-col">

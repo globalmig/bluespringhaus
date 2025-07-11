@@ -1,4 +1,4 @@
-// pages/api/inquiry/check.ts
+// pages/api/inquiry/check_artist.ts
 import { createPagesServerClient } from "@supabase/auth-helpers-nextjs";
 import { NextApiRequest, NextApiResponse } from "next";
 
