@@ -1,26 +1,38 @@
 "use client";
+
 import React from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+
+import axios from "axios";
+import { useAuth } from "@/app/contexts/AuthContext";
 
 interface BookProps {
-  id: string;
+  id: string; // speakerId
 }
 
 export default function Book({ id }: BookProps) {
   const router = useRouter();
+  const { user } = useAuth();
 
   const handleClick = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    if (!user) {
+      alert("로그인 후 문의를 진행하실 수 있습니다.");
+      return;
+    }
 
-    if (user) {
-      router.push(`/book/${id}`); // 로그인 O
-    } else {
+    try {
+      const res = await axios.get(`/api/inquiry/check?speakerId=${id}`);
+      const { canApply, reason } = res.data;
 
-      //   TODO: 로그인모달 뜨게
-      alert("로그인 후 문의부탁드립니다");
+      if (!canApply) {
+        alert(reason || "이미 진행 중인 문의가 있습니다.");
+        return;
+      }
+
+      router.push(`/book/${id}`);
+    } catch (error) {
+      console.error("❌ 문의 가능 여부 확인 실패:", error);
+      alert("잠시 후 다시 시도해주세요.");
     }
   };
 

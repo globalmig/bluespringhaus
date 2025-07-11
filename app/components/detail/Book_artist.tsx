@@ -1,24 +1,38 @@
 "use client";
+
 import React from "react";
 import { useRouter } from "next/navigation";
-import { sessionCache } from "@/lib/supabase"; // ✅ 세션 캐시에서 사용
+
+import axios from "axios";
+import { useAuth } from "@/app/contexts/AuthContext";
 
 interface BookProps {
-  id: string;
+  id: string; // artistId
 }
 
-export default function Book_artist({ id }: BookProps) {
+export default function Book({ id }: BookProps) {
   const router = useRouter();
+  const { user } = useAuth();
 
   const handleClick = async () => {
-    const session = await sessionCache.getSession();
-
-    if (session?.user) {
-      // ✅ 로그인 되어 있으면 섭외 폼 페이지로 이동
-      router.push(`/artists/book/${id}`);
-    } else {
-      // ❌ 로그인 안 돼 있으면 안내
+    if (!user) {
       alert("로그인 후 문의를 진행하실 수 있습니다.");
+      return;
+    }
+
+    try {
+      const res = await axios.get(`/api/inquiry/check_artist?artistId=${id}`);
+      const { canApply, reason } = res.data;
+
+      if (!canApply) {
+        alert(reason || "이미 진행 중인 문의가 있습니다.");
+        return;
+      }
+
+      router.push(`/artists/book/${id}`);
+    } catch (error) {
+      console.error("❌ 문의 가능 여부 확인 실패:", error);
+      alert("잠시 후 다시 시도해주세요.");
     }
   };
 
