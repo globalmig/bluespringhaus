@@ -9,14 +9,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    console.log("👉 [LOG] 받은 req.body:", req.body);
-    const { userEmail: formEmail, message, artistId: id, user_id } = req.body;
-    console.log("👉 [LOG] 구조분해 후 값:", {
-      formEmail,
-      message,
-      id,
-      user_id,
-    });
+    const { userEmail: formEmail, message, artistId: id } = req.body;
+
     if (!formEmail || !message || !id) {
       return res.status(400).json({
         success: false,
@@ -24,69 +18,66 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Supabase 클라이언트 생성
     const supabase = createPagesServerClient({ req, res });
 
-    // ① inquiries 테이블에 문의 내용 저장 + 삽입된 행 반환
+    // ✅ 로그인된 유저 확인
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return res.status(401).json({ success: false, error: "로그인이 필요합니다." });
+    }
+
+    // ✅ 문의 내용 저장
     const { data: insertedInquiry, error: insertError } = await supabase
       .from("inquiries_artist")
       .insert([
         {
-          user_id: user_id,
+          user_id: user.id, // ✅ 여기서 서버에서 user.id 사용
           contact_email: formEmail,
           artist_id: id,
-          message: message,
+          message,
           created_at: new Date().toISOString(),
         },
       ])
-      .select() // 삽입된 행 반환
-      .single(); // 단일 행만 받음
+      .select()
+      .single();
 
     if (insertError || !insertedInquiry) {
       console.error("문의 저장 실패:", insertError);
-      return res.status(500).json({
-        success: false,
-        error: "문의 정보 저장에 실패했습니다.",
-      });
+      return res.status(500).json({ success: false, error: "문의 정보 저장에 실패했습니다." });
     }
 
     const inquiryId = insertedInquiry.id;
 
-    // ② inquiryId로 토큰 생성
+    // ✅ 수락/거절용 토큰 생성
     const token = crypto.createHmac("sha256", process.env.SECRET_KEY!).update(`${inquiryId}-${Date.now()}`).digest("hex");
 
-    // ③ 토큰을 inquiries 테이블에 업데이트
+    // ✅ 토큰을 테이블에 저장
     const { error: updateError } = await supabase.from("inquiries_artist").update({ token }).eq("id", inquiryId);
 
     if (updateError) {
       console.error("토큰 저장 실패:", updateError);
-      return res.status(500).json({
-        success: false,
-        error: "문의 토큰 저장에 실패했습니다.",
-      });
+      return res.status(500).json({ success: false, error: "문의 토큰 저장에 실패했습니다." });
     }
 
-    // ④ 스피커 이메일 조회
+    // ✅ 아티스트 이메일 가져오기
     const { data: artist, error: artistError } = await supabase.from("artists").select("email").eq("id", id).single();
 
     if (artistError || !artist) {
       console.error("강연자 이메일 조회 실패:", artistError);
-      return res.status(404).json({
-        success: false,
-        error: "강연자 정보를 찾을 수 없습니다.",
-      });
+      return res.status(404).json({ success: false, error: "강연자 정보를 찾을 수 없습니다." });
     }
 
-    // ⑤ 메일 발송 설정 확인
+    // ✅ SMTP 환경변수 체크
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
       console.error("SMTP 설정이 없습니다.");
-      return res.status(500).json({
-        success: false,
-        error: "메일 서버 설정 오류입니다.",
-      });
+      return res.status(500).json({ success: false, error: "메일 서버 설정 오류입니다." });
     }
 
-    // ⑥ 메일 발송
+    // ✅ 메일 발송
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 587,
@@ -96,8 +87,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         pass: process.env.SMTP_PASS,
       },
     });
-    // TODO:도메인 변경 후 수정해야함 토근 링크
-    // TODO: 메일 받은 디자인 변경해야함
+
     await transporter.sendMail({
       from: `"마이크임팩트" <${process.env.SMTP_USER}>`,
       to: artist.email,

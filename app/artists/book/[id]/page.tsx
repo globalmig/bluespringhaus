@@ -24,6 +24,7 @@ export default function BookPage() {
 
     if (!user) {
       alert("로그인 후 문의하실 수 있습니다!");
+      router.push(`/artists/${id}`);
       return;
     }
 
@@ -40,12 +41,6 @@ export default function BookPage() {
     setIsSubmitting(true);
 
     try {
-      console.log("보내는 값 확인:", {
-        userEmail,
-        message,
-        artistId: id,
-        user_id: user?.id,
-      });
       const res = await fetch("/api/contact_artist", {
         method: "POST",
         headers: {
@@ -56,7 +51,6 @@ export default function BookPage() {
           userEmail,
           message,
           artistId: id,
-          user_id: user.id, // 안전하게 접근 가능
         }),
       });
 

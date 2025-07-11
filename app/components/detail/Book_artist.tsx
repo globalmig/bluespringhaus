@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { sessionCache } from "@/lib/supabase"; // ✅ 세션 캐시에서 사용
 
 interface BookProps {
   id: string;
@@ -11,15 +11,14 @@ export default function Book_artist({ id }: BookProps) {
   const router = useRouter();
 
   const handleClick = async () => {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const session = await sessionCache.getSession();
 
-    if (user) {
-      router.push(`/artists/book/${id}`); // 로그인  artistsId: id,
+    if (session?.user) {
+      // ✅ 로그인 되어 있으면 섭외 폼 페이지로 이동
+      router.push(`/artists/book/${id}`);
     } else {
-      //   TODO: 로그인모달 뜨게
-      alert("로그인 후 문의부탁드립니다");
+      // ❌ 로그인 안 돼 있으면 안내
+      alert("로그인 후 문의를 진행하실 수 있습니다.");
     }
   };
 
