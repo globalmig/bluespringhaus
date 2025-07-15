@@ -50,7 +50,7 @@ export default function Home() {
 
       <section className="py-10 md:py-20">{topClassSpeaker.length > 0 ? <CardList slides={topClassSpeaker} title="탑 클래스 연사" /> : <p>탑 클래스 연사가 없습니다.</p>}</section>
 
-      <section className="py-10 md:py-20">{risingNewSpeaker.length > 0 ? <CardList slides={risingNewSpeaker} title="떠오르는 신규연사" /> : <p>탑 클래스 연사가 없습니다.</p>}</section>
+      <section className="py-10 md:py-20">{risingNewSpeaker.length > 0 ? <CardList slides={risingNewSpeaker} title="떠오르는 신규연사" /> : <p>떠오르는 신규연사가 없습니다.</p>}</section>
 
       <section className="py-10 md:py-20">
         {trendInsightMaker.length > 0 ? <CardList slides={trendInsightMaker} title="트렌드 읽는 인사이트메이커" /> : <p>트렌드 읽는 인사이트메이커 연사가 없습니다.</p>}
