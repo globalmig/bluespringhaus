@@ -7,6 +7,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method === "POST") {
     const { type, name, gallery_images, short_desc, full_desc, intro_video, career, tags, email, profile_image, is_recommended } = req.body;
 
+    console.log("👉 받은 데이터:", req.body);
+
     if (!type || !["artist", "speaker"].includes(type)) {
       return res.status(400).json({ success: false, error: "유효하지 않은 type 값입니다." });
     }
@@ -20,13 +22,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       gallery_images,
       short_desc,
       full_desc,
-      intro_video,
+      intro_video: typeof intro_video === "string" ? intro_video.split(",").map((v: string) => v.trim()) : [],
       career,
-      tags,
+      tags: typeof tags === "string" ? tags.split(",").map((tag: string) => tag.trim()) : [],
       email,
       profile_image,
       is_recommended,
     };
+
+    console.log("👉 최종 payload:", payload);
 
     const tableName = type === "speaker" ? "speakers" : "artists";
 
