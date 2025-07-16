@@ -13,6 +13,7 @@ interface tabProps {
 export interface Review {
   id: number;
   speaker_id: number;
+  user_id: string; // 리뷰 작성자 ID
   reviewer_name: string;
   rating: number;
   comment: string;
@@ -37,7 +38,7 @@ export default function Tab({ total, reviews, id }: tabProps) {
           <InformationTab reviews={reviews} />
         </TabsContent>
         <TabsContent value="reviews">
-          <ReviewsTab reviews={reviews} speakerId={parseInt(id)} />
+          <ReviewsTab reviews={reviews} speakerId={id} />
         </TabsContent>
       </Tabs>
     </div>
