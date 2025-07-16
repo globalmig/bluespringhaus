@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session, AuthError } from "@supabase/supabase-js";
-import { createBrowserSupabaseClient } from "@supabase/auth-helpers-nextjs"; // ✅ 추가
+import { createPagesBrowserClient } from "@supabase/auth-helpers-nextjs"; // ✅ 추가
 
 interface AuthContextType {
   user: User | null;
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const supabase = createBrowserSupabaseClient(); // ✅ 수정
+  const supabase = createPagesBrowserClient(); // ✅ 수정
 
   useEffect(() => {
     const init = async () => {
