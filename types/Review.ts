@@ -6,7 +6,7 @@ export interface Reviews {
   comment: string;
   rating: number;
   created_at: string;
-  id: string;
+  id: number;
   name: string;
   profile_image: string;
   gallery_images: string;

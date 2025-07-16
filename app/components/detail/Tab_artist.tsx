@@ -6,20 +6,12 @@ import ReviewsTab from "./ReviewsTab";
 import InformationTab_artist from "./InformationTab_artist";
 import type { Artists } from "@/types/inquiry";
 import ReviewsTab_artist from "./ReviewsTab_artist";
+import type { Reviews } from "@/types/Review";
 
 interface tabProps {
   total: number;
-  reviews: Review[];
+  reviews: Reviews[];
   artist: Artists;
-}
-
-export interface Review {
-  id: number;
-  artist_id: number;
-  reviewer_name: string;
-  rating: number;
-  comment: string;
-  created_at: string; // ISO timestamp
 }
 
 export default function Tab_artist({ total, reviews, artist }: tabProps) {
