@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ["bluespringhaus-rbt5.vercel.app/"],
+    domains: ["bluespringhaus-rbt5.vercel.app"],
   },
 };
 
