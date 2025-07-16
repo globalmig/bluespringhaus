@@ -51,7 +51,7 @@ export default function SpeakerDetail() {
     <div>
       <div className="gap-14 flex flex-col w-full max-w-[1440px] mx-auto">
         {/* <div className="bg-black w-full max-w-[1440px] h-[600px]"></div> */}
-        <HeroSlider />
+        <HeroSlider gallery_images={artists?.gallery_images} />
         <h1 className="text-4xl font-bold"> {artists ? `Artist ${artists.name}` : ""}</h1>
 
         <div className="flex flex-wrap gap-2 mb-2">

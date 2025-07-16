@@ -12,8 +12,8 @@ import { Speaker } from "lucide-react";
 interface Speaker {
   id: string;
   name: string;
-  profile_image: string;
-  gallery_images: string;
+  profile_image: string[];
+  gallery_images: string[];
   short_desc: string;
   full_desc: string;
   intro_video: string[];
@@ -64,7 +64,7 @@ export default function SpeakerDetail() {
     <div>
       <div className="gap-14 flex flex-col w-full max-w-[1440px] mx-auto">
         {/* <div className="bg-black w-full max-w-[1440px] h-[600px]"></div> */}
-        <HeroSlider />
+        <HeroSlider gallery_images={speaker?.gallery_images} />
         <h1 className="text-4xl font-bold"> {speaker ? `Speaker ${speaker.name}` : ""}</h1>
 
         <div className="flex flex-wrap gap-2 mb-2">

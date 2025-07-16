@@ -1,7 +1,7 @@
 export interface Speaker {
   id: string;
   name: string;
-  profile_image: string;
+  profile_image: string[];
   gallery_images: string;
   short_desc: string;
   full_desc: string;
@@ -16,8 +16,8 @@ export interface Speaker {
 export interface Artists {
   id: string;
   name: string;
-  profile_image: string;
-  gallery_images: string;
+  profile_image: string[];
+  gallery_images?: string[];
   short_desc: string;
   full_desc: string;
   intro_video: string[];

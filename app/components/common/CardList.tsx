@@ -57,18 +57,20 @@ export default function CardList({ slides, title }: CardItemProps) {
       >
         {slides.map((speaker) => {
           const isLiked = liked.has(speaker.id);
+
           return (
             <SwiperSlide key={speaker.id}>
               <div className="relative max-w-[354px]">
                 {/* 카드 본문 */}
                 <Link href={`/speakers/${speaker.id}`} className="no-underline">
                   <Image
-                    src={speaker.profile_image ?? "/default.png"} // 이미지 없을 때 대체 이미지 권장
+                    src={speaker.profile_image?.[0] ?? "/default.png"} // 이미지 없을 때 대체 이미지 권장
                     alt={speaker.name}
                     width={354}
                     height={300}
                     className="w-full rounded-2xl object-cover"
                   />
+
                   <div className="w-full px-2 flex flex-col gap-1 mt-2">
                     <p>{speaker.name}</p>
                     <p>{speaker.short_desc}</p>

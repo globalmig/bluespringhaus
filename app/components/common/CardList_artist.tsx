@@ -63,7 +63,7 @@ export default function CardList_artist({ slides, title }: CardItemProps) {
                 {/* 카드 본문 */}
                 <Link href={`/artists/${artist.id}`} className="no-underline">
                   <Image
-                    src={artist.profile_image ?? "/default.png"} // 이미지 없을 때 대체 이미지 권장
+                    src={artist.profile_image?.[0] ?? "/default.png"} // 이미지 없을 때 대체 이미지 권장
                     alt={artist.name}
                     width={354}
                     height={300}

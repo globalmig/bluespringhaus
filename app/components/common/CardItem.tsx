@@ -51,7 +51,7 @@ export default function CardItem({ slides, title }: CardItemProps) {
           <SwiperSlide key={speaker.id}>
             <div className="relative max-w-[354px]">
               <Link href={`/speakers/${speaker.id}`} className="no-underline">
-                <Image src={speaker.profile_image || "/default.png"} alt={speaker.name} width={354} height={300} className="w-full rounded-2xl bg-black object-cover" />
+                <Image src={speaker?.profile_image[0] || "/default.png"} alt={speaker.name} width={354} height={300} className="w-full rounded-2xl bg-black object-cover" />
                 <div className="w-full px-2 flex flex-col gap-1 mt-2">
                   <p className="font-bold">{speaker.name}</p>
                   <p className="text-gray-600">{speaker.short_desc}</p>
