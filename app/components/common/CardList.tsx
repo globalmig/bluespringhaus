@@ -67,7 +67,7 @@ export default function CardList({ slides, title }: CardItemProps) {
                     alt={speaker.name}
                     width={354}
                     height={300}
-                    className="w-full rounded-2xl bg-black object-cover"
+                    className="w-full rounded-2xl object-cover"
                   />
                   <div className="w-full px-2 flex flex-col gap-1 mt-2">
                     <p>{speaker.name}</p>
