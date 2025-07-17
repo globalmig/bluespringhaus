@@ -2,14 +2,22 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import type { Inquiry } from "@/types/inquiry";
+import type { Inquiry, Speaker, Artists } from "@/types/inquiry";
 import axios from "axios";
 import CardList from "../components/common/CardList";
+
+// ✅ 확장 타입 정의
+type InquiryWithType = Inquiry & {
+  type: "artist" | "speaker";
+  artists?: Artists[];
+  speakers?: Speaker[];
+};
 
 export default function Mypage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const [inquiries, setInquiries] = useState<InquiryWithType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -23,14 +31,13 @@ export default function Mypage() {
         try {
           const res = await axios.get("/api/inquiry");
 
-          const all = [
-            ...(res.data.inquiries || []).map((i: any) => ({ ...i, type: "speaker" })),
-            ...(res.data.artistInquiries || []).map((i: any) => ({ ...i, type: "artist" })),
-          ];
+          const all = [...(res.data.inquiries || []).map((i: any) => ({ ...i, type: "speaker" })), ...(res.data.artistInquiries || []).map((i: any) => ({ ...i, type: "artist" }))];
           setInquiries(all);
         } catch (error) {
           console.error("❌ API 호출 에러:", error);
           alert("잠시후 다시 이용해주세요");
+        } finally {
+          setIsLoading(false);
         }
       };
 
@@ -42,35 +49,32 @@ export default function Mypage() {
   const acceptedInquiries = inquiries.filter((inq) => inq.status === "accepted");
   const rejectedInquiries = inquiries.filter((inq) => inq.status === "rejected");
 
-  const getProfileData = (inq: any) => (inq.type === "artist" ? inq.artists : inq.speakers);
+  // ✅ artists/speakers가 undefined일 경우 대비
+  const getProfileData = (inq: InquiryWithType): (Speaker | Artists)[] => (inq.type === "artist" ? inq.artists ?? [] : inq.speakers ?? []);
+
+  const inquirySections = [
+    { title: "섭외 성공! 메일을 확인해주세요🎉", data: acceptedInquiries },
+    { title: "섭외를 고민중이세요", data: pendingInquiries },
+    { title: "이번엔 인연이 아니었어요 😥", data: rejectedInquiries },
+  ];
 
   return (
-    <div className="mx-4 mt-10 pb-40 gap-14 flex flex-col">
-      <h1 className="text-center text-3xl mb-2 font-bold">마이페이지</h1>
+    <div className="mt-10 pb-40 gap-14 flex flex-col w-full">
+      <h1 className="text-start text-3xl mb-2 font-bold w-full max-w-[1440px] mx-auto px-4">마이페이지</h1>
 
-      <section className="bg-white rounded-lg p-10">
-        {acceptedInquiries.length > 0 ? (
-          <CardList slides={acceptedInquiries.map(getProfileData)} title="수락된 문의" />
-        ) : (
-          <p>수락된 문의 내역이 없습니다.</p>
-        )}
-      </section>
-
-      <section className="bg-white rounded-lg p-10">
-        {pendingInquiries.length > 0 ? (
-          <CardList slides={pendingInquiries.map(getProfileData)} title="진행중인 문의" />
-        ) : (
-          <p>진행중인 문의 내역이 없습니다.</p>
-        )}
-      </section>
-
-      <section className="bg-white rounded-lg p-10">
-        {rejectedInquiries.length > 0 ? (
-          <CardList slides={rejectedInquiries.map(getProfileData)} title="거절된 문의" />
-        ) : (
-          <p>거절된 문의 내역이 없습니다.</p>
-        )}
-      </section>
+      {isLoading ? (
+        <div className="w-full mx-auto min-h-screen flex justify-center items-start pt-20">
+          <p>잠시만 기다려주세요. 문의 내역을 확인 중입니다.</p>
+        </div>
+      ) : (
+        <>
+          {inquirySections.map(({ title, data }) => (
+            <section key={title} className="bg-white rounded-lg w-full max-w-[1440px] mx-auto">
+              {data.length > 0 ? <CardList slides={data.flatMap(getProfileData)} title={title} /> : <p>{title} 내역이 없습니다.</p>}
+            </section>
+          ))}
+        </>
+      )}
     </div>
   );
 }
