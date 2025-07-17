@@ -32,7 +32,7 @@ export default function CardList_artist({ slides, title }: CardItemProps) {
     <div className="px-4 transform">
       {/* 헤더 & 화살표 */}
       <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-medium my-5">{title}</h2>
+        <h2 className="text-2xl font-bold my-5">{title}</h2>
         <div className="flex gap-2">
           <button onClick={() => swiperRef.current?.slidePrev()} className="w-10 h-10 bg-white rounded-full shadow flex items-center justify-center">
             ‹
@@ -70,12 +70,12 @@ export default function CardList_artist({ slides, title }: CardItemProps) {
                     className="w-full rounded-2xl bg-black object-cover"
                   />
                   <div className="w-full px-2 flex flex-col gap-1 mt-2">
-                    <p>{artist.name}</p>
-                    <p>{artist.short_desc}</p>
-                    <div className="flex flex-wrap gap-2 mt-2">
+                    <p className="font-bold">{artist.name}</p>
+                    <p className="h-12 text-sm">{artist.short_desc}</p>
+                    <div className="flex flex-wrap md:gap-2 gap-1 mt-2 max-h-[64px] overflow-hidden">
                       {(artist.tags ?? []).map((t) => (
-                        <span key={t} className="bg-black text-white rounded-full px-3 py-1 text-sm">
-                          #{t}
+                        <span key={t} className=" text-zinc-600 bg-slate-200 rounded-full px-2 md:px-3 py-1 md:text-sm text-xs">
+                          {t}
                         </span>
                       ))}
                     </div>

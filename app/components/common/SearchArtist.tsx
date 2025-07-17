@@ -3,11 +3,21 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
+import { FaSearch } from "react-icons/fa";
 
 // TODO: 섭외비 항목 고민해봐야함
 
 export default function Search() {
   const router = useRouter();
+
+  const [openMenu, setOpenMenu] = useState<"recommend" | "category" | "budget" | null>(null);
+  const toggleMenu = (type: "recommend" | "category" | "budget" | null) => {
+    setOpenMenu((prev) => (prev === type ? null : type));
+  };
+
+  const DEFAULT_LOCATION = "";
+  const DEFAULT_CATEGORY = "분야 선택";
+  const DEFAULT_BUDGET = "섭외비 선택";
 
   const categoryOptions = [
     { label: "인디", value: "indie", icon: "🎸", desc: "진심을 노래하는 감성 음악" },
@@ -35,7 +45,7 @@ export default function Search() {
   const [isOpenMenuCategory, setOpenMenuCategory] = useState(false);
   const [isOpenMenuBudget, setOpenMenuBudget] = useState(false);
 
-  const [isLocation, setLocation] = useState<string>("추천리스트");
+  const [isLocation, setLocation] = useState<string>("");
   const [isCategory, setCategory] = useState<string>("분야 선택");
   const [isBudget, setBudget] = useState<string>("섭외비 선택");
 
@@ -141,16 +151,16 @@ export default function Search() {
   }, []);
 
   return (
-    <div>
-      <div className="w-full max-w-[1440px] mx-auto mb-8 shadow-xl rounded-full md:grid grid-cols-3 justify-center items-center bg-white relative border hidden fade-out-slide">
+    <div className="bg-zinc-100 w-full  border-b ">
+      <div className="w-full max-w-[1440px] mx-auto mb-8 shadow-xl rounded-full md:grid grid-cols-3 justify-center items-center bg-white relative border hidden fade-out-slide h-[90px]">
         {/* 추천 키워드 */}
-        <div ref={locationRef} className="relative group flex flex-col text-start gap-1 border-r pr-6 py-2 hover:bg-slate-300 bg-white rounded-full pl-10" onClick={toggleMenuLocation}>
-          <label className="text-sm font-medium">키워드 검색</label>
+        <div ref={locationRef} className="relative group flex flex-col text-start border-r pr-6 py-4 hover:bg-slate-300 bg-white rounded-full pl-10" onClick={toggleMenuLocation}>
+          <label className="text-sm font-bold">키워드 검색</label>
           <input
             type="text"
             placeholder="키워드를 입력하세요"
             value={isLocation}
-            className="h-10 focus:outline-none group-hover:bg-slate-300"
+            className="h-7  focus:outline-none group-hover:bg-slate-300"
             onChange={handleLocationChange}
             onClick={(e) => {
               e.stopPropagation();
@@ -176,9 +186,9 @@ export default function Search() {
         )}
 
         {/* 대상 */}
-        <div ref={categoryRef} className="relative group flex flex-col text-start gap-1 py-2 px-4 hover:bg-slate-300 rounded-full border-r pr-6 cursor-pointer" onClick={toggleMenuCategory}>
-          <label className="text-sm font-medium">대상</label>
-          <div className="h-10 flex items-center text-gray-700">{isCategory}</div>
+        <div ref={categoryRef} className="relative group flex flex-col text-start py-4 px-4 hover:bg-slate-300 rounded-full border-r pr-6 cursor-pointer" onClick={toggleMenuCategory}>
+          <label className="text-sm font-bold">대상</label>
+          <div className="h-7 flex items-center text-gray-700">{isCategory}</div>
         </div>
         {isOpenMenuCategory && (
           <div className="absolute top-20 z-10 left-1/2 -translate-x-1/2 bg-white shadow-lg rounded-xl mt-2 w-full max-w-[32%] max-h-[400px] overflow-y-auto">
@@ -205,9 +215,9 @@ export default function Search() {
 
         {/* 섭외비 */}
         <div className="group flex items-center justify-center h-full hover:bg-slate-300 rounded-full px-4">
-          <div ref={budgetRef} className="relative flex flex-col text-start gap-1 group-hover:bg-slate-300 flex-1 cursor-pointer rounded-full" onClick={toggleMenuBudget}>
-            <label className="text-sm font-medium">섭외비</label>
-            <div className="h-10 flex items-center text-gray-700">{isBudget}</div>
+          <div ref={budgetRef} className="relative flex flex-col text-start group-hover:bg-slate-300 flex-1 cursor-pointer rounded-full" onClick={toggleMenuBudget}>
+            <label className="text-sm font-bold">섭외비</label>
+            <div className="h-7 flex items-center text-gray-700">{isBudget}</div>
           </div>
           {isOpenMenuBudget && (
             <div className="absolute top-20 right-4 z-10 bg-white shadow-lg rounded-xl mt-2 w-full max-w-[33%]">
@@ -229,8 +239,10 @@ export default function Search() {
             </div>
           )}
           <div className="flex justify-center items-center h-full group-hover:bg-slate-300 rounded-full ml-4">
-            <button className="h-10 px-6 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition" onClick={handleSearch}>
-              검색
+            <button className="h-14 w-14 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition" onClick={handleSearch}>
+              <div className="flex justify-center items-center">
+                <FaSearch />
+              </div>
             </button>
           </div>
         </div>

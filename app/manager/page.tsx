@@ -122,18 +122,18 @@ export default function Manager() {
       }
     }
 
-    // if (form.profile_image && form.profile_image[0]) {
-    //   const file = form.profile_image[0];
-    //   const { data, error } = await supabase.storage.from("profile").upload(`profile/${Date.now()}_${file.name}`, file);
+    if (form.profile_image && form.profile_image[0]) {
+      const file = form.profile_image[0];
+      const { data, error } = await supabase.storage.from("profile").upload(`profile/${Date.now()}_${file.name}`, file);
 
-    //   if (error) {
-    //     console.error("프로필 이미지 업로드 실패", error);
-    //     alert("프로필 이미지 업로드 실패");
-    //     return;
-    //   }
+      if (error) {
+        console.error("프로필 이미지 업로드 실패", error);
+        alert("프로필 이미지 업로드 실패");
+        return;
+      }
 
-    //   profileImageUrl = supabase.storage.from("profile").getPublicUrl(data.path).data.publicUrl;
-    // }
+      profileImageUrl = supabase.storage.from("profile").getPublicUrl(data.path).data.publicUrl;
+    }
 
     // 2. payload 준비
     const payload = {

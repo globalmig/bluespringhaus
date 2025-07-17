@@ -26,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ko">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
-          <div className="w-full mx-auto bg-zinc-100">
+          <div className="w-full mx-auto bg-[#FDFDFD]">
             <Gnb />
             {children}
           </div>

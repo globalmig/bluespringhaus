@@ -28,11 +28,12 @@ export default function Gnb() {
   }, [isModalOpen]);
 
   // 로딩 상태일 때 전체 UI를 막지 말고 작은 로딩 표시만
+  // TODO: fixed 수정해야함
   return (
-    <div className="py-4 flex md:flex-col">
+    <div className="py-2 flex md:flex-col bg-zinc-100">
       <div className="w-full max-w-[1440px] h-16 md:h-24 mx-auto flex items-center justify-center md:justify-between">
-        <Link href="/" className="md:block hidden">
-          로고
+        <Link href="/" className="md:block hidden font-bold">
+          Mic Impact
         </Link>
         {user ? (
           <nav className="flex gap-20 pl-0 md:pl-52">

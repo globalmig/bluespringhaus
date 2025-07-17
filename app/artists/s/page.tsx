@@ -161,16 +161,21 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
   });
 
   return (
-    <main className="w-full max-w-[1440px] mx-auto py-10 md:py-20">
-      <SearchArtist />
-      <h1 className="text-2xl md:text-4xl font-bold mb-8">검색 결과</h1>
-      {loading ? (
-        <p className="text-gray-500">검색 결과를 불러오는 중...</p>
-      ) : filteredSpeakers.length > 0 ? (
-        <CardItem slides={filteredSpeakers} title="검색 결과" />
-      ) : (
-        <p className="text-lg">검색 결과가 없습니다.</p>
-      )}
+    <main className="w-full mx-auto">
+      <div className="w-full">
+        <SearchArtist />
+      </div>
+      <div className="w-full max-w-[1440px] mx-auto py-12 ">
+        {loading ? (
+          <div className="min-h-screen flex justify-center">
+            <p className="text-gray-500 pt-10">검색 결과를 불러오는 중...</p>
+          </div>
+        ) : filteredSpeakers.length > 0 ? (
+          <CardItem slides={filteredSpeakers} title="검색 결과" />
+        ) : (
+          <p className="text-lg">검색 결과가 없습니다.</p>
+        )}
+      </div>
     </main>
   );
 }

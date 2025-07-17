@@ -1,42 +1,76 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
+
+// TODO: 섭외비 항목 고민해봐야함
 
 export default function Search() {
   const router = useRouter();
 
-  const [openMenu, setOpenMenu] = useState<"recommend" | "category" | "budget" | null>(null);
-  const toggleMenu = (type: "recommend" | "category" | "budget" | null) => {
-    setOpenMenu((prev) => (prev === type ? null : type));
-  };
+  const [isOpenMenuLocation, setOpenMenuLocation] = useState(false);
+  const [isOpenMenuCategory, setOpenMenuCategory] = useState(false);
+  const [isOpenMenuBudget, setOpenMenuBudget] = useState(false);
 
+  // 기본값들을 상수로 정의
   const DEFAULT_LOCATION = "";
   const DEFAULT_CATEGORY = "분야 선택";
   const DEFAULT_BUDGET = "섭외비 선택";
 
-  const [isLocation, setLocation] = useState(DEFAULT_LOCATION);
-  const [isCategory, setCategory] = useState(DEFAULT_CATEGORY);
-  const [isBudget, setBudget] = useState(DEFAULT_BUDGET);
+  const [isLocation, setLocation] = useState<string>(DEFAULT_LOCATION);
+  const [isCategory, setCategory] = useState<string>(DEFAULT_CATEGORY);
+  const [isBudget, setBudget] = useState<string>(DEFAULT_BUDGET);
+
+  const locationRef = useRef<HTMLDivElement>(null);
+  const categoryRef = useRef<HTMLDivElement>(null);
+  const budgetRef = useRef<HTMLDivElement>(null);
+
+  const toggleMenuLocation = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    setOpenMenuLocation((prev) => !prev);
+    setOpenMenuCategory(false);
+    setOpenMenuBudget(false);
+  };
+
+  const toggleMenuCategory = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    setOpenMenuCategory((prev) => !prev);
+    setOpenMenuLocation(false);
+    setOpenMenuBudget(false);
+  };
+
+  const toggleMenuBudget = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    setOpenMenuBudget((prev) => !prev);
+    setOpenMenuLocation(false);
+    setOpenMenuCategory(false);
+  };
+
+  const selectedLocation = (value: string) => {
+    setLocation(value);
+    setOpenMenuLocation(false);
+  };
 
   const selectedCategory = (value: string) => {
     setCategory(value);
-    setOpenMenu(null);
+    setOpenMenuCategory(false);
   };
 
   const selectedBudget = (value: string) => {
     setBudget(value);
-    setOpenMenu(null);
+    setOpenMenuBudget(false);
   };
 
   const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocation(e.target.value);
-    setOpenMenu("recommend");
+    setOpenMenuLocation(true);
   };
 
   const handleSearch = () => {
     const params = new URLSearchParams();
+
+    // 🔥 label → value로 변환
     const categoryOptions = [
       { label: "인문 & 철학", value: "humanities" },
       { label: "경제 & 경영", value: "economy" },
@@ -47,62 +81,78 @@ export default function Search() {
       { label: "문화 & 사회", value: "culture" },
       { label: "글로벌", value: "global" },
     ];
+
     const matched = categoryOptions.find((c) => c.label === isCategory);
     const categoryValue = matched?.value ?? "";
     params.append("location", isLocation);
     params.append("category", categoryValue);
     params.append("budget", isBudget);
+
     router.push(`/s?${params.toString()}`);
   };
 
   useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest(".dropdown-menu") && !target.closest(".dropdown-trigger")) {
-        setOpenMenu(null);
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+
+      if (locationRef.current && !locationRef.current.contains(target)) {
+        setOpenMenuLocation(false);
+      }
+      if (categoryRef.current && !categoryRef.current.contains(target)) {
+        setOpenMenuCategory(false);
+      }
+      if (budgetRef.current && !budgetRef.current.contains(target)) {
+        setOpenMenuBudget(false);
       }
     };
+
     document.addEventListener("click", handleClickOutside);
     return () => {
       document.removeEventListener("click", handleClickOutside);
     };
   }, []);
 
+  // 기본, 선택, 비선택되었을 때 스타일 변화
+  const isDefault = isCategory === DEFAULT_CATEGORY && isLocation === DEFAULT_LOCATION && isBudget === DEFAULT_BUDGET;
+
+  const getBoxStyle = (current: string, defaultValue: string) => {
+    if (isDefault) {
+      return "bg-white text-gray-600"; // 1. 모든 항목이 기본 상태
+    }
+    if (current !== defaultValue) {
+      return "bg-blue-100 text-blue-800 font-bold"; // 2. 선택된 항목
+    }
+    return "bg-gray-100 text-gray-400"; // 3. 선택 안된 항목
+  };
+
   return (
-    <div className="bg-zinc-100 w-full border-b">
-      <div
-        className={`w-full max-w-[1440px] mx-auto mb-8 shadow-xl rounded-full md:grid grid-cols-3 justify-center items-center bg-white relative border hidden fade-out-slide ${
-          openMenu === null ? "bg-white" : "bg-zinc-200"
-        }`}
-      >
-        <div className={`absolute w-full ${openMenu === "recommend" || openMenu === null ? "bg-red-300" : "bg-zinc-200"} transform duration-300 ease-out`}></div>
+    <div className="bg-zinc-100 w-full  border-b">
+      <div className="w-full max-w-[1440px] mx-auto mb-8 shadow-xl rounded-full md:grid grid-cols-3 justify-center items-center bg-white relative border hidden fade-out-slide">
+        {/* 추천 키워드 */}
         <div
-          className={`relative group flex flex-col text-start border-r pr-6 py-4  rounded-full pl-10 cursor-pointer dropdown-trigger h-full justify-center ${
-            openMenu === "recommend" || openMenu === null ? "bg-white" : "bg-zinc-200"
-          } transform duration-300 ease-out`}
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleMenu("recommend");
-          }}
+          ref={locationRef}
+          className={`relative group flex flex-col text-start border-r pr-6 py-4 hover:bg-slate-300 rounded-full pl-10 cursor-pointer ${getBoxStyle(isLocation, DEFAULT_LOCATION)}`}
+          onClick={toggleMenuLocation}
         >
           <label className="text-sm font-bold">키워드 검색</label>
           <input
             type="text"
             placeholder="키워드를 입력하세요"
             value={isLocation}
-            className="h-7 focus:outline-none bg-transparent"
+            className="h-7 focus:outline-none group-hover:bg-slate-300 bg-transparent"
             onChange={handleLocationChange}
             onClick={(e) => {
-              toggleMenu("recommend");
               e.stopPropagation();
+              setOpenMenuLocation(true);
             }}
           />
         </div>
-        {openMenu === "recommend" && (
-          <div className="absolute left-2 top-20 z-10 bg-white shadow-lg rounded-xl mt-4 w-full max-w-[32%] dropdown-menu">
+        {isOpenMenuLocation && (
+          <div className="absolute left-2 top-20 z-10 bg-white shadow-lg rounded-xl mt-2 w-full max-w-[32%]">
             <ul className="my-4 mx-4">
+              {/* TODO: 미리보는 추천 키워드 수정해야함 */}
               {["추천리스트", "서울", "부산", "제주"].map((loc) => (
-                <li key={loc} className="hover:bg-slate-300 cursor-pointer flex items-center py-4 px-4 rounded-md" onClick={() => setLocation(loc)}>
+                <li key={loc} className="hover:bg-slate-300 cursor-pointer flex items-center py-4 px-4 rounded-md" onClick={() => selectedLocation(loc)}>
                   <div className="bg-black w-10 h-7 rounded"></div>
                   <div className="flex flex-col text-sm ml-2">
                     <p className="font-bold">{loc}</p>
@@ -113,20 +163,18 @@ export default function Search() {
             </ul>
           </div>
         )}
+
+        {/* 대상 */}
         <div
-          className={`relative group flex flex-col text-start justify-center py-4 px-4  rounded-full border-r pr-6 cursor-pointer dropdown-trigger h-full transform duration-300 ease-out ${
-            openMenu === "category" || openMenu === null ? "bg-white" : "bg-zinc-200"
-          }`}
-          onClick={(e) => {
-            e.stopPropagation();
-            toggleMenu("category");
-          }}
+          ref={categoryRef}
+          className={`relative group flex flex-col text-start py-4 px-4 hover:bg-slate-300 rounded-full border-r pr-6 cursor-pointer ${getBoxStyle(isCategory, DEFAULT_CATEGORY)}`}
+          onClick={toggleMenuCategory}
         >
           <label className="text-sm font-bold">대상</label>
           <div className="h-7 flex items-center text-gray-700">{isCategory}</div>
         </div>
-        {openMenu === "category" && (
-          <div className="absolute top-20 z-10 left-1/2 -translate-x-1/2 bg-white shadow-lg rounded-xl mt-4 w-full max-w-[32%] max-h-[400px] overflow-y-auto dropdown-menu">
+        {isOpenMenuCategory && (
+          <div className="absolute top-20 z-10 left-1/2 -translate-x-1/2 bg-white shadow-lg rounded-xl mt-2 w-full max-w-[32%] max-h-[400px] overflow-y-auto">
             <ul className="my-4 mx-4">
               {[
                 { label: "인문 & 철학", value: "humanities", icon: "🍽️", desc: "인문학, 철학 등" },
@@ -138,7 +186,14 @@ export default function Search() {
                 { label: "문화 & 사회", value: "culture", icon: "🎯", desc: "문화예술, 교육, 사회문제 등" },
                 { label: "글로벌", value: "global", icon: "🎯", desc: "국제정세, 해외 시장 진출 등" },
               ].map(({ label, value, icon, desc }) => (
-                <li key={value} className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md" onClick={() => selectedCategory(label)}>
+                <li
+                  key={value}
+                  className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md"
+                  onClick={() => {
+                    setCategory(label); // 사용자에게는 label만 저장
+                    setOpenMenuCategory(false);
+                  }}
+                >
                   <div className="bg-gray-500 w-10 h-10 rounded flex items-center justify-center text-white font-bold">{icon}</div>
                   <div className="flex flex-col text-sm">
                     <p className="font-bold">{label}</p>
@@ -149,23 +204,15 @@ export default function Search() {
             </ul>
           </div>
         )}
-        <div
-          className={`group flex items-center justify-center  h-full  rounded-full px-4 py-4 transform duration-300 ease-out ${
-            openMenu === "budget" || openMenu === null ? "bg-white" : "bg-zinc-200"
-          }`}
-        >
-          <div
-            className="relative flex flex-col text-start  flex-1 cursor-pointer rounded-full dropdown-trigger"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleMenu("budget");
-            }}
-          >
+
+        {/* 섭외비 */}
+        <div className={`group flex items-center justify-center h-full hover:bg-slate-300 rounded-full px-4 py-4 ${getBoxStyle(isBudget, DEFAULT_BUDGET)}`}>
+          <div ref={budgetRef} className="relative flex flex-col text-start group-hover:bg-slate-300 flex-1 cursor-pointer rounded-full" onClick={toggleMenuBudget}>
             <label className="text-sm font-bold">섭외비</label>
             <div className="h-7 flex items-center text-gray-700">{isBudget}</div>
           </div>
-          {openMenu === "budget" && (
-            <div className="absolute top-20 right-4 z-10 bg-white shadow-lg rounded-xl mt-4 w-full  max-w-[90%] dropdown-menu ">
+          {isOpenMenuBudget && (
+            <div className="absolute top-20 right-4 z-10 bg-white shadow-lg rounded-xl mt-2 w-full max-w-[33%]">
               <ul className="my-4 mx-4">
                 {[
                   { label: "~300만원", icon: "💸" },
@@ -183,7 +230,7 @@ export default function Search() {
               </ul>
             </div>
           )}
-          <div className="flex justify-center items-center h-full  rounded-full ml-4">
+          <div className="flex justify-center items-center h-full group-hover:bg-slate-300 rounded-full ml-4">
             <button className="h-14 w-14 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition" onClick={handleSearch}>
               <div className="flex justify-center items-center">
                 <FaSearch />
