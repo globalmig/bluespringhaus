@@ -19,6 +19,7 @@ export default function Book({ id }: BookProps) {
     const check = async () => {
       if (!user) {
         setCanApply(null);
+        setLoading(false);
         return;
       }
 
@@ -58,7 +59,7 @@ export default function Book({ id }: BookProps) {
           disabled={canApply === false || loading}
           className={`rounded-xl px-32 py-3 text-lg text-white transition-colors ${canApply === false ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"}`}
         >
-          {loading ? "확인 중..." : canApply === false ? "이미 문의하셨습니다" : "문의하기"}
+          {loading ? "문의하기" : canApply === false ? "이미 문의하셨습니다" : "문의하기"}
         </button>
       </div>
     </div>
