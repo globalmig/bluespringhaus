@@ -46,7 +46,7 @@ const RECOMMEND_ARTIST_TAGS = [
 
 export default function Manager() {
   const [password, setPassword] = useState("");
-  const [isAuthorized, setIsAuthorized] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
   const [form, setForm] = useState(initialForm);
   const [type, setType] = useState<"artist" | "speaker">("artist");
@@ -144,6 +144,7 @@ export default function Manager() {
       profile_image: profileImageUrl,
       tags: form.tags.split(",").map((tag) => tag.trim()),
       intro_video: form.intro_video.split(",").map((v) => v.trim()),
+      is_recommended: form.is_recommended,
     };
 
     try {
@@ -168,10 +169,10 @@ export default function Manager() {
   };
 
   return (
-    <div className="flex flex-col mx-auto justify-start items-center min-h-screen mt-40 px-4">
+    <div className="flex flex-col mx-auto justify-start items-center min-h-screen mt-10 px-4">
       {!isAuthorized ? (
         <>
-          <p className="text-2xl mb-10">관리자님 안녕하세요 :)</p>
+          <p className="text-2xl mb-10 mt-40">관리자님 안녕하세요 :)</p>
           <form onSubmit={handlePasswordSubmit} className="flex items-center">
             <input type="password" className="px-4 py-2 border rounded" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="비밀번호 입력" />
             <button type="submit" className="bg-black text-white py-2 px-4 rounded-lg ml-4">

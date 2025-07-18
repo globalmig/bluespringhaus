@@ -19,15 +19,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const payload = {
       name,
-      gallery_images,
+      gallery_images: Array.isArray(gallery_images) ? gallery_images : [],
       short_desc,
       full_desc,
       intro_video: typeof intro_video === "string" ? intro_video.split(",").map((v: string) => v.trim()) : Array.isArray(intro_video) ? intro_video : [],
       career,
       tags: typeof tags === "string" ? tags.split(",").map((tag: string) => tag.trim()) : Array.isArray(tags) ? tags : [],
       email,
-      profile_image,
-      is_recommended: typeof is_recommended === "string" ? is_recommended.split(",").map((v: string) => v.trim()) : [],
+      profile_image: typeof profile_image === "string" ? profile_image : "",
+      is_recommended: typeof is_recommended === "string" ? is_recommended.split(",").map((v: string) => v.trim()) : Array.isArray(is_recommended) ? is_recommended : [],
     };
 
     console.log("👉 최종 payload:", payload);

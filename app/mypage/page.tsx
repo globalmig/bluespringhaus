@@ -70,7 +70,14 @@ export default function Mypage() {
         <>
           {inquirySections.map(({ title, data }) => (
             <section key={title} className="bg-white rounded-lg w-full max-w-[1440px] mx-auto">
-              {data.length > 0 ? <CardList slides={data.flatMap(getProfileData)} title={title} /> : <p>{title} 내역이 없습니다.</p>}
+              {data.length > 0 ? (
+                <CardList slides={data.flatMap(getProfileData)} title={title} />
+              ) : (
+                <div className="flex flex-col pb-20 border-b">
+                  <h2 className="text-lg md:text-2xl font-bold my-5 transform duration-300 ease-in-out ">{title}</h2>
+                  <p className="mt-10">아직 소식이 없습니다.</p>
+                </div>
+              )}
             </section>
           ))}
         </>
