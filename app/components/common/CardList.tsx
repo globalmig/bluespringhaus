@@ -57,14 +57,18 @@ export default function CardList({ slides, title }: CardItemProps) {
       >
         {slides.map((speaker) => {
           const isLiked = liked.has(speaker.id);
-
           return (
             <SwiperSlide key={speaker.id}>
               <div className="relative max-w-[354px]">
                 {/* 카드 본문 */}
                 <Link href={`/speakers/${speaker.id}`} className="no-underline">
                   <div className="aspect-[3/4] w-full relative rounded-2xl overflow-hidden">
-                    <Image src={speaker.profile_image ?? "/default.png"} alt={speaker.name} fill className="object-cover" />
+                    <Image
+                      src={speaker.profile_image && (speaker.profile_image.startsWith("http") || speaker.profile_image.startsWith("/")) ? speaker.profile_image : "/default.png"}
+                      alt={speaker.name}
+                      fill
+                      className="object-cover"
+                    />
                   </div>
 
                   <div className="w-full px-2 flex flex-col gap-1 mt-2">

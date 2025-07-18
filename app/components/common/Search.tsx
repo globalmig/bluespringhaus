@@ -69,7 +69,7 @@ export default function Search() {
   }, []);
 
   return (
-    <div className="bg-zinc-100 w-full border-b">
+    <div className="bg-zinc-100 w-full border-b z-50">
       <div
         className={`w-full max-w-[1440px] mx-auto mb-8 shadow-xl rounded-full md:grid grid-cols-3 justify-center items-center bg-white relative border hidden fade-out-slide ${
           openMenu === null ? "bg-white" : "bg-zinc-200"
@@ -165,7 +165,7 @@ export default function Search() {
             <div className="h-7 flex items-center text-gray-700">{isBudget}</div>
           </div>
           {openMenu === "budget" && (
-            <div className="absolute top-20 right-4 z-10 bg-white shadow-lg rounded-xl mt-4 w-full  max-w-[90%] dropdown-menu ">
+            <div className="absolute top-20 right-4 z-50 bg-white shadow-lg rounded-xl mt-4 w-full  max-w-[90%] dropdown-menu ">
               <ul className="my-4 mx-4">
                 {[
                   { label: "~300만원", icon: "💸" },

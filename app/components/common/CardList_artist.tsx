@@ -62,16 +62,18 @@ export default function CardList_artist({ slides, title }: CardItemProps) {
               <div className="relative max-w-[354px]">
                 {/* 카드 본문 */}
                 <Link href={`/artists/${artist.id}`} className="no-underline">
-                  <Image
-                    src={artist.profile_image?.[0] ?? "/default.png"} // 이미지 없을 때 대체 이미지 권장
-                    alt={artist.name}
-                    width={200}
-                    height={300}
-                    className="w-full rounded-2xl bg-black object-cover"
-                  />
+                  <div className="aspect-[3/4] w-full relative rounded-2xl overflow-hidden">
+                    <Image
+                      src={artist.profile_image && (artist.profile_image.startsWith("http") || artist.profile_image.startsWith("/")) ? artist.profile_image : "/default.png"}
+                      alt={artist.name}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+
                   <div className="w-full px-2 flex flex-col gap-1 mt-2">
                     <p className="font-bold">{artist.name}</p>
-                    <p className="h-12 text-sm">{artist.short_desc}</p>
+                    <p className="h-12 text-sm">{artist.short_desc.length > 30 ? artist.short_desc.slice(0, 25) + "..." : artist.short_desc}</p>
                     <div className="flex flex-wrap md:gap-2 gap-1 mt-2 max-h-[64px] overflow-hidden">
                       {(artist.tags ?? []).map((t) => (
                         <span key={t} className=" text-zinc-600 bg-slate-200 rounded-full px-2 md:px-3 py-1 md:text-sm text-xs">

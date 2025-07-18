@@ -34,45 +34,35 @@ export default function CardItem({ slides, title }: CardItemProps) {
         <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
       </div>
 
-      {/* 슬라이드 */}
-      <Swiper
-        modules={[Navigation]}
-        slidesPerView={1.2}
-        spaceBetween={16}
-        navigation
-        onSwiper={(swiper) => (swiperRef.current = swiper)}
-        breakpoints={{
-          768: { slidesPerView: 2.2 },
-          1024: { slidesPerView: 3.2 },
-          1280: { slidesPerView: 4 },
-        }}
-      >
+      <div className="grid grid-cols-4 gap-4">
         {slides.map((speaker) => (
-          <SwiperSlide key={speaker.id}>
-            <div className="relative max-w-[354px]">
-              <Link href={`/speakers/${speaker.id}`} className="no-underline">
-                <Image src={speaker?.profile_image[0] || "/default.png"} alt={speaker.name} width={354} height={300} className="w-full rounded-2xl bg-black object-cover" />
-                <div className="w-full px-2 flex flex-col gap-1 mt-2">
-                  <p className="font-bold">{speaker.name}</p>
-                  <p className="text-gray-600">{speaker.short_desc}</p>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {(speaker.tags ?? []).map((t) => (
-                      <span key={t} className="bg-black text-white rounded-full px-3 py-1 text-sm">
-                        #{t}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </Link>
+          <div className="relative mb-8">
+            {/* 카드 본문 */}
+            <Link href={`/speakers/${speaker.id}`} className="no-underline">
+              <div className="aspect-[3/4] h-[400px] w-full relative rounded-2xl overflow-hidden">
+                <Image
+                  src={speaker.profile_image && (speaker.profile_image.startsWith("http") || speaker.profile_image.startsWith("/")) ? speaker.profile_image : "/default.png"}
+                  alt={speaker.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
 
-              {/* 좋아요 버튼 */}
-              <button onClick={() => toggleLike(speaker.id)} className="absolute top-2 right-2 text-white text-xl z-10">
-                {liked.has(speaker.id) ? "❤️" : "🤍"}
-              </button>
-            </div>
-          </SwiperSlide>
+              <div className="w-full px-2 flex flex-col gap-1 mt-2">
+                <p className="font-bold">{speaker.name}</p>
+                <p className="h-12 text-sm">{speaker.short_desc.length > 30 ? speaker.short_desc.slice(0, 25) + "..." : speaker.short_desc}</p>
+                <div className="flex flex-wrap md:gap-2 gap-1 mt-2 max-h-[64px] overflow-hidden">
+                  {(speaker.tags ?? []).map((t) => (
+                    <span key={t} className=" text-zinc-600 bg-slate-200 rounded-full px-2 md:px-3 py-1 md:text-sm text-xs">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </Link>
+          </div>
         ))}
-      </Swiper>
+      </div>
     </div>
   );
 }

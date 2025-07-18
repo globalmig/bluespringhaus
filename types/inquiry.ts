@@ -2,7 +2,7 @@ export interface Speaker {
   id: string;
   name: string;
   profile_image: string;
-  gallery_images: string;
+  gallery_images: string[];
   short_desc: string;
   full_desc: string;
   intro_video: string[];

@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const { data: existing, error: findError } = await supabase.from("inquiries").select("id, status").eq("user_id", user.id).eq("speaker_id", speakerId).eq("status", "in_progress").maybeSingle();
 
-    console.log("🔍 DB 조회 결과:", { existing, findError });
+    // console.log("🔍 DB 조회 결과:", { existing, findError });
 
     if (findError) {
       console.error("❌ Supabase 쿼리 에러:", findError);

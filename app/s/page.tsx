@@ -114,7 +114,9 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
         ) : filteredSpeakers.length > 0 ? (
           <CardItem slides={filteredSpeakers} title="검색 결과" />
         ) : (
-          <p className="text-lg">검색 결과가 없습니다.</p>
+          <div className="min-h-screen flex justify-center">
+            <p className="text-gray-500 pt-10">검색 결과가 없습니다.</p>
+          </div>
         )}
       </div>
     </main>
