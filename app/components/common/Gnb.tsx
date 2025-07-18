@@ -68,7 +68,7 @@ export default function Gnb() {
 
         {/* ✅ 모달 오버레이 */}
         {isModalOpen && (
-          <div className="fixed top-0 left-0 w-full h-full z-40 flex items-center justify-center">
+          <div className="fixed top-0 left-0 w-full h-full z-50 flex items-center justify-center">
             <div className="bg-black backdrop-blur-sm bg-opacity-50 w-full h-full" onClick={handleModalToggle}></div>
 
             <div className="absolute w-full max-w-[460px] lg:max-w-[1400px]">

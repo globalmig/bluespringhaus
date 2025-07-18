@@ -40,7 +40,7 @@ export default function Home() {
 
   return (
     <div className="w-full justify-center items-center mx-auto">
-      <div className="relative w-full z-50">
+      <div className="relative w-full z-40">
         <Search />
       </div>
 

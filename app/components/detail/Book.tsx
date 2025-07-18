@@ -51,7 +51,7 @@ export default function Book({ id }: BookProps) {
   };
 
   return (
-    <div className="fixed bottom-0 w-full z-50 shadow-xl">
+    <div className="fixed bottom-0 w-full z-40 shadow-xl">
       <div className="w-full h-20 bg-white flex justify-center items-center shadow-xl">
         <button
           onClick={handleClick}

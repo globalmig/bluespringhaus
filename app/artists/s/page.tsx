@@ -69,7 +69,7 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
 
   return (
     <main className="w-full mx-auto">
-      <div className="w-full sticky top-0 z-50 bg-white border-b shadow-sm">
+      <div className="w-full sticky top-0 z-40 bg-white border-b shadow-sm">
         <SearchArtist />
       </div>
 

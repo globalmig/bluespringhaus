@@ -29,7 +29,13 @@ export default function Tab_artist({ total, reviews, artist }: tabProps) {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="information" className="">
-          <InformationTab_artist reviews={reviews} artist={artist} />
+          <InformationTab_artist
+            reviews={reviews}
+            artist={{
+              ...artist,
+              profile_image: Array.isArray(artist.profile_image) ? artist.profile_image : [artist.profile_image],
+            }}
+          />
         </TabsContent>
         <TabsContent value="reviews">
           <ReviewsTab_artist reviews={reviews} artistId={artist.id} />

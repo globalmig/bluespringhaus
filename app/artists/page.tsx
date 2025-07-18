@@ -44,7 +44,7 @@ export default function Artists() {
 
   return (
     <div className="w-full justify-center items-center mx-auto">
-      <div className="relative w-full z-50">
+      <div className="relative w-full z-40">
         <SearchArtist />
       </div>
 
