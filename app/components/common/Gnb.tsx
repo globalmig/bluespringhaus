@@ -10,73 +10,62 @@ export default function Gnb() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleModalToggle = () => {
-    setIsModalOpen(!isModalOpen);
+    setIsModalOpen((prev) => !prev);
   };
 
-  // ✅ 모달 상태에 따라 스크롤 제어
+  // 모달 열릴 때 body 스크롤 막기
   useEffect(() => {
-    if (isModalOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-
-    // 컴포넌트 언마운트 시 복구
+    document.body.classList.toggle("overflow-hidden", isModalOpen);
     return () => {
-      document.body.style.overflow = "auto";
+      document.body.classList.remove("overflow-hidden");
     };
   }, [isModalOpen]);
 
-  // 로딩 상태일 때 전체 UI를 막지 말고 작은 로딩 표시만
-  // TODO: fixed 수정해야함
   return (
     <div className="py-2 flex md:flex-col bg-zinc-100">
-      <div className="w-full max-w-[1440px] h-16 md:h-24 mx-auto flex items-center justify-center md:justify-between">
-        <Link href="/" className="md:block hidden font-bold">
+      <div className="w-full max-w-[1440px] h-16 md:h-24 mx-auto flex items-center justify-between px-4">
+        {/* 로고 */}
+        <Link href="/" className="font-bold text-lg md:text-xl">
           Mic Impact
         </Link>
-        {user ? (
-          <nav className="flex gap-20 pl-0 md:pl-52">
-            <Link href="/">연사</Link>
-            <Link href="/artists">인플루언서</Link>
-          </nav>
-        ) : (
-          <nav className="flex gap-20">
-            <Link href="/">연사</Link>
-            <Link href="/artists">인플루언서</Link>
-          </nav>
-        )}
 
-        {/* 로딩 상태에서도 UI 표시 */}
-        <div>
+        {/* 내비게이션 */}
+        <nav className="flex gap-10 md:gap-20 text-sm md:text-base">
+          <Link href="/">speaker</Link>
+          <Link href="/artists">artist</Link>
+        </nav>
+
+        {/* 로그인/로그아웃 영역 */}
+        <div className="flex items-center gap-4">
           {user ? (
-            <div className=" hidden md:flex items-center justify-end relative w-60 ">
-              <Link href="/mypage">
-                <button className="text-sm mr-10 ">마이페이지</button>
+            <>
+              <Link href="/mypage" className="text-sm">
+                마이페이지
               </Link>
-
               <button onClick={signOut} className="text-sm">
                 로그아웃
               </button>
-            </div>
+            </>
           ) : (
             <button onClick={handleModalToggle} className="text-sm">
               로그인
             </button>
           )}
         </div>
-
-        {/* ✅ 모달 오버레이 */}
-        {isModalOpen && (
-          <div className="fixed top-0 left-0 w-full h-full z-50 flex items-center justify-center">
-            <div className="bg-black backdrop-blur-sm bg-opacity-50 w-full h-full" onClick={handleModalToggle}></div>
-
-            <div className="absolute w-full max-w-[460px] lg:max-w-[1400px]">
-              <Login onClose={handleModalToggle} />
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* 로그인 모달 */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* 어두운 배경 */}
+          <div className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm" onClick={handleModalToggle} />
+
+          {/* 로그인 폼 */}
+          <div className="relative z-10 w-full max-w-[460px] md:max-w-[600px] mx-auto px-4">
+            <Login onClose={handleModalToggle} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
