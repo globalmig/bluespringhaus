@@ -40,7 +40,7 @@ export default function HeroSlider({ gallery_images }: gallery) {
       >
         {gallery_images?.map((img, index) => (
           <SwiperSlide key={index}>
-            <img src={img} alt="Nature 1" className="w-full h-full object-cover" />
+            <img src={img} alt="Nature 1" className="w-full h-full object-contain" />
           </SwiperSlide>
         ))}
       </Swiper>

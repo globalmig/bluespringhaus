@@ -27,7 +27,7 @@ export default function BookPage() {
           setErrorMessage("");
         } else {
           setIsAllowed(false);
-          setErrorMessage(res.data.reason || "이미 진행중인 문의가 있습니다.");
+          setErrorMessage(res.data.error || "이미 진행중인 문의가 있습니다.");
         }
       } catch (error: any) {
         console.error("🚫 문의 제한:", error);
@@ -94,16 +94,16 @@ export default function BookPage() {
 
     try {
       // ✅ 문의 전송 전 다시 한 번 권한 확인
-      const checkRes = await axios.get(`/api/inquiry/check_speaker?speakerId=${id}`);
+      const checkRes = await axios.get(`/api/inquiry/check?speakerId=${id}`);
 
       if (!checkRes.data.canApply) {
-        alert(checkRes.data.reason || "이미 처리 중인 문의가 있습니다.");
+        alert(checkRes.data.error || "이미 처리 중인 문의가 있습니다.");
         window.location.reload();
         return;
       }
 
       const res = await axios.post(
-        "/api/contact_speaker",
+        "/api/contact",
         { userEmail, message, speakerId: id },
         {
           withCredentials: true,
@@ -114,6 +114,7 @@ export default function BookPage() {
       if (res.status === 200 && res.data.success) {
         alert("문의가 성공적으로 전송되었습니다!");
         form.reset();
+
         router.push(`/speakers/${id}`);
       } else {
         alert(res.data.error || "문의 전송에 실패했습니다.");
@@ -130,6 +131,7 @@ export default function BookPage() {
       }
     } finally {
       setIsSubmitting(false);
+      
     }
   };
 

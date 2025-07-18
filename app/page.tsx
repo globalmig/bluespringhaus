@@ -55,7 +55,7 @@ export default function Home() {
             if (filtered.length === 0) return null;
 
             return (
-              <section key={key} className="py-4 md:py-10 w-full max-w-[1440px] mx-auto">
+              <section key={key} className="py-4 md:py-6 w-full max-w-[1440px] mx-auto">
                 <CardList slides={filtered} title={title} />
               </section>
             );

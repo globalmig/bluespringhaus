@@ -41,6 +41,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           user_id: user.id, // 💡 여기!
           contact_email: formEmail,
           speaker_id: id,
+          status: "in_progress",
           message,
           created_at: new Date().toISOString(),
         },

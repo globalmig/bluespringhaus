@@ -16,7 +16,7 @@ export default function VideoList({ url, title }: YoutubeEmbedProps) {
   }
 
   return (
-    <div className="aspect-w-16 aspect-h-9 h-[500px] w-full">
+    <div className="aspect-w-16 aspect-h-9 h-[320px] md:h-[700px] w-full transform duration-300 ease-in-out">
       <iframe
         src={embedUrl}
         title={title}

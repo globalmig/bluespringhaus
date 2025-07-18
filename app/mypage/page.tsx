@@ -45,7 +45,7 @@ export default function Mypage() {
     }
   }, [user]);
 
-  const pendingInquiries = inquiries.filter((inq) => inq.status === null);
+  const pendingInquiries = inquiries.filter((inq) => inq.status === null || inq.status === "in_progress");
   const acceptedInquiries = inquiries.filter((inq) => inq.status === "accepted");
   const rejectedInquiries = inquiries.filter((inq) => inq.status === "rejected");
 

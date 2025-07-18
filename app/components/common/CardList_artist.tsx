@@ -49,7 +49,7 @@ export default function CardList_artist({ slides, title }: CardItemProps) {
         breakpoints={{
           320: { slidesPerView: 2, slidesPerGroup: 1, spaceBetween: 10 },
           640: { slidesPerView: 3, slidesPerGroup: 2, spaceBetween: 15 },
-          1024: { slidesPerView: 4, slidesPerGroup: 4, spaceBetween: 20 },
+          1024: { slidesPerView: 7, slidesPerGroup: 4, spaceBetween: 20 },
         }}
         speed={100}
         modules={[Navigation]}
@@ -65,7 +65,7 @@ export default function CardList_artist({ slides, title }: CardItemProps) {
                   <Image
                     src={artist.profile_image?.[0] ?? "/default.png"} // 이미지 없을 때 대체 이미지 권장
                     alt={artist.name}
-                    width={354}
+                    width={200}
                     height={300}
                     className="w-full rounded-2xl bg-black object-cover"
                   />

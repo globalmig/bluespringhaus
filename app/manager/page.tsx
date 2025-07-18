@@ -3,7 +3,6 @@ import { supabase } from "@/lib/supabase";
 import { Speaker } from "lucide-react";
 import React, { useState } from "react";
 
-// ✅ form 초기값 정의
 const initialForm = {
   name: "",
   gallery_images: null as FileList | null,
@@ -44,11 +43,13 @@ const RECOMMEND_ARTIST_TAGS = [
   { label: "방송인", value: "broadcasters" },
   { label: "인기 유튜버", value: "topYoutubers" },
 ];
+
 export default function Manager() {
   const [password, setPassword] = useState("");
   const [isAuthorized, setIsAuthorized] = useState(true);
-
   const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
+  const [form, setForm] = useState(initialForm);
+  const [type, setType] = useState<"artist" | "speaker">("artist");
 
   const handleRecommendedChange = (value: string) => {
     setForm((prev) => {
@@ -68,9 +69,6 @@ export default function Manager() {
       alert("비밀번호가 틀렸습니다.");
     }
   };
-
-  const [form, setForm] = useState(initialForm); // ✅ 초기값 사용
-  const [type, setType] = useState<"artist" | "speaker">("artist");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const target = e.target;
@@ -99,16 +97,18 @@ export default function Manager() {
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 1. 파일 업로드 먼저
     let galleryUrls: string[] = [];
     let profileImageUrl = "";
+    const uploadFolder = `gallery/${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
 
     if (form.gallery_images) {
       const files = Array.from(form.gallery_images);
+
       for (const file of files) {
-        const { data, error } = await supabase.storage
-          .from("gallery") // ← 너가 만든 bucket 이름
-          .upload(`gallery/${Date.now()}_${file.name}`, file); // 고유 이름으로 업로드
+        const ext = file.name.split(".").pop();
+        const safeFileName = `${uploadFolder}/${Date.now()}_${Math.random().toString(36).substring(2)}.${ext}`;
+
+        const { data, error } = await supabase.storage.from("gallery").upload(safeFileName, file, { upsert: true });
 
         if (error) {
           console.error("갤러리 이미지 업로드 실패", error);
@@ -117,14 +117,16 @@ export default function Manager() {
         }
 
         const url = supabase.storage.from("gallery").getPublicUrl(data.path).data.publicUrl;
-
         galleryUrls.push(url);
       }
     }
 
     if (form.profile_image && form.profile_image[0]) {
       const file = form.profile_image[0];
-      const { data, error } = await supabase.storage.from("profile").upload(`profile/${Date.now()}_${file.name}`, file);
+      const ext = file.name.split(".").pop();
+      const safeFileName = `${uploadFolder}/profile_${Date.now()}_${Math.random().toString(36).substring(2)}.${ext}`;
+
+      const { data, error } = await supabase.storage.from("gallery").upload(safeFileName, file, { upsert: true });
 
       if (error) {
         console.error("프로필 이미지 업로드 실패", error);
@@ -132,10 +134,9 @@ export default function Manager() {
         return;
       }
 
-      profileImageUrl = supabase.storage.from("profile").getPublicUrl(data.path).data.publicUrl;
+      profileImageUrl = supabase.storage.from("gallery").getPublicUrl(data.path).data.publicUrl;
     }
 
-    // 2. payload 준비
     const payload = {
       ...form,
       type,
