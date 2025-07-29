@@ -3,21 +3,12 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@radix-ui/react-tabs";
 import React, { useState } from "react";
 import InformationTab from "./InformationTab";
 import ReviewsTab from "./ReviewsTab";
+import type { Reviews } from "@/types/Review";
 
 interface tabProps {
   id: string;
   total: number;
-  reviews: Review[];
-}
-
-export interface Review {
-  id: number;
-  speaker_id: number;
-  user_id: string; // 리뷰 작성자 ID
-  reviewer_name: string;
-  rating: number;
-  comment: string;
-  created_at: string;
+  reviews: Reviews[];
 }
 
 export default function Tab({ total, reviews, id }: tabProps) {

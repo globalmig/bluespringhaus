@@ -6,18 +6,20 @@ import Accordiond from "@/app/components/detail/Accordiond";
 
 import ReviewItem_mini from "./ReviewItem_mini";
 import VideoList from "./VideoList";
+import LinkPreview from "./LinkPreview";
 
 interface Artist {
   id: string;
   name: string;
   profile_image?: string[];
   gallery_images?: string[];
-  short_desc: string;
-  full_desc: string;
-  intro_video: string[];
-  reviews: string[];
-  career: string;
-  tags: string[];
+  short_desc?: string;
+  full_desc?: string;
+  intro_video?: string[];
+  intro_book?: string[];
+  reviews?: string[];
+  career?: string;
+  tags?: string[];
 }
 
 interface ReviewItemProps {
@@ -29,31 +31,12 @@ export default function InformationTab_artist({ reviews, artist }: ReviewItemPro
   const router = useRouter();
   const params = useParams();
   const id = params?.id as string | undefined;
-
-  // const [artist, setArtist] = useState<Artist | null>(null);
-
-  // useEffect(() => {
-  //   if (!id || typeof id !== "string") return;
-
-  //   const fetchArtist = async () => {
-  //     const { data, error } = await supabase.from("artists").select("*").eq("id", id).single();
-
-  //     if (error) {
-  //       console.error("Supabase fetch error:", error);
-  //       return;
-  //     }
-
-  //     console.log("받아온 데이터:", data);
-  //     setArtist(data as Artist);
-  //   };
-
-  //   fetchArtist();
-  // }, [id]);
+  const [showAllBooks, setShowAllBooks] = useState(false);
 
   return (
     <div className="flex flex-col gap-10">
       <section className="flex flex-col  p-10  bg-white rounded-lg">
-        <h2 className="font-bold text-2xl mb-2">안녕하세요 {artist?.name}</h2>
+        <h2 className="font-bold text-2xl mb-2">{artist?.name}님을 소개합니다!</h2>
         <div className="flex gap-6">
           <p>{artist?.full_desc}</p>
         </div>
@@ -72,19 +55,56 @@ export default function InformationTab_artist({ reviews, artist }: ReviewItemPro
           ))}
       </section>
 
-      <section className="flex flex-col  p-10 bg-white rounded-lg">
-        <h2 className="font-bold text-2xl">행사 진행 리뷰</h2>
-        <p>고객분들의 만족도를 한눈에 봐요!</p>
-        <ReviewItem_mini reviews={reviews} />
-      </section>
+      {artist?.intro_book && artist.intro_book.length > 0 ? (
+        <section className="flex flex-col p-10 bg-white rounded-lg">
+          <h2 className="font-bold text-2xl">책</h2>
+          <p className="mb-4">지필한 책을 확인해보세요</p>
+          <div className="md:block hidden">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-8">
+              {(showAllBooks ? artist.intro_book : artist.intro_book.slice(0, 3)).map((item, index) => (
+                <LinkPreview key={index} url={item} />
+              ))}
+            </div>
 
-      <section className="flex flex-col  p-10 bg-white rounded-lg">
-        <h2 className="font-bold text-2xl">경력 및 수상 내역</h2>
-        <p>활동기록을 확인해보세요!</p>
-        <div className="mt-4">
-          <p className="whitespace-pre-line">{artist?.career}</p>
-        </div>
-      </section>
+            {artist.intro_book.length > 3 && (
+              <button onClick={() => setShowAllBooks(!showAllBooks)} className="mt-6 self-center text-sm text-blue-500  w-full p-8 shadow-md rounded-lg border">
+                {showAllBooks ? "접기" : "더보기"}
+              </button>
+            )}
+          </div>
+          <div className="block md:hidden">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-8">
+              {(showAllBooks ? artist.intro_book : artist.intro_book.slice(0, 2)).map((item, index) => (
+                <LinkPreview key={index} url={item} />
+              ))}
+            </div>
+
+            {artist.intro_book.length > 2 && (
+              <button onClick={() => setShowAllBooks(!showAllBooks)} className="mt-6 self-center text-sm text-blue-500  w-full p-6 shadow-md rounded-lg border ">
+                {showAllBooks ? "접기" : "더보기"}
+              </button>
+            )}
+          </div>
+        </section>
+      ) : null}
+
+      {artist.reviews ? (
+        <section className="flex flex-col  p-10 bg-white rounded-lg">
+          <h2 className="font-bold text-2xl">행사 진행 리뷰</h2>
+          <p>고객분들의 만족도를 한눈에 봐요!</p>
+          <ReviewItem_mini reviews={reviews} />
+        </section>
+      ) : null}
+
+      {artist.career ? (
+        <section className="flex flex-col  p-10 bg-white rounded-lg">
+          <h2 className="font-bold text-2xl">경력 및 수상 내역</h2>
+          <p>활동기록을 확인해보세요!</p>
+          <div className="mt-4">
+            <p className="whitespace-pre-line">{artist?.career}</p>
+          </div>
+        </section>
+      ) : null}
 
       <section className="flex flex-col mb-10 md:mb-20  p-10 bg-white rounded-lg">
         <h2 className="font-bold text-2xl">자주묻는질문</h2>

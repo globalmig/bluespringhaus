@@ -58,6 +58,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           user_id: user.id, // 💡 여기!
           contact_email: formEmail,
           speaker_id: id,
+
           status: "in_progress",
           message,
           host,
@@ -139,17 +140,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       subject: "[마이크임팩트] 새 문의가 도착했습니다",
       html: `
         <h3>안녕하세요. 마이크임팩트입니다. </h3>
-        <p><strong>문의자 연락처:</strong> ${formEmail}</p>
+        <p>${manager_name} 고객분께서 ${event_title}강연 ${event_date} 일정을 문의하셨습니다.</p>
+        <p>아래와 같이 섭외 문의드립니다</p>
+        <p>개최:${host} </p>
+        <p>담당자 이름:${manager_name} </p>
+        <p>담당자 전화번호:${manager_phone} </p>
+        <p>담당자 이메일:${formEmail}</p>
         <hr>
-        <p><strong>메시지:</strong></p>
+        <p>행사 명:${event_title}</p>
+        <p>행사 한줄 설명:${event_summary}</p>
+        <p>일자:${event_date}</p>
+        <p>장소:${event_location}</p>
+        <p>대상:${audience_type.replace(/\n/g, "<br>")}</p>
+        <p>대상 인원수:${audience_count}</p>
+        <p>요청사항:${message.replace(/\n/g, "<br>")}</p>
+        <p>요청 시간:${requested_time}</p>
+        <p>섭외비:${offer_fee}</p>
+        <p>기타사항:${additional_notes.replace(/\n/g, "<br>")}</p>
         <p>${message.replace(/\n/g, "<br>")}</p>
         <hr>
+
+        // TODO: 도메인 명으로 변경해야함
         <p>
           <a href="https://bluespringhaus-rbt5.vercel.app/api/inquiry/handle?inquiryId=${inquiryId}&action=accept&token=${token}"
             style="padding:12px 20px;background-color:#4CAF50;color:white;text-decoration:none;border-radius:4px;">
             수락
           </a>
-          <a href="https://bluespringhaus-rbt5.vercel.app/api/inquiry/handle?inquiryId=${inquiryId}&action=reject&token=${token}"
+          <a href="https://bluespringhaus-rbt5.vercel.app/confirm?inquiryId=${inquiryId}&action=reject&token=${token}"
             style="padding:12px 20px;background-color:#f44336;color:white;text-decoration:none;border-radius:4px;margin-left:10px;">
             거절
           </a>

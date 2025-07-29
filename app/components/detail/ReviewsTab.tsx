@@ -4,29 +4,18 @@ import { FaPenToSquare, FaTrash } from "react-icons/fa6";
 import { useAuth } from "@/app/contexts/AuthContext";
 
 import { StarRatingInput } from "../common/StarRatingInput";
-import { supabase } from "@/lib/supabase";
+import type { Reviews } from "@/types/Review";
 
 interface ReviewItemProps {
-  reviews: Review[];
+  reviews: Reviews[];
   speakerId: string;
-}
-
-// TODO: 타입폴더에 정리 예정
-export interface Review {
-  id: number;
-  speaker_id: number;
-  user_id: string; // ✅ 추가: 리뷰 작성자 ID
-  reviewer_name: string;
-  rating: number;
-  comment: string;
-  created_at: string; // ISO timestamp
 }
 
 export default function ReviewsTab({ reviews, speakerId }: ReviewItemProps) {
   const { user } = useAuth();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
-  const [reviewsState, setReviewsState] = useState<Review[]>(reviews);
+  const [reviewsState, setReviewsState] = useState<Reviews[]>(reviews);
 
   // ✅ 수정 모드 상태 관리
   const [editingReviewId, setEditingReviewId] = useState<number | null>(null);
@@ -71,7 +60,7 @@ export default function ReviewsTab({ reviews, speakerId }: ReviewItemProps) {
   };
 
   // ✅ 리뷰 수정 시작
-  const handleEditStart = (review: Review) => {
+  const handleEditStart = (review: Reviews) => {
     setEditingReviewId(review.id);
     setEditRating(review.rating);
     setEditComment(review.comment);

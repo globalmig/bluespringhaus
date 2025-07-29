@@ -128,6 +128,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         <p>${message.replace(/\n/g, "<br>")}</p>
         <hr>
         <p>
+           // TODO: 도메인 명으로 변경해야함
           <a href="https://bluespringhaus-rbt5.vercel.app/api/inquiry_artist/handle?inquiryId=${inquiryId}&action=accept&token=${token}"
             style="padding:12px 20px;background-color:#4CAF50;color:white;text-decoration:none;border-radius:4px;">
             수락

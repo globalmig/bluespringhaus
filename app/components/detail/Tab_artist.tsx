@@ -2,7 +2,6 @@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@radix-ui/react-tabs";
 import React, { useState } from "react";
 
-import ReviewsTab from "./ReviewsTab";
 import InformationTab_artist from "./InformationTab_artist";
 import type { Artists } from "@/types/inquiry";
 import ReviewsTab_artist from "./ReviewsTab_artist";

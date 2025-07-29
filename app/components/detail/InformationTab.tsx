@@ -61,6 +61,17 @@ export default function InformationTab({ reviews }: ReviewItemProps) {
         </div>
       </section>
 
+      <section className="flex flex-col  p-10 bg-white rounded-lg">
+        <h2 className="font-bold text-2xl">소개영상</h2>
+        <p>이용석님의 영상 포트폴리오입니다!</p>
+        {Array.isArray(speaker?.intro_video) &&
+          speaker!.intro_video.map((video, index) => (
+            <div className=" my-4">
+              <VideoList key={index} url={video} title={speaker?.name || "소개 영상"} />
+            </div>
+          ))}
+      </section>
+
       {speaker?.intro_book && speaker.intro_book.length > 0 ? (
         <section className="flex flex-col p-10 bg-white rounded-lg">
           <h2 className="font-bold text-2xl">책</h2>
@@ -94,19 +105,23 @@ export default function InformationTab({ reviews }: ReviewItemProps) {
         </section>
       ) : null}
 
-      <section className="flex flex-col  p-10 bg-white rounded-lg">
-        <h2 className="font-bold text-2xl">행사 진행 리뷰</h2>
-        <p>고객분들의 만족도를 한눈에 봐요!</p>
-        <ReviewItem_mini reviews={reviews} />
-      </section>
+      {speaker?.reviews ? (
+        <section className="flex flex-col  p-10 bg-white rounded-lg">
+          <h2 className="font-bold text-2xl">행사 진행 리뷰</h2>
+          <p>고객분들의 만족도를 한눈에 봐요!</p>
+          <ReviewItem_mini reviews={reviews} />
+        </section>
+      ) : null}
 
-      <section className="flex flex-col  p-10 bg-white rounded-lg">
-        <h2 className="font-bold text-2xl">경력 및 수상 내역</h2>
-        <p>활동기록을 확인해보세요!</p>
-        <div className="mt-4">
-          <p className="whitespace-pre-line">{speaker?.career}</p>
-        </div>
-      </section>
+      {speaker?.career ? (
+        <section className="flex flex-col  p-10 bg-white rounded-lg">
+          <h2 className="font-bold text-2xl">경력 및 수상 내역</h2>
+          <p>활동기록을 확인해보세요!</p>
+          <div className="mt-4">
+            <p className="whitespace-pre-line">{speaker?.career}</p>
+          </div>
+        </section>
+      ) : null}
 
       <section className="flex flex-col mb-10 md:mb-20  p-10 bg-white rounded-lg">
         <h2 className="font-bold text-2xl">자주묻는질문</h2>

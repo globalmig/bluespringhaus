@@ -37,5 +37,17 @@ export interface Inquiry {
   user_id: string;
   status: "accepted" | "rejected" | null | "in_progress";
   token: string | null;
-  speakers: Speaker; // ✅ 여기 추가
+  speakers: Speaker;
+  //     host: string;
+  //     manager_name: string;
+  //     manager_phone: string;
+  //     event_title: string;
+  //     event_summary: string;
+  //     event_date: string;
+  //     event_location: string;
+  //     audience_type: string;
+  //     audience_count: string;
+  //     requested_time: string;
+  //     offer_fee: string;
+  //     additional_notes: string;
 }
