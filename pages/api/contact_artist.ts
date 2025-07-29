@@ -9,7 +9,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { userEmail: formEmail, message, artistId: id } = req.body;
+    const {
+      userEmail: formEmail,
+      message,
+      artistId: id,
+      host,
+      manager_name,
+      manager_phone,
+      event_title,
+      event_summary,
+      event_date,
+      event_location,
+      audience_type,
+      audience_count,
+      requested_time,
+      offer_fee,
+      additional_notes,
+    } = req.body;
 
     if (!formEmail || !message || !id) {
       return res.status(400).json({
@@ -39,6 +55,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           contact_email: formEmail,
           artist_id: id,
           message,
+          host,
+          manager_name,
+          manager_phone,
+          event_title,
+          event_summary,
+          event_date,
+          event_location,
+          audience_type,
+          audience_count,
+          requested_time,
+          offer_fee,
+          additional_notes,
           created_at: new Date().toISOString(),
         },
       ])

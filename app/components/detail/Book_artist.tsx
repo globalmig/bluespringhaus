@@ -48,7 +48,7 @@ export default function Book({ id }: BookProps) {
       return;
     }
 
-    router.push(`/book/${id}`);
+    router.push(`/artists/book/${id}`);
   };
 
   return (

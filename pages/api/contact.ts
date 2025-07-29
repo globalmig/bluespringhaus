@@ -9,7 +9,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { userEmail: formEmail, message, speakerId: id } = req.body;
+    const {
+      userEmail: formEmail,
+      message,
+      speakerId: id,
+      host,
+      manager_name,
+      manager_phone,
+      event_title,
+      event_summary,
+      event_date,
+      event_location,
+      audience_type,
+      audience_count,
+      requested_time,
+      offer_fee,
+      additional_notes,
+    } = req.body;
 
     if (!formEmail || !message || !id) {
       return res.status(400).json({
@@ -19,6 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // ✅ Supabase 인증 유저 가져오기
+
     const supabase = createPagesServerClient({ req, res });
 
     const {
@@ -43,6 +60,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           speaker_id: id,
           status: "in_progress",
           message,
+          host,
+          manager_name,
+          manager_phone,
+          event_title,
+          event_summary,
+          event_date,
+          event_location,
+          audience_type,
+          audience_count,
+          requested_time,
+          offer_fee,
+          additional_notes,
           created_at: new Date().toISOString(),
         },
       ])
@@ -109,7 +138,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       to: speaker.email,
       subject: "[마이크임팩트] 새 문의가 도착했습니다",
       html: `
-        <h3>새 문의가 도착했습니다</h3>
+        <h3>안녕하세요. 마이크임팩트입니다. </h3>
         <p><strong>문의자 연락처:</strong> ${formEmail}</p>
         <hr>
         <p><strong>메시지:</strong></p>

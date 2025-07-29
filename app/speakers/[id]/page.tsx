@@ -62,18 +62,21 @@ export default function SpeakerDetail() {
   }, [id]);
   return (
     <div>
-      <div className="gap-14 flex flex-col w-full max-w-[1440px] mx-auto">
+      <div className="flex flex-col w-full max-w-[1440px] mx-auto">
         {/* <div className="bg-black w-full max-w-[1440px] h-[600px]"></div> */}
         <HeroSlider gallery_images={speaker?.gallery_images} />
-        <h1 className="text-4xl font-bold"> {speaker ? `Speaker ${speaker.name}` : ""}</h1>
-
-        <div className="flex flex-wrap gap-2 mb-2">
-          {speaker?.tags.map((t) => (
-            <span key={t} className="bg-black text-white rounded-full px-3 py-1 text-sm">
-              #{t}
-            </span>
-          ))}
+        <div className="min-h-80">
+          <h1 className="text-4xl font-bold mt-16 px-4"> {speaker ? `Speaker ${speaker.name}` : ""}</h1>
+          <p className="px-4 my-6">{speaker?.short_desc}</p>
+          <div className="flex flex-wrap gap-2 my-10 px-4">
+            {speaker?.tags.map((t) => (
+              <span key={t} className="bg-black text-white rounded-full px-3 py-1 text-sm">
+                #{t}
+              </span>
+            ))}
+          </div>
         </div>
+
         {speaker && <Tab total={reviews.length} reviews={reviews} id={speaker.id} />}
       </div>
       {speaker?.id && <Book id={speaker.id} />}

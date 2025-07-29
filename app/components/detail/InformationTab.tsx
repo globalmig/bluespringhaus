@@ -6,18 +6,20 @@ import Accordiond from "@/app/components/detail/Accordiond";
 
 import ReviewItem_mini from "./ReviewItem_mini";
 import VideoList from "./VideoList";
+import LinkPreview from "./LinkPreview";
 
 interface Speaker {
   id: string;
   name: string;
-  profile_image: string;
-  gallery_images: string;
-  short_desc: string;
-  full_desc: string;
-  intro_video: string[];
-  reviews: string[];
-  career: string;
-  tags: string[];
+  profile_image?: string;
+  gallery_images?: string;
+  short_desc?: string;
+  full_desc?: string;
+  intro_video?: string[];
+  intro_book?: string[];
+  reviews?: string[];
+  career?: string;
+  tags?: string[];
 }
 
 interface ReviewItemProps {
@@ -30,6 +32,7 @@ export default function InformationTab({ reviews }: ReviewItemProps) {
   const id = params?.id as string | undefined;
 
   const [speaker, setSpeaker] = useState<Speaker | null>(null);
+  const [showAllBooks, setShowAllBooks] = useState(false);
 
   useEffect(() => {
     if (!id || typeof id !== "string") return;
@@ -52,24 +55,44 @@ export default function InformationTab({ reviews }: ReviewItemProps) {
   return (
     <div className="flex flex-col gap-10">
       <section className="flex flex-col  p-10  bg-white rounded-lg">
-        <h2 className="font-bold text-2xl mb-2">안녕하세요 {speaker?.name}</h2>
+        <h2 className="font-bold text-2xl mb-2">{speaker?.name}님을 소개합니다!</h2>
         <div className="flex gap-6">
           <p>{speaker?.full_desc}</p>
         </div>
-        {/* TODO: 리뷰 시각화 */}
       </section>
 
-      <section className="flex flex-col  p-10 bg-white rounded-lg">
-        <h2 className="font-bold text-2xl">소개영상</h2>
-        <p>포트폴리오를 확인해보세요!</p>
-        {/* TODO: 유튜브영상 */}
-        {Array.isArray(speaker?.intro_video) &&
-          speaker!.intro_video.map((video, index) => (
-            <div className=" my-4">
-              <VideoList key={index} url={video} title={speaker?.name || "소개 영상"} />
+      {speaker?.intro_book && speaker.intro_book.length > 0 ? (
+        <section className="flex flex-col p-10 bg-white rounded-lg">
+          <h2 className="font-bold text-2xl">책</h2>
+          <p className="mb-4">지필한 책을 확인해보세요</p>
+          <div className="md:block hidden">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-8">
+              {(showAllBooks ? speaker.intro_book : speaker.intro_book.slice(0, 3)).map((item, index) => (
+                <LinkPreview key={index} url={item} />
+              ))}
             </div>
-          ))}
-      </section>
+
+            {speaker.intro_book.length > 3 && (
+              <button onClick={() => setShowAllBooks(!showAllBooks)} className="mt-6 self-center text-sm text-blue-500  w-full p-8 shadow-md rounded-lg border">
+                {showAllBooks ? "접기" : "더보기"}
+              </button>
+            )}
+          </div>
+          <div className="block md:hidden">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-8">
+              {(showAllBooks ? speaker.intro_book : speaker.intro_book.slice(0, 2)).map((item, index) => (
+                <LinkPreview key={index} url={item} />
+              ))}
+            </div>
+
+            {speaker.intro_book.length > 2 && (
+              <button onClick={() => setShowAllBooks(!showAllBooks)} className="mt-6 self-center text-sm text-blue-500  w-full p-6 shadow-md rounded-lg border ">
+                {showAllBooks ? "접기" : "더보기"}
+              </button>
+            )}
+          </div>
+        </section>
+      ) : null}
 
       <section className="flex flex-col  p-10 bg-white rounded-lg">
         <h2 className="font-bold text-2xl">행사 진행 리뷰</h2>

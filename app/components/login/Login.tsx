@@ -138,9 +138,9 @@ export default function Login({ onClose }: LoginProps) {
           </form>
 
           <div className="flex flex-col w-full justify-center items-center gap-4 mb-60">
-            <p>or</p>
+            {/* <p>or</p>
             <div className="w-[60%] py-7 bg-black text-sm text-white flex justify-center items-center h-11 rounded">간편로그인03</div>
-            <div className="w-[60%] py-7 bg-black text-sm text-white flex justify-center items-center h-11 rounded">간편로그인03</div>
+            <div className="w-[60%] py-7 bg-black text-sm text-white flex justify-center items-center h-11 rounded">간편로그인03</div> */}
           </div>
         </div>
       </div>

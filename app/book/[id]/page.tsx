@@ -17,11 +17,8 @@ export default function BookPage() {
   useEffect(() => {
     const checkEligibility = async () => {
       if (!id || !user) return;
-
       try {
         const res = await axios.get(`/api/inquiry/check?speakerId=${id}`);
-
-        // ✅ API 응답 형식에 맞춘 처리
         if (res.data.canApply) {
           setIsAllowed(true);
           setErrorMessage("");
@@ -32,8 +29,6 @@ export default function BookPage() {
       } catch (error: any) {
         console.error("🚫 문의 제한:", error);
         setIsAllowed(false);
-
-        // ✅ 서버에서 반환된 에러 메시지 사용
         if (error.response?.data?.error) {
           setErrorMessage(error.response.data.error);
         } else {
@@ -41,21 +36,13 @@ export default function BookPage() {
         }
       }
     };
-
     if (!loading && user) {
       checkEligibility();
     }
   }, [id, user, loading]);
 
-  // ✅ 로딩 중이거나 로그인하지 않은 경우
-  if (!id) {
-    return <p className="text-center py-20 text-lg">잘못된 접근입니다. 페이지 ID가 없습니다.</p>;
-  }
-
-  if (loading || isAllowed === null) {
-    return <p className="text-center py-20 text-lg">접근 가능 여부 확인 중...</p>;
-  }
-
+  if (!id) return <p className="text-center py-20 text-lg">잘못된 접근입니다. 페이지 ID가 없습니다.</p>;
+  if (loading || isAllowed === null) return <p className="text-center py-20 text-lg">접근 가능 여부 확인 중...</p>;
   if (!user) {
     return (
       <div className="text-center py-20">
@@ -66,8 +53,6 @@ export default function BookPage() {
       </div>
     );
   }
-
-  // ✅ 문의 불가능한 경우 (이미 처리 중인 문의가 있는 경우)
   if (isAllowed === false) {
     return (
       <div className="text-center py-20">
@@ -84,8 +69,8 @@ export default function BookPage() {
     if (isSubmitting) return;
 
     const form = e.currentTarget;
-    const userEmail = (form.elements.namedItem("userEmail") as HTMLInputElement | null)?.value;
-    const message = (form.elements.namedItem("message") as HTMLTextAreaElement | null)?.value;
+    const userEmail = (form.elements.namedItem("userEmail") as HTMLInputElement)?.value;
+    const message = (form.elements.namedItem("message") as HTMLTextAreaElement)?.value;
 
     if (!userEmail) return alert("이메일을 입력해주세요!");
     if (!message) return alert("메시지를 입력해주세요!");
@@ -93,9 +78,7 @@ export default function BookPage() {
     setIsSubmitting(true);
 
     try {
-      // ✅ 문의 전송 전 다시 한 번 권한 확인
       const checkRes = await axios.get(`/api/inquiry/check?speakerId=${id}`);
-
       if (!checkRes.data.canApply) {
         alert(checkRes.data.error || "이미 처리 중인 문의가 있습니다.");
         window.location.reload();
@@ -104,7 +87,23 @@ export default function BookPage() {
 
       const res = await axios.post(
         "/api/contact",
-        { userEmail, message, speakerId: id },
+        {
+          userEmail,
+          message,
+          speakerId: id,
+          host: form.host.value,
+          manager_name: form.manager_name.value,
+          manager_phone: form.manager_phone.value,
+          event_title: form.event_title.value,
+          event_summary: form.event_summary.value,
+          event_date: form.event_date.value,
+          event_location: form.event_location.value,
+          audience_type: form.audience_type.value,
+          audience_count: form.audience_count.value,
+          requested_time: form.requested_time.value,
+          offer_fee: form.offer_fee.value,
+          additional_notes: form.additional_notes.value,
+        },
         {
           withCredentials: true,
           headers: { "Content-Type": "application/json" },
@@ -114,15 +113,12 @@ export default function BookPage() {
       if (res.status === 200 && res.data.success) {
         alert("문의가 성공적으로 전송되었습니다!");
         form.reset();
-
         router.push(`/speakers/${id}`);
       } else {
         alert(res.data.error || "문의 전송에 실패했습니다.");
       }
     } catch (error: any) {
       console.error("문의 전송 오류:", error);
-
-      // ✅ 권한 체크 실패 시 특별 처리
       if (error.response?.status === 403) {
         alert("이미 처리 중인 문의가 있습니다. 페이지를 새로고침합니다.");
         window.location.reload();
@@ -131,43 +127,124 @@ export default function BookPage() {
       }
     } finally {
       setIsSubmitting(false);
-      
     }
   };
 
   return (
-    <div className="mx-4 mt-10 pb-40 gap-10 flex flex-col">
-      <h1 className="text-center text-3xl mb-2 font-bold">섭외하기</h1>
-      <section className="w-full">
-        <form onSubmit={handleSubmit} className="w-full flex flex-col justify-center max-w-[700px] mx-auto">
-          <label className="text-sm mb-2">이메일</label>
+    <div className="mx-4 mt-10 pb-40 flex flex-col items-center">
+      <h1 className="text-3xl mb-6 font-bold text-center">섭외하기</h1>
+      <form onSubmit={handleSubmit} className="w-full max-w-2xl grid gap-6">
+        {[
+          { name: "host", label: "주최", placeholder: "주최정보를 입력해주세요" },
+          { name: "manager_name", label: "담당자 이름", placeholder: "주최 담당자 이름을 입력해주세요" },
+          { name: "event_title", label: "행사명", placeholder: "행사명을 입력해주세요" },
+          { name: "event_summary", label: "행사 한줄 설명", placeholder: "행사를 간략하게 설명해주세요." },
+          { name: "event_location", label: "장소", placeholder: "행사 장소를 입력해주세요" },
+          { name: "audience_type", label: "대상", placeholder: "행사 대상을 입력해주세요" },
+          { name: "audience_count", label: "행사 인원수", placeholder: "행사에 참여하는 인원수를 입력해주세요" },
+          { name: "requested_time", label: "요청시간", placeholder: "요청시간을 입력해주세요." },
+        ].map(({ name, label, placeholder }) => (
+          <div key={name} className="flex flex-col">
+            <label htmlFor={name} className="text-sm mb-1">
+              {label}
+            </label>
+            <input id={name} name={name} required disabled={isSubmitting} placeholder={placeholder} className="py-4 px-4 rounded-xl border border-gray-300 disabled:opacity-50" />
+          </div>
+        ))}
+
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="flex flex-col">
+            <label htmlFor="manager_phone" className="text-sm mb-1">
+              전화번호
+            </label>
+            <input
+              id="manager_phone"
+              name="manager_phone"
+              type="tel"
+              required
+              disabled={isSubmitting}
+              placeholder="담당자 전화번호를 입력해주세요"
+              className="py-4 px-4 rounded-xl border border-gray-300 disabled:opacity-50"
+            />
+          </div>
+
+          <div className="flex flex-col">
+            <label htmlFor="userEmail" className="text-sm mb-1">
+              이메일
+            </label>
+            <input
+              id="userEmail"
+              name="userEmail"
+              type="email"
+              required
+              disabled={isSubmitting}
+              placeholder="답변받으실 이메일을 입력해주세요"
+              className="py-4 px-4 rounded-xl border border-gray-300 disabled:opacity-50"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-col">
+          <label htmlFor="event_date" className="text-sm mb-1">
+            일자
+          </label>
           <input
-            name="userEmail"
-            type="email"
+            id="event_date"
+            name="event_date"
+            type="date"
+            min={new Date().toISOString().split("T")[0]}
             required
             disabled={isSubmitting}
-            placeholder="답변받으실 이메일을 입력해주세요"
-            className="py-6 rounded-xl p-4 mb-10 border border-gray-300 disabled:opacity-50"
+            className="py-4 px-4 rounded-xl border border-gray-300 disabled:opacity-50"
           />
+        </div>
 
-          <label className="text-sm mb-2">상세내용</label>
+        <div className="flex flex-col">
+          <label htmlFor="message" className="text-sm mb-1">
+            요청사항
+          </label>
           <textarea
+            id="message"
             name="message"
             required
             disabled={isSubmitting}
-            placeholder="섭외날짜/원하시는 금액/상세 내용을 작성해주세요"
-            className="py-4 rounded-xl min-h-[200px] resize-y p-4 border border-gray-300 disabled:opacity-50"
+            placeholder="요청사항을 입력해주세요"
+            className="min-h-[160px] resize-y p-4 rounded-xl border border-gray-300 disabled:opacity-50"
           />
+        </div>
 
-          <button
-            type="submit"
+        <div className="flex flex-col">
+          <label htmlFor="offer_fee" className="text-sm mb-1">
+            섭외비
+          </label>
+          <textarea
+            id="offer_fee"
+            name="offer_fee"
+            required
             disabled={isSubmitting}
-            className="bg-black text-white font-medium py-4 rounded-xl mt-10 hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? "전송 중..." : "문의하기"}
-          </button>
-        </form>
-      </section>
+            placeholder="섭외비를 입력해주세요."
+            className="min-h-[160px] resize-y p-4 rounded-xl border border-gray-300 disabled:opacity-50"
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label htmlFor="additional_notes" className="text-sm mb-1">
+            기타사항
+          </label>
+          <textarea
+            id="additional_notes"
+            name="additional_notes"
+            required
+            disabled={isSubmitting}
+            placeholder="기타사항을 입력해주세요."
+            className="min-h-[160px] resize-y p-4 rounded-xl border border-gray-300 disabled:opacity-50"
+          />
+        </div>
+
+        <button type="submit" disabled={isSubmitting} className="bg-black text-white font-medium py-4 rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          {isSubmitting ? "전송 중..." : "문의하기"}
+        </button>
+      </form>
     </div>
   );
 }
