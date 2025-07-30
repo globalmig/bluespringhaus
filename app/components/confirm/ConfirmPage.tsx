@@ -9,6 +9,9 @@ export default function ConfirmPage() {
   const action = searchParams?.get("action");
   const token = searchParams?.get("token");
 
+  const rawTarget = searchParams?.get("target");
+  const target = rawTarget === "artist" ? "artist" : "speaker"; // 허용된 값만 적용
+
   const [status, setStatus] = useState<"pending" | "success" | "fail" | "form">("pending");
   const [reason, setReason] = useState("");
 
@@ -21,7 +24,7 @@ export default function ConfirmPage() {
     if (action === "accept") {
       const accept = async () => {
         try {
-          const res = await axios.get(`/api/inquiry/handle?inquiryId=${inquiryId}&action=${action}&token=${token}`);
+          const res = await axios.get(`/api/inquiry/handle?inquiryId=${inquiryId}&action=${action}&token=${token}&target=${target}`);
           setStatus(res.data.success ? "success" : "fail");
         } catch {
           setStatus("fail");
@@ -31,7 +34,7 @@ export default function ConfirmPage() {
     } else if (action === "reject") {
       setStatus("form");
     }
-  }, [inquiryId, action, token]);
+  }, [inquiryId, action, token, target]);
 
   const handleReject = async () => {
     try {
@@ -40,6 +43,7 @@ export default function ConfirmPage() {
         action: "reject",
         token,
         reason,
+        target,
       });
 
       setStatus(res.data.success ? "success" : "fail");

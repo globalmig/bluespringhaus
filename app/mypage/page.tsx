@@ -6,9 +6,8 @@ import type { Inquiry, Speaker, Artists } from "@/types/inquiry";
 import axios from "axios";
 import CardList from "../components/common/CardList";
 
-// ✅ 확장 타입 정의
 type InquiryWithType = Inquiry & {
-  type: "artist" | "speaker";
+  type: "speaker" | "artist";
   artists?: Artists[];
   speakers?: Speaker[];
 };
@@ -32,10 +31,11 @@ export default function Mypage() {
           const res = await axios.get("/api/inquiry");
 
           const all = [...(res.data.inquiries || []).map((i: any) => ({ ...i, type: "speaker" })), ...(res.data.artistInquiries || []).map((i: any) => ({ ...i, type: "artist" }))];
+
           setInquiries(all);
         } catch (error) {
           console.error("❌ API 호출 에러:", error);
-          alert("잠시후 다시 이용해주세요");
+          alert("잠시 후 다시 이용해주세요.");
         } finally {
           setIsLoading(false);
         }
@@ -45,18 +45,36 @@ export default function Mypage() {
     }
   }, [user]);
 
+  const getProfileData = (inq: InquiryWithType): (Speaker | Artists)[] => (inq.type === "artist" ? inq.artists ?? [] : inq.speakers ?? []);
+
+  const splitByType = (list: InquiryWithType[]) => ({
+    speakers: list.filter((inq) => inq.type === "speaker"),
+    artists: list.filter((inq) => inq.type === "artist"),
+  });
+
   const pendingInquiries = inquiries.filter((inq) => inq.status === null || inq.status === "in_progress");
   const acceptedInquiries = inquiries.filter((inq) => inq.status === "accepted");
   const rejectedInquiries = inquiries.filter((inq) => inq.status === "rejected");
 
-  // ✅ artists/speakers가 undefined일 경우 대비
-  const getProfileData = (inq: InquiryWithType): (Speaker | Artists)[] => (inq.type === "artist" ? inq.artists ?? [] : inq.speakers ?? []);
+  const renderSection = (title: string, list: InquiryWithType[]) => {
+    const { speakers, artists } = splitByType(list);
 
-  const inquirySections = [
-    { title: "섭외 성공! 메일을 확인해주세요🎉", data: acceptedInquiries },
-    { title: "섭외를 고민중이세요", data: pendingInquiries },
-    { title: "이번엔 인연이 아니었어요 😥", data: rejectedInquiries },
-  ];
+    return (
+      <section key={title} className="bg-white rounded-lg w-full max-w-[1440px] mx-auto ">
+        <div>
+          {speakers.length > 0 && <CardList slides={speakers.flatMap(getProfileData)} title={`SPEAKER가 ${title}`} type="speaker" />}
+          {artists.length > 0 && <CardList slides={artists.flatMap(getProfileData)} title={`ARTIST가 ${title}`} type="artist" />}
+        </div>
+
+        {speakers.length === 0 && artists.length === 0 && (
+          <div className="flex flex-col pb-20 border-b">
+            <h2 className="text-lg md:text-2xl font-bold my-5">{title}</h2>
+            <p className="mt-10">아직 소식이 없습니다.</p>
+          </div>
+        )}
+      </section>
+    );
+  };
 
   return (
     <div className="mt-10 pb-40 gap-14 flex flex-col w-full">
@@ -68,18 +86,9 @@ export default function Mypage() {
         </div>
       ) : (
         <>
-          {inquirySections.map(({ title, data }) => (
-            <section key={title} className="bg-white rounded-lg w-full max-w-[1440px] mx-auto">
-              {data.length > 0 ? (
-                <CardList slides={data.flatMap(getProfileData)} title={title} />
-              ) : (
-                <div className="flex flex-col pb-20 border-b">
-                  <h2 className="text-lg md:text-2xl font-bold my-5 transform duration-300 ease-in-out ">{title}</h2>
-                  <p className="mt-10">아직 소식이 없습니다.</p>
-                </div>
-              )}
-            </section>
-          ))}
+          {renderSection("섭외 성공! 메일을 확인해주세요🎉", acceptedInquiries)}
+          {renderSection("섭외를 고민중이세요", pendingInquiries)}
+          {renderSection("아쉽게 거절하셨어요 😥", rejectedInquiries)}
         </>
       )}
     </div>
