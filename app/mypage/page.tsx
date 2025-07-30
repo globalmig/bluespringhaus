@@ -5,11 +5,12 @@ import { useRouter } from "next/navigation";
 import type { Inquiry, Speaker, Artists } from "@/types/inquiry";
 import axios from "axios";
 import CardList from "../components/common/CardList";
+import RejectItem from "../components/mypage/RejectItem";
 
 type InquiryWithType = Inquiry & {
   type: "speaker" | "artist";
-  artists?: Artists[];
-  speakers?: Speaker[];
+  artists?: Artists[] | Artists;
+  speakers?: Speaker[] | Speaker;
 };
 
 export default function Mypage() {
@@ -45,7 +46,27 @@ export default function Mypage() {
     }
   }, [user]);
 
-  const getProfileData = (inq: InquiryWithType): (Speaker | Artists)[] => (inq.type === "artist" ? inq.artists ?? [] : inq.speakers ?? []);
+  const getProfileData = (inq: InquiryWithType): (Speaker | Artists)[] => {
+    const data = inq.type === "artist" ? inq.artists : inq.speakers;
+    if (Array.isArray(data)) return data;
+    if (data) return [data];
+    return [];
+  };
+
+  const getRejectSlides = (list: InquiryWithType[]) => {
+    return list.flatMap((inq) => {
+      const profiles = getProfileData(inq);
+      return profiles.map((profile) => ({
+        id: profile.id,
+        name: profile.name,
+        profile_image: profile.profile_image,
+        short_desc: profile.short_desc,
+        tags: profile.tags,
+        reason: inq.reason,
+        type: inq.type,
+      }));
+    });
+  };
 
   const splitByType = (list: InquiryWithType[]) => ({
     speakers: list.filter((inq) => inq.type === "speaker"),
@@ -56,11 +77,13 @@ export default function Mypage() {
   const acceptedInquiries = inquiries.filter((inq) => inq.status === "accepted");
   const rejectedInquiries = inquiries.filter((inq) => inq.status === "rejected");
 
+  const rejectedSplit = splitByType(rejectedInquiries);
+
   const renderSection = (title: string, list: InquiryWithType[]) => {
     const { speakers, artists } = splitByType(list);
 
     return (
-      <section key={title} className="bg-white rounded-lg w-full max-w-[1440px] mx-auto ">
+      <section key={title} className="bg-white rounded-lg w-full max-w-[1440px] mx-auto">
         <div>
           {speakers.length > 0 && <CardList slides={speakers.flatMap(getProfileData)} title={`SPEAKER가 ${title}`} type="speaker" />}
           {artists.length > 0 && <CardList slides={artists.flatMap(getProfileData)} title={`ARTIST가 ${title}`} type="artist" />}
@@ -88,7 +111,10 @@ export default function Mypage() {
         <>
           {renderSection("섭외 성공! 메일을 확인해주세요🎉", acceptedInquiries)}
           {renderSection("섭외를 고민중이세요", pendingInquiries)}
-          {renderSection("아쉽게 거절하셨어요 😥", rejectedInquiries)}
+
+          {rejectedSplit.artists.length > 0 && <RejectItem slides={getRejectSlides(rejectedSplit.artists)} title="아쉽게 거절하셨어요 😥 (ARTIST)" type="artist" />}
+
+          {rejectedSplit.speakers.length > 0 && <RejectItem slides={getRejectSlides(rejectedSplit.speakers)} title="아쉽게 거절하셨어요 😥 (SPEAKER)" type="speaker" />}
         </>
       )}
     </div>

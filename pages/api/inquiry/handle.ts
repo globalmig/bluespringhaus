@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const supabase = createPagesServerClient({ req, res });
 
-  const table = target === "speaker" ? "inquiries_artist" : "inquiries";
+  const table = target === "artist" ? "inquiries_artist" : "inquiries";
 
   const { data: inquiry, error } = await supabase.from(table).select("token").eq("id", inquiryId).single();
 

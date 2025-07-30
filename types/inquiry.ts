@@ -38,6 +38,7 @@ export interface Inquiry {
   status: "accepted" | "rejected" | null | "in_progress";
   token: string | null;
   speakers: Speaker;
+  reason: string;
   //     host: string;
   //     manager_name: string;
   //     manager_phone: string;
