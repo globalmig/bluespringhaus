@@ -56,7 +56,7 @@ export default function Home() {
 
             return (
               <section key={key} className="py-4 md:py-6 w-full max-w-[1440px] mx-auto">
-                <CardList slides={filtered} title={title} />
+                <CardList slides={filtered} title={title} type={"speaker"} />
               </section>
             );
           })}
