@@ -100,9 +100,9 @@ export default function Mypage() {
   };
 
   return (
-    <div className="mt-10 pb-40 gap-14 flex flex-col w-full">
-      <h1 className="text-start text-3xl mb-2 font-bold w-full max-w-[1440px] mx-auto px-4">마이페이지</h1>
-
+    <div className="mt-10 pb-40 gap-4 flex flex-col w-full max-w-[1440px] mx-auto">
+      <h1 className="text-center text-3xl md:text-4xl font-bold w-full max-w-[1440px] px-4">진행상황</h1>
+      <p className="px-4 text-center text-sm">섭외 문의 진행상황을 확인해보실 수 있습니다.</p>
       {isLoading ? (
         <div className="w-full mx-auto min-h-screen flex justify-center items-start pt-20">
           <p>잠시만 기다려주세요. 문의 내역을 확인 중입니다.</p>

@@ -30,7 +30,7 @@ export default function CardList({ slides, title, type }: CardItemProps) {
   };
 
   return (
-    <div className="px-4 transform duration-300 ease-in-out">
+    <div className="px-4 py-4 md:py-6 border-b  transform duration-300 ease-in-out">
       <div className="flex justify-between items-center">
         <h2 className="text-lg md:text-2xl font-bold my-5">{title}</h2>
         <div className="flex gap-2">
@@ -46,7 +46,7 @@ export default function CardList({ slides, title, type }: CardItemProps) {
       <Swiper
         onSwiper={(s) => (swiperRef.current = s)}
         breakpoints={{
-          320: { slidesPerView: 2.2, slidesPerGroup: 1, spaceBetween: 10 },
+          320: { slidesPerView: 3.2, slidesPerGroup: 1, spaceBetween: 10 },
           640: { slidesPerView: 4.5, slidesPerGroup: 2, spaceBetween: 15 },
           1024: { slidesPerView: 7, slidesPerGroup: 4, spaceBetween: 20 },
         }}
@@ -57,7 +57,7 @@ export default function CardList({ slides, title, type }: CardItemProps) {
         {slides.map((speaker) => {
           const isLiked = liked.has(speaker.id);
           return (
-            <SwiperSlide key={speaker.id}>
+            <SwiperSlide key={speaker.id} className="pb-4">
               <div className="relative max-w-[354px]">
                 <Link href={`/${type}s/${(speaker as Speaker | Artists).id}`} className="no-underline">
                   <div className="aspect-[3/4] w-full relative rounded-2xl overflow-hidden">

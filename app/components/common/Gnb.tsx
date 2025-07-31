@@ -53,7 +53,7 @@ export default function Gnb() {
             className={`font-semibold ${isSelected === "ARTIST" ? "text-sky-600 font-bold border-b-2 p border-sky-600" : "text-gray-700"}`}
             onClick={() => handleSelected("ARTIST")}
           >
-            ARTIST
+            ARTISTS
           </Link>
         </nav>
 
@@ -70,14 +70,15 @@ export default function Gnb() {
                 <DropdownMenuContent>
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem
+                  {/* TODO: 계정정보 수정 기능 만들어야함 */}
+                  {/* <DropdownMenuItem
                     onClick={() => {
                       handlePrepare();
                       // handleSelected("");
                     }}
                   >
                     계정정보
-                  </DropdownMenuItem>
+                  </DropdownMenuItem> */}
                   <DropdownMenuItem>
                     <Link
                       href="/mypage"

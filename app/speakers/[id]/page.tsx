@@ -66,11 +66,11 @@ export default function SpeakerDetail() {
         {/* <div className="bg-black w-full max-w-[1440px] h-[600px]"></div> */}
         <HeroSlider gallery_images={speaker?.gallery_images} />
         <div className="min-h-80">
-          <h1 className="text-4xl font-bold mt-16 px-4"> {speaker ? `Speaker ${speaker.name}` : ""}</h1>
+          <h1 className="text-4xl font-bold mt-16 px-4"> {speaker ? `${speaker.name}` : ""}</h1>
           <p className="px-4 my-6">{speaker?.short_desc}</p>
           <div className="flex flex-wrap gap-2 my-10 px-4">
             {speaker?.tags.map((t) => (
-              <span key={t} className="bg-black text-white rounded-full px-3 py-1 text-sm">
+              <span key={t} className="border text-black/70 rounded-full px-3 py-1 text-sm">
                 #{t}
               </span>
             ))}

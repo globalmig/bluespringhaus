@@ -6,6 +6,7 @@ import CardList_artist from "../components/common/CardList_artist";
 import type { Speaker } from "@/types/inquiry";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
+import Image from "next/image";
 
 // Import Swiper styles
 import "swiper/css";
@@ -50,14 +51,14 @@ export default function Home() {
   ];
 
   return (
-    <div className="w-full justify-center items-center mx-auto min-h-screen">
+    <div className="main  w-full justify-center items-center mx-auto min-h-screen">
       <div className="relative h-[280px] md:h-[600px] slider duration-300 transform ease-in-out  mb-12 md:mb-8 z-40">
         <div className="md:absolute w-full md:bottom-1 ">
           <div className="relative w-full z-40">
             <SearchArtist isMoOpen={isMoOpen} setMoOpen={setMoOpen} />
           </div>
         </div>
-        <div className={`absolute md:mt-0 w-full h-[280px] md:h-[600px] bg-zinc-100  ${isMoOpen ? "hidden" : "flex"}`}>
+        <div className={`absolute md:mt-0 w-full h-[280px] md:h-[650px] bg-zinc-100  ${isMoOpen ? "hidden" : "flex"}`}>
           <Swiper
             direction={"vertical"}
             pagination={{
@@ -70,9 +71,12 @@ export default function Home() {
             modules={[Autoplay, Pagination]}
             className={`mySwiper mt-4 `}
           >
-            <SwiperSlide>Slide 1</SwiperSlide>
-            <SwiperSlide>Slide 2</SwiperSlide>
-            <SwiperSlide>Slide 3</SwiperSlide>
+            <SwiperSlide>
+              <Image src="/image/banner3.jpg" alt="세일할인배너" fill className="object-contain" />
+            </SwiperSlide>
+            <SwiperSlide>
+              <Image src="/image/banner2.jpg" alt="세일할인배너" fill className="object-contain" />
+            </SwiperSlide>
           </Swiper>
         </div>
       </div>
@@ -88,7 +92,7 @@ export default function Home() {
             if (filtered.length === 0) return null;
 
             return (
-              <section key={key} className={`py-4 md:py-6 w-full max-w-[1440px] mx-auto`}>
+              <section key={key} className={` w-full max-w-[1440px] mx-auto`}>
                 <CardList_artist slides={filtered} title={title} />
               </section>
             );

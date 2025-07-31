@@ -115,7 +115,7 @@ export default function SearchArtist({ isMoOpen, setMoOpen }: { isMoOpen: boolea
   }, []);
 
   return (
-    <div className="w-full  z-40 bg-zinc-100 md:bg-transparent my-0">
+    <div className="w-full  z-40 bg-zinc-100 md:bg-transparent my-0 px-4">
       {/* 모바일 전용 검색 창 */}
 
       <div
@@ -181,7 +181,7 @@ export default function SearchArtist({ isMoOpen, setMoOpen }: { isMoOpen: boolea
       )}
       {/* 모바일 대상 섹션 */}
       <div
-        className={`md:hidden relative group  flex-col text-start justify-center py-4 px-4  rounded-full border-r pr-6 cursor-pointer dropdown-trigger  transform duration-300 ease-out my-4 ${
+        className={`md:hidden relative group  flex-col text-start justify-center py-4 px-10  rounded-full border-r pr-6 cursor-pointer dropdown-trigger  transform duration-300 ease-out my-4 ${
           openMoMenu === "category" || openMoMenu === null ? "bg-white" : "bg-zinc-200"
         }  ${isMoOpen === false ? "hidden" : "flex"} `}
         onClick={(e) => {
@@ -230,7 +230,7 @@ export default function SearchArtist({ isMoOpen, setMoOpen }: { isMoOpen: boolea
 
       {/* 모바일 섭외비 섹션 */}
       <div
-        className={`md:hidden group items-center justify-center  rounded-full px-4 py-4 transform duration-300 ease-out ${
+        className={`md:hidden group items-center justify-center  rounded-full px-10 py-4 transform duration-300 ease-out ${
           openMoMenu === "budget" || openMoMenu === null ? "bg-white" : "bg-zinc-200"
         }  ${isMoOpen === false ? "hidden" : "flex"}`}
       >
@@ -281,7 +281,7 @@ export default function SearchArtist({ isMoOpen, setMoOpen }: { isMoOpen: boolea
       </div>
       {/*pc버전 */}
       <div
-        className={`w-full max-w-[1440px] mx-auto md:mb-8 shadow-xl rounded-full md:grid md:grid-cols-3 justify-center items-center  md:bg-white relative fade-out-slide ${
+        className={`w-full max-w-[1440px] mx-auto  shadow-xl rounded-full md:grid md:grid-cols-3 justify-center items-center  md:bg-white relative fade-out-slide ${
           openPcMenu === null ? "bg-white" : "bg-zinc-200 "
         } 
         `}

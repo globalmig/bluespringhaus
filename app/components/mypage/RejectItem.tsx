@@ -21,7 +21,7 @@ interface RejectItemProps {
 export default function RejectItem({ slides, type, title }: RejectItemProps) {
   return (
     <div className="px-4 max-w-[1440px] w-full mx-auto flex flex-col justify-center items-center">
-      <h2 className="text-lg md:text-2xl font-bold my-5">{title}</h2>
+      <h2 className="text-lg md:text-2xl text-start font-bold my-5 w-full">{title}</h2>
 
       <div className="flex flex-col gap-6 max-w-[1440px] w-full ">
         {slides.map((item) => (
