@@ -34,12 +34,12 @@ export default function CardItem({ slides, title }: CardItemProps) {
         <h2 className="text-xl md:text-2xl font-bold">{title}</h2>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4">
         {slides.map((speaker) => (
           <div className="relative mb-8">
             {/* 카드 본문 */}
             <Link href={`/speakers/${speaker.id}`} className="no-underline">
-              <div className="aspect-[3/4] h-[400px] w-full relative rounded-2xl overflow-hidden">
+              <div className="aspect-[3/4]  md:min-h-[245px]  w-full relative rounded-2xl overflow-hidden">
                 <Image
                   src={speaker.profile_image && (speaker.profile_image.startsWith("http") || speaker.profile_image.startsWith("/")) ? speaker.profile_image : "/default.png"}
                   alt={speaker.name}
@@ -53,7 +53,7 @@ export default function CardItem({ slides, title }: CardItemProps) {
                 <p className="h-12 text-sm">{speaker.short_desc.length > 30 ? speaker.short_desc.slice(0, 25) + "..." : speaker.short_desc}</p>
                 <div className="flex flex-wrap md:gap-2 gap-1 mt-2 max-h-[64px] overflow-hidden">
                   {(speaker.tags ?? []).map((t) => (
-                    <span key={t} className=" text-zinc-600 bg-slate-200 rounded-full px-2 md:px-3 py-1 md:text-sm text-xs">
+                    <span key={t} className=" text-zinc-600 bg-slate-200 rounded-full px-2 md:px-3 py-1 md:text-sm text-xs md:block hidden">
                       {t}
                     </span>
                   ))}

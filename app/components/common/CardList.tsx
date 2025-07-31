@@ -46,8 +46,8 @@ export default function CardList({ slides, title, type }: CardItemProps) {
       <Swiper
         onSwiper={(s) => (swiperRef.current = s)}
         breakpoints={{
-          320: { slidesPerView: 2, slidesPerGroup: 1, spaceBetween: 10 },
-          640: { slidesPerView: 3, slidesPerGroup: 2, spaceBetween: 15 },
+          320: { slidesPerView: 2.2, slidesPerGroup: 1, spaceBetween: 10 },
+          640: { slidesPerView: 4.5, slidesPerGroup: 2, spaceBetween: 15 },
           1024: { slidesPerView: 7, slidesPerGroup: 4, spaceBetween: 20 },
         }}
         speed={100}
@@ -74,7 +74,7 @@ export default function CardList({ slides, title, type }: CardItemProps) {
                     <p className="h-12 text-sm">{speaker.short_desc.length > 30 ? speaker.short_desc.slice(0, 25) + "..." : speaker.short_desc}</p>
                     <div className="flex flex-wrap md:gap-2 gap-1 mt-2 max-h-[64px] overflow-hidden">
                       {(speaker.tags ?? []).map((t) => (
-                        <span key={t} className=" text-zinc-600 bg-slate-200 rounded-full px-2 md:px-3 py-1 md:text-sm text-xs">
+                        <span key={t} className=" text-zinc-600 bg-slate-200 rounded-full px-2 md:px-3 py-1 md:text-sm text-xs hidden md:block">
                           {t}
                         </span>
                       ))}

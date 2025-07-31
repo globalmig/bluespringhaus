@@ -73,6 +73,8 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
     fetchSpeakers();
   }, []);
 
+  const [isMoOpen, setMoOpen] = useState(false);
+
   const filteredSpeakers = isSpeakers.filter((spk) => {
     const toText = (...args: (string | string[] | null | undefined)[]) =>
       args
@@ -105,7 +107,7 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
 
   return (
     <main className="w-full mx-auto ">
-      <Search />
+      <Search isMoOpen={isMoOpen} setMoOpen={setMoOpen} />
       <div className="w-full max-w-[1440px] mx-auto py-12 ">
         {loading ? (
           <div className="min-h-screen flex justify-center">

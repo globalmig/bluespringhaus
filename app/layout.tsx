@@ -5,16 +5,16 @@ import Gnb from "./components/common/Gnb";
 import Footer from "./components/common/Footer";
 import Providers from "./providers";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+// const geistSans = localFont({
+//   src: "./fonts/GeistVF.woff",
+//   variable: "--font-geist-sans",
+//   weight: "100 900",
+// });
+// const geistMono = localFont({
+//   src: "./fonts/GeistMonoVF.woff",
+//   variable: "--font-geist-mono",
+//   weight: "100 900",
+// });
 
 export const metadata: Metadata = {
   title: "마이크임팩트",
@@ -24,13 +24,21 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <head>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+      </head>
+      <body className="font-pretendard">
         <Providers>
-          <div className="w-full mx-auto bg-[#FDFDFD]">
+          <div className="min-h-screen flex flex-col bg-[#FDFDFD]">
+            {/* GNB */}
             <Gnb />
-            {children}
+
+            {/* 콘텐츠 */}
+            <main className="flex-grow w-full mx-auto">{children}</main>
+
+            {/* Footer */}
+            <Footer />
           </div>
-          <Footer />
         </Providers>
       </body>
     </html>

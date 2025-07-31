@@ -1,21 +1,28 @@
 "use client";
 import { useEffect, useState } from "react";
 import axios from "axios";
-
-import type { Artists } from "@/types/inquiry";
-
 import SearchArtist from "../components/common/SearchArtist";
 import CardList_artist from "../components/common/CardList_artist";
+import type { Speaker } from "@/types/inquiry";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Pagination } from "swiper/modules";
 
-export default function Artists() {
-  const [isArtists, setArtists] = useState<Artists[]>([]);
-  const [loading, setLoading] = useState(true); // true는 boolean으로 수정
+// Import Swiper styles
+import "swiper/css";
+import "swiper/css/pagination";
+
+import "./styles.css";
+
+export default function Home() {
+  const [isSpeakers, setSpeakers] = useState<Speaker[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isMoOpen, setMoOpen] = useState(false);
 
   useEffect(() => {
-    const fetchArtists = async () => {
+    const fetchSpeakers = async () => {
       try {
-        const res = await axios.get<Artists[]>("/api/artists");
-        setArtists(res.data);
+        const res = await axios.get<Speaker[]>("/api/artists");
+        setSpeakers(res.data);
       } catch (error) {
         console.error("API 호출 실패!", error);
       } finally {
@@ -23,11 +30,11 @@ export default function Artists() {
       }
     };
 
-    fetchArtists();
+    fetchSpeakers();
   }, []);
 
-  // 카테고리 리스트 배열로 정리
-  const artistCategories = [
+  // 추천 태그 목록 정의
+  const speakerCategories = [
     { key: "trendingArtists", title: "지금 인기있는 아티스트" },
     { key: "topClassArtists", title: "탑 클래스 아티스트" },
     { key: "risingNewArtists", title: "떠오르는 신규 아티스트" },
@@ -43,28 +50,50 @@ export default function Artists() {
   ];
 
   return (
-    <div className="w-full justify-center items-center mx-auto">
-      <div className="relative w-full z-40">
-        <SearchArtist />
+    <div className="w-full justify-center items-center mx-auto min-h-screen">
+      <div className="relative h-[280px] md:h-[600px] slider duration-300 transform ease-in-out  mb-12 md:mb-8 z-40">
+        <div className="md:absolute w-full md:bottom-1 ">
+          <div className="relative w-full z-40">
+            <SearchArtist isMoOpen={isMoOpen} setMoOpen={setMoOpen} />
+          </div>
+        </div>
+        <div className={`absolute md:mt-0 w-full h-[280px] md:h-[600px] bg-zinc-100  ${isMoOpen ? "hidden" : "flex"}`}>
+          <Swiper
+            direction={"vertical"}
+            pagination={{
+              clickable: true,
+            }}
+            autoplay={{
+              delay: 2500,
+              disableOnInteraction: false,
+            }}
+            modules={[Autoplay, Pagination]}
+            className={`mySwiper mt-4 `}
+          >
+            <SwiperSlide>Slide 1</SwiperSlide>
+            <SwiperSlide>Slide 2</SwiperSlide>
+            <SwiperSlide>Slide 3</SwiperSlide>
+          </Swiper>
+        </div>
       </div>
 
       {loading ? (
-        <div className="w-full mx-auto min-h-screen flex justify-center items-start pt-20">
+        <div className={`w-full mx-auto min-h-screen flex justify-center items-start pt-20 ${isMoOpen ? "md:block hidden" : "block"}`}>
           <p>잠시만 기다려주세요.</p>
         </div>
       ) : (
-        <>
-          {artistCategories.map(({ key, title }) => {
-            const filtered = isArtists.filter((artist) => artist.is_recommended?.includes(key));
+        <div className={`${isMoOpen ? "md:block hidden" : "block"} mt-28`}>
+          {speakerCategories.map(({ key, title }) => {
+            const filtered = isSpeakers.filter((spk) => spk.is_recommended?.includes(key));
             if (filtered.length === 0) return null;
 
             return (
-              <section key={key} className="py-4 md:py-6  w-full max-w-[1440px] mx-auto">
+              <section key={key} className={`py-4 md:py-6 w-full max-w-[1440px] mx-auto`}>
                 <CardList_artist slides={filtered} title={title} />
               </section>
             );
           })}
-        </>
+        </div>
       )}
     </div>
   );

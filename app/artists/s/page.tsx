@@ -36,6 +36,8 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
   const [speakers, setSpeakers] = useState<Speaker[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [isMoOpen, setMoOpen] = useState(false);
+
   useEffect(() => {
     axios
       .get<Speaker[]>("/api/artists")
@@ -70,7 +72,7 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
   return (
     <main className="w-full mx-auto">
       <div className="w-full sticky top-0 z-40 bg-white border-b shadow-sm">
-        <SearchArtist />
+        <SearchArtist isMoOpen={isMoOpen} setMoOpen={setMoOpen} />
       </div>
 
       <div className="w-full max-w-[1440px] mx-auto py-12">
@@ -79,7 +81,9 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
             <p className="text-gray-500">검색 결과를 불러오는 중...</p>
           </div>
         ) : filtered.length > 0 ? (
-          <CardItem slides={filtered} title="검색 결과" />
+          <div className="grid grid-cols-1">
+            <CardItem slides={filtered} title="검색 결과" />
+          </div>
         ) : (
           <div className="min-h-screen flex justify-center pt-10">
             <p className="text-gray-500">검색 결과가 없습니다.</p>

@@ -47,8 +47,8 @@ export default function CardList_artist({ slides, title }: CardItemProps) {
       <Swiper
         onSwiper={(s) => (swiperRef.current = s)}
         breakpoints={{
-          320: { slidesPerView: 2, slidesPerGroup: 1, spaceBetween: 10 },
-          640: { slidesPerView: 3, slidesPerGroup: 2, spaceBetween: 15 },
+          320: { slidesPerView: 2.2, slidesPerGroup: 1, spaceBetween: 10 },
+          640: { slidesPerView: 4.5, slidesPerGroup: 2, spaceBetween: 15 },
           1024: { slidesPerView: 7, slidesPerGroup: 4, spaceBetween: 20 },
         }}
         speed={100}

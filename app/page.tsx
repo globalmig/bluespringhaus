@@ -4,10 +4,19 @@ import axios from "axios";
 import CardList from "./components/common/CardList";
 import Search from "./components/common/Search";
 import type { Speaker } from "@/types/inquiry";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Pagination } from "swiper/modules";
+
+// Import Swiper styles
+import "swiper/css";
+import "swiper/css/pagination";
+
+import "./styles.css";
 
 export default function Home() {
   const [isSpeakers, setSpeakers] = useState<Speaker[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isMoOpen, setMoOpen] = useState(false);
 
   useEffect(() => {
     const fetchSpeakers = async () => {
@@ -39,28 +48,50 @@ export default function Home() {
   ];
 
   return (
-    <div className="w-full justify-center items-center mx-auto">
-      <div className="relative w-full z-40">
-        <Search />
+    <div className="w-full justify-center items-center mx-auto min-h-screen">
+      <div className="relative h-[280px] md:h-[600px] slider duration-300 transform ease-in-out  mb-12 md:mb-8 z-40">
+        <div className="md:absolute w-full md:bottom-1 ">
+          <div className="relative w-full z-40">
+            <Search isMoOpen={isMoOpen} setMoOpen={setMoOpen} />
+          </div>
+        </div>
+        <div className={`absolute md:mt-0 w-full h-[280px] md:h-[600px] bg-zinc-100  ${isMoOpen ? "hidden" : "flex"}`}>
+          <Swiper
+            direction={"vertical"}
+            pagination={{
+              clickable: true,
+            }}
+            autoplay={{
+              delay: 2500,
+              disableOnInteraction: false,
+            }}
+            modules={[Autoplay, Pagination]}
+            className={`mySwiper mt-4 `}
+          >
+            <SwiperSlide>Slide 1</SwiperSlide>
+            <SwiperSlide>Slide 2</SwiperSlide>
+            <SwiperSlide>Slide 3</SwiperSlide>
+          </Swiper>
+        </div>
       </div>
 
       {loading ? (
-        <div className="w-full mx-auto min-h-screen flex justify-center items-start pt-20">
+        <div className={`w-full mx-auto min-h-screen flex justify-center items-start pt-20 ${isMoOpen ? "md:block hidden" : "block"}`}>
           <p>잠시만 기다려주세요.</p>
         </div>
       ) : (
-        <>
+        <div className={`${isMoOpen ? "md:block hidden" : "block"} mt-28`}>
           {speakerCategories.map(({ key, title }) => {
             const filtered = isSpeakers.filter((spk) => spk.is_recommended?.includes(key));
             if (filtered.length === 0) return null;
 
             return (
-              <section key={key} className="py-4 md:py-6 w-full max-w-[1440px] mx-auto">
+              <section key={key} className={`py-4 md:py-6 w-full max-w-[1440px] mx-auto`}>
                 <CardList slides={filtered} title={title} type={"speaker"} />
               </section>
             );
           })}
-        </>
+        </div>
       )}
     </div>
   );
