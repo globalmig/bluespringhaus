@@ -7,8 +7,10 @@ import { useAuth } from "@/app/contexts/AuthContext";
 import { FaMicrophoneAlt } from "react-icons/fa";
 import { FaRegUser } from "react-icons/fa";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { usePathname } from "next/navigation";
 
 export default function Gnb() {
+  const pathname = usePathname();
   const { user, signOut } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSelected, setSelected] = useState("SPEAKERS");
@@ -24,6 +26,18 @@ export default function Gnb() {
   const handlePrepare = () => {
     alert("준비중입니다.");
   };
+
+  useEffect(() => {
+    if (!pathname) return;
+    // ✅ 경로 변경될 때마다 상태 초기화
+    if (pathname.startsWith("/artists")) {
+      setSelected("ARTIST");
+    } else if (pathname === "/") {
+      setSelected("SPEAKERS");
+    } else {
+      setSelected(""); // 기타 페이지 (예: /manager 등)
+    }
+  }, [pathname]);
 
   // 모달 열릴 때 body 스크롤 막기
   useEffect(() => {
