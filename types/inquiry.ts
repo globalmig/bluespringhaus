@@ -10,6 +10,7 @@ export interface Speaker {
   career: string;
   tags: string[];
   email: string;
+  intro_book: string[];
   is_recommended: string[];
 }
 
@@ -17,7 +18,7 @@ export interface Artists {
   id: string;
   name: string;
   profile_image: string;
-  gallery_images?: string[];
+  gallery_images: string[];
   short_desc: string;
   full_desc: string;
   intro_video: string[];
@@ -25,6 +26,7 @@ export interface Artists {
   career: string;
   tags: string[];
   email: string;
+  intro_book: string[];
   is_recommended: string[];
 }
 

@@ -16,9 +16,8 @@ import "./styles.css";
 
 export default function Home() {
   const [isSpeakers, setSpeakers] = useState<Speaker[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isMoOpen, setMoOpen] = useState(false);
-
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     const fetchSpeakers = async () => {
       try {

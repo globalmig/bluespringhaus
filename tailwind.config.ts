@@ -5,7 +5,7 @@ const config: Config = {
   content: ["./pages/**/*.{js,ts,jsx,tsx,mdx}", "./components/**/*.{js,ts,jsx,tsx,mdx}", "./app/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
-        fontFamily: {
+      fontFamily: {
         pretendard: ["Pretendard", "sans-serif"],
       },
       keyframes: {
@@ -101,6 +101,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/line-clamp")],
+  plugins: [require("tailwindcss-animate")],
 };
 export default config;

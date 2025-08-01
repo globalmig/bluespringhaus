@@ -1,275 +1,320 @@
 "use client";
-import { supabase } from "@/lib/supabase";
-import { Speaker } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import axios from "axios";
+import { Search, Plus, Edit, Trash2, User, Music, Loader2 } from "lucide-react";
+import type { Speaker, Artists } from "@/types/inquiry";
 
-const initialForm = {
-  name: "",
-  gallery_images: null as FileList | null,
-  short_desc: "",
-  full_desc: "",
-  intro_video: "",
-  career: "",
-  tags: "",
-  email: "",
-  profile_image: null as FileList | null,
-  is_recommended: [] as string[],
-};
-
-const RECOMMEND_SPEAKER_TAGS = [
-  { label: "지금 인기있는 연사", value: "popularSpeaker" },
-  { label: "탑 클래스 연사", value: "topClassSpeaker" },
-  { label: "떠오르는 신규연사", value: "risingNewSpeaker" },
-  { label: "트렌드 읽는 인사이트메이커", value: "trendInsightMaker" },
-  { label: "마음과 삶을 변화시키는 마인드 전문가", value: "mindsetExpert" },
-  { label: "영감을 주는 문화 예술 연사", value: "culturalArtSpeaker" },
-  { label: "청춘에게 영감을 주는 연사", value: "youthInspiringSpeaker" },
-  { label: "꿈에 더 가까워지는 자기계발연사", value: "selfImprovementSpeaker" },
-  { label: "전 세계가 주목하는 글로벌 스피커", value: "globalSpeaker" },
-  { label: "성장을 설계하는 비즈니스 전문가", value: "businessGrowthExpert" },
-];
-
-const RECOMMEND_ARTIST_TAGS = [
-  { label: "지금 인기있는 아티스트", value: "trendingArtists" },
-  { label: "탑 클래스 아티스트", value: "topClassArtists" },
-  { label: "떠오르는 신예 아티스트", value: "risingNewArtists" },
-  { label: "감성을 자극하는 아티스트", value: "emotionalArtists" },
-  { label: "힙합 아티스트", value: "hiphopArtists" },
-  { label: "밴드 아티스트", value: "bandArtists" },
-  { label: "페스티벌 헤드라이너", value: "festivalHeadliners" },
-  { label: "트로트 아티스트", value: "trotArtists" },
-  { label: "인디 아티스트", value: "indieArtists" },
-  { label: "글로벌 아이돌", value: "globalIdolArtists" },
-  { label: "방송인", value: "broadcasters" },
-  { label: "인기 유튜버", value: "topYoutubers" },
-];
+// 통합 타입 정의
+interface CombinedItem extends Partial<Speaker & Artists> {
+  type: "speaker" | "artist";
+}
 
 export default function Manager() {
+  // 인증 관련 상태
   const [password, setPassword] = useState("");
   const [isAuthorized, setIsAuthorized] = useState(false);
-  const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
-  const [form, setForm] = useState(initialForm);
-  const [type, setType] = useState<"artist" | "speaker">("artist");
 
-  const handleRecommendedChange = (value: string) => {
-    setForm((prev) => {
-      const current = prev.is_recommended;
-      return {
-        ...prev,
-        is_recommended: current.includes(value) ? current.filter((v) => v !== value) : [...current, value],
-      };
-    });
-  };
+  // 데이터 상태
+  const [speakers, setSpeakers] = useState<Speaker[]>([]);
+  const [artists, setArtists] = useState<Artists[]>([]);
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === adminPassword) {
-      setIsAuthorized(true);
-    } else {
-      alert("비밀번호가 틀렸습니다.");
-    }
-  };
+  // UI 상태
+  const [loadingSpeakers, setLoadingSpeakers] = useState(true);
+  const [loadingArtists, setLoadingArtists] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState<"all" | "speaker" | "artist">("all");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const target = e.target;
-    const { name, type } = target;
+  // 통합 리스트 생성
+  const combinedList = useMemo(() => {
+    const speakersWithType: CombinedItem[] = speakers.map((item) => ({
+      ...item,
+      type: "speaker" as const,
+    }));
+    const artistsWithType: CombinedItem[] = artists.map((item) => ({
+      ...item,
+      type: "artist" as const,
+    }));
+    return [...speakersWithType, ...artistsWithType];
+  }, [speakers, artists]);
 
-    if (type === "file") {
-      setForm((prev) => ({
-        ...prev,
-        [name]: (target as HTMLInputElement).files,
-      }));
-    } else if (type === "checkbox") {
-      const checked = (target as HTMLInputElement).checked;
-      setForm((prev) => ({
-        ...prev,
-        [name]: checked,
-      }));
-    } else {
-      const value = (target as HTMLInputElement).value;
-      setForm((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
-  };
+  // 필터링된 리스트
+  const filteredList = useMemo(() => {
+    let filtered = combinedList;
 
-  const handleFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    let galleryUrls: string[] = [];
-    let profileImageUrl = "";
-    const uploadFolder = `gallery/${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-
-    if (form.gallery_images) {
-      const files = Array.from(form.gallery_images);
-
-      for (const file of files) {
-        const ext = file.name.split(".").pop();
-        const safeFileName = `${uploadFolder}/${Date.now()}_${Math.random().toString(36).substring(2)}.${ext}`;
-
-        const { data, error } = await supabase.storage.from("gallery").upload(safeFileName, file, { upsert: true });
-
-        if (error) {
-          console.error("갤러리 이미지 업로드 실패", error);
-          alert("갤러리 이미지 업로드 실패");
-          return;
-        }
-
-        const url = supabase.storage.from("gallery").getPublicUrl(data.path).data.publicUrl;
-        galleryUrls.push(url);
-      }
+    // 타입 필터
+    if (filterType !== "all") {
+      filtered = filtered.filter((item) => item.type === filterType);
     }
 
-    if (form.profile_image && form.profile_image[0]) {
-      const file = form.profile_image[0];
-      const ext = file.name.split(".").pop();
-      const safeFileName = `${uploadFolder}/profile_${Date.now()}_${Math.random().toString(36).substring(2)}.${ext}`;
-
-      const { data, error } = await supabase.storage.from("gallery").upload(safeFileName, file, { upsert: true });
-
-      if (error) {
-        console.error("프로필 이미지 업로드 실패", error);
-        alert("프로필 이미지 업로드 실패");
-        return;
-      }
-
-      profileImageUrl = supabase.storage.from("gallery").getPublicUrl(data.path).data.publicUrl;
+    // 검색 필터
+    if (searchTerm) {
+      filtered = filtered.filter((item) => item.name?.toLowerCase().includes(searchTerm.toLowerCase()) || item.short_desc?.toLowerCase().includes(searchTerm.toLowerCase()));
     }
 
-    const payload = {
-      ...form,
-      type,
-      gallery_images: galleryUrls,
-      profile_image: profileImageUrl,
-      tags: form.tags.split(",").map((tag) => tag.trim()),
-      intro_video: form.intro_video.split(",").map((v) => v.trim()),
-      is_recommended: form.is_recommended,
-    };
+    return filtered;
+  }, [combinedList, searchTerm, filterType]);
 
+  // 데이터 로딩 상태
+  const isLoading = loadingSpeakers || loadingArtists;
+
+  // 데이터 페칭
+  useEffect(() => {
+    fetchSpeakers();
+    fetchArtists();
+  }, []);
+
+  const fetchSpeakers = async () => {
     try {
-      const res = await fetch("/api/manager/post", {
+      setLoadingSpeakers(true);
+      const res = await axios.get<Speaker[]>("/api/speakers");
+      setSpeakers(res.data);
+    } catch (error) {
+      console.error("연사 데이터 로드 실패:", error);
+    } finally {
+      setLoadingSpeakers(false);
+    }
+  };
+
+  const fetchArtists = async () => {
+    try {
+      setLoadingArtists(true);
+      const res = await axios.get<Artists[]>("/api/artists");
+      setArtists(res.data);
+    } catch (error) {
+      console.error("아티스트 데이터 로드 실패:", error);
+    } finally {
+      setLoadingArtists(false);
+    }
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/admin-auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ password }),
       });
 
-      const result = await res.json();
-
-      if (res.ok && result.success) {
-        alert("등록 성공!");
-        setForm(initialForm);
+      if (res.ok) {
+        setIsAuthorized(true);
       } else {
-        alert(result.error || "등록 실패");
+        alert("비밀번호가 틀렸습니다.");
       }
-    } catch (err) {
-      console.error(err);
-      alert("서버 오류");
+    } catch (error) {
+      console.error("인증 오류:", error);
+      alert("인증 중 오류가 발생했습니다.");
     }
   };
 
-  return (
-    <div className="flex flex-col mx-auto justify-start items-center min-h-screen mt-10 px-4">
-      {!isAuthorized ? (
-        <>
-          <p className="text-2xl mb-10 mt-40">관리자님 안녕하세요 :)</p>
-          <form onSubmit={handlePasswordSubmit} className="flex items-center">
-            <input type="password" className="px-4 py-2 border rounded" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="비밀번호 입력" />
-            <button type="submit" className="bg-black text-white py-2 px-4 rounded-lg ml-4">
-              확인
-            </button>
-          </form>
-        </>
-      ) : (
-        <div className="flex flex-col w-full max-w-2xl">
-          <h1 className="text-2xl font-bold mb-6">아티스트 등록</h1>
-          <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
-            <label className="mb-4">
-              등록 타입:
-              <select value={type} onChange={(e) => setType(e.target.value as "artist" | "speaker")} className="ml-2 border p-1">
-                <option value="artist">아티스트</option>
-                <option value="speaker">연사</option>
-              </select>
-            </label>
+  const handleDelete = async (item: CombinedItem) => {
+    const confirmed = confirm(`'${item.name}'을(를) 정말 삭제하시겠습니까?`);
+    if (!confirmed) return;
 
-            <label className="flex flex-col gap-2">
-              추천 태그 선택
-              {type === "speaker" ? (
-                <>
-                  <div className="grid grid-cols-2 gap-2">
-                    {RECOMMEND_SPEAKER_TAGS.map((tag) => (
-                      <label key={tag.value} className="flex items-center gap-2 text-sm">
-                        <input type="checkbox" value={tag.value} checked={form.is_recommended.includes(tag.value)} onChange={() => handleRecommendedChange(tag.value)} />
-                        {tag.label}
-                      </label>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="grid grid-cols-2 gap-2">
-                    {RECOMMEND_ARTIST_TAGS.map((tag) => (
-                      <label key={tag.value} className="flex items-center gap-2 text-sm">
-                        <input type="checkbox" value={tag.value} checked={form.is_recommended.includes(tag.value)} onChange={() => handleRecommendedChange(tag.value)} />
-                        {tag.label}
-                      </label>
-                    ))}
-                  </div>
-                </>
-              )}
-            </label>
+    try {
+      const res = await axios.delete(`/api/manager/delete?id=${item.id}&type=${item.type}`);
 
-            <label>
-              이름
-              <input name="name" value={form.name} onChange={handleChange} className="border p-2 rounded w-full" />
-            </label>
+      if (res.status === 200) {
+        // 상태 업데이트
+        if (item.type === "speaker") {
+          setSpeakers((prev) => prev.filter((s) => s.id !== item.id));
+        } else {
+          setArtists((prev) => prev.filter((a) => a.id !== item.id));
+        }
+        alert("삭제가 완료되었습니다.");
+      } else {
+        alert("삭제에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("삭제 오류:", error);
+      alert("삭제 중 오류가 발생했습니다.");
+    }
+  };
 
-            <label>
-              갤러리 이미지 URL (쉼표로 구분)
-              <input name="gallery_images" type="file" multiple onChange={(e) => setForm((prev) => ({ ...prev, gallery_images: e.target.files }))} className="border p-2 rounded w-full" />
-            </label>
+  // 인증되지 않은 경우
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="max-w-md w-full space-y-8 p-8">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-gray-900 mb-8">관리자 로그인</h2>
+            <p className="text-lg text-gray-600 mb-8">관리자님 안녕하세요 :)</p>
+          </div>
 
-            <label>
-              한 줄 소개
-              <input name="short_desc" value={form.short_desc} onChange={handleChange} className="border p-2 rounded w-full" />
-            </label>
-
-            <label>
-              상세 설명
-              <textarea name="full_desc" value={form.full_desc} onChange={handleChange} className="border p-2 rounded w-full h-32" />
-            </label>
-
-            <label>
-              소개 영상 링크 (쉼표로 구분)
-              <input name="intro_video" value={form.intro_video} onChange={handleChange} className="border p-2 rounded w-full" />
-            </label>
-
-            <label>
-              경력 사항
-              <textarea name="career" value={form.career} onChange={handleChange} className="border p-2 rounded w-full h-24" />
-            </label>
-
-            <label>
-              태그 (쉼표로 구분)
-              <input name="tags" value={form.tags} onChange={handleChange} className="border p-2 rounded w-full" />
-            </label>
-
-            <label>
-              이메일
-              <input type="email" name="email" value={form.email} onChange={handleChange} className="border p-2 rounded w-full" />
-            </label>
-
-            <label>
-              프로필 이미지
-              <input name="profile_image" type="file" onChange={handleChange} className="border p-2 rounded w-full" />
-            </label>
-
-            <button type="submit" className="bg-black text-white py-2 rounded">
-              등록하기
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <input
+              type="password"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="비밀번호를 입력하세요"
+              required
+            />
+            <button type="submit" className="w-full bg-black text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition-colors font-medium">
+              로그인
             </button>
           </form>
         </div>
-      )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* 헤더 */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">관리자 대시보드</h1>
+              <p className="text-gray-600 mt-1">연사 및 아티스트 관리</p>
+            </div>
+
+            <Link href="/manager/write" className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium">
+              <Plus className="w-4 h-4 mr-2" />
+              새로 등록
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* 필터 및 검색 */}
+        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4">
+            {/* 검색 */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input
+                type="text"
+                placeholder="이름 또는 설명으로 검색..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            {/* 타입 필터 */}
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value as typeof filterType)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="all">전체</option>
+              <option value="speaker">연사</option>
+              <option value="artist">아티스트</option>
+            </select>
+          </div>
+
+          {/* 통계 */}
+          <div className="flex gap-6 mt-4 pt-4 border-t">
+            <div className="flex items-center text-sm text-gray-600">
+              <User className="w-4 h-4 mr-1" />
+              연사: {speakers.length}명
+            </div>
+            <div className="flex items-center text-sm text-gray-600">
+              <Music className="w-4 h-4 mr-1" />
+              아티스트: {artists.length}명
+            </div>
+            <div className="text-sm text-gray-600">총 {combinedList.length}명</div>
+          </div>
+        </div>
+
+        {/* 데이터 테이블 */}
+        <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-6 h-6 animate-spin mr-2" />
+              <span>데이터를 불러오는 중...</span>
+            </div>
+          ) : filteredList.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">데이터가 없습니다.</p>
+              {searchTerm && (
+                <button onClick={() => setSearchTerm("")} className="text-blue-600 hover:text-blue-800 mt-2">
+                  검색 초기화
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">프로필</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">정보</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">타입</th>
+                    <th className="px-6 py-4 text-center text-sm font-medium text-gray-900">관리</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredList.map((item) => (
+                    <tr key={`${item.type}-${item.id}`} className="hover:bg-gray-50">
+                      {/* 프로필 이미지 */}
+                      <td className="px-6 py-4">
+                        <div className="w-16 h-16 relative rounded-full overflow-hidden bg-gray-200">
+                          <Image src={item.profile_image || "/default.jpg"} alt={item.name || "프로필"} fill className="object-cover" />
+                        </div>
+                      </td>
+
+                      {/* 정보 */}
+                      <td className="px-6 py-4">
+                        <div>
+                          <div className="font-medium text-gray-900">{item.name}</div>
+                          {item.short_desc && <div className="text-sm text-gray-500 mt-1 truncate max-w-xs">{item.short_desc}</div>}
+                          {item.email && <div className="text-sm text-gray-400 mt-1">{item.email}</div>}
+                        </div>
+                      </td>
+
+                      {/* 타입 */}
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            item.type === "speaker" ? "bg-blue-100 text-blue-800" : "bg-purple-100 text-purple-800"
+                          }`}
+                        >
+                          {item.type === "speaker" ? <User className="w-3 h-3 mr-1" /> : <Music className="w-3 h-3 mr-1" />}
+                          {item.type === "speaker" ? "연사" : "아티스트"}
+                        </span>
+                      </td>
+
+                      {/* 관리 버튼 */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-center gap-2">
+                          <Link
+                            href={{
+                              pathname: `/manager/edit/${item.id}`,
+                              query: { type: item.type },
+                            }}
+                            className="inline-flex items-center px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors"
+                          >
+                            <Edit className="w-3 h-3 mr-1" />
+                            수정
+                          </Link>
+
+                          <button onClick={() => handleDelete(item)} className="inline-flex items-center px-3 py-1.5 text-sm bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors">
+                            <Trash2 className="w-3 h-3 mr-1" />
+                            삭제
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* 결과 수 표시 */}
+        {!isLoading && filteredList.length > 0 && (
+          <div className="mt-4 text-sm text-gray-600 text-center">
+            {searchTerm || filterType !== "all" ? `${filteredList.length}개의 결과 (전체 ${combinedList.length}개 중)` : `총 ${combinedList.length}개의 항목`}
+          </div>
+        )}
+      </main>
     </div>
   );
 }
