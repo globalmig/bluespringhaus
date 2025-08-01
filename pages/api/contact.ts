@@ -139,39 +139,56 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       to: speaker.email,
       subject: "[마이크임팩트] 새 문의가 도착했습니다",
       html: `
-        <h3>안녕하세요. 마이크임팩트입니다. </h3>
-        <p>${manager_name} 고객분께서 ${event_title}강연 ${event_date} 일정을 문의하셨습니다.</p>
-        <p>아래와 같이 섭외 문의드립니다</p>
-        <p>개최:${host} </p>
-        <p>담당자 이름:${manager_name} </p>
-        <p>담당자 전화번호:${manager_phone} </p>
-        <p>담당자 이메일:${formEmail}</p>
-        <hr>
-        <p>행사 명:${event_title}</p>
-        <p>행사 한줄 설명:${event_summary}</p>
-        <p>일자:${event_date}</p>
-        <p>장소:${event_location}</p>
-        <p>대상:${audience_type.replace(/\n/g, "<br>")}</p>
-        <p>대상 인원수:${audience_count}</p>
-        <p>요청사항:${message.replace(/\n/g, "<br>")}</p>
-        <p>요청 시간:${requested_time}</p>
-        <p>섭외비:${offer_fee}</p>
-        <p>기타사항:${additional_notes.replace(/\n/g, "<br>")}</p>
-        <p>${message.replace(/\n/g, "<br>")}</p>
-        <hr>
+  <div style="font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; font-size: 16px; color: #333; line-height: 1.6;">
+    <h2 style="color: #2c3e50;">안녕하세요. 마이크임팩트입니다.</h2>
 
-       
-        <p>
-          <a href="https://bluespringhaus-rbt5.vercel.app/api/inquiry/handle?inquiryId=${inquiryId}&action=accept&token=${token}"
-            style="padding:12px 20px;background-color:#4CAF50;color:white;text-decoration:none;border-radius:4px;">
-            수락
-          </a>
-          <a href="https://bluespringhaus-rbt5.vercel.app/confirm?inquiryId=${inquiryId}&action=reject&token=${token}"
-            style="padding:12px 20px;background-color:#f44336;color:white;text-decoration:none;border-radius:4px;margin-left:10px;">
-            거절
-          </a>
-        </p>
-      `,
+    <p><strong>${manager_name}</strong> 고객님께서 <strong>『${event_title}』</strong> 강연에 대해 <strong>${event_date}</strong> 일정 문의를 주셨습니다.</p>
+    <p>아래와 같이 섭외 요청드립니다.</p>
+
+    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+      <tbody>
+        <tr><td style="font-weight: bold; width: 160px;">개최</td><td>${host}</td></tr>
+        <tr><td style="font-weight: bold;">담당자 이름</td><td>${manager_name}</td></tr>
+        <tr><td style="font-weight: bold;">전화번호</td><td>${manager_phone}</td></tr>
+        <tr><td style="font-weight: bold;">이메일</td><td>${formEmail}</td></tr>
+      </tbody>
+    </table>
+
+    <hr style="margin: 30px 0; border: none; border-top: 1px solid #ccc;" />
+
+    <table style="width: 100%; border-collapse: collapse;">
+      <tbody>
+        <tr><td style="font-weight: bold; width: 160px;">행사명</td><td>${event_title}</td></tr>
+        <tr><td style="font-weight: bold;">행사 설명</td><td>${event_summary}</td></tr>
+        <tr><td style="font-weight: bold;">일자</td><td>${event_date}</td></tr>
+        <tr><td style="font-weight: bold;">장소</td><td>${event_location}</td></tr>
+        <tr><td style="font-weight: bold;">대상</td><td>${audience_type.replace(/\n/g, "<br>")}</td></tr>
+        <tr><td style="font-weight: bold;">인원수</td><td>${audience_count}</td></tr>
+        <tr><td style="font-weight: bold;">요청사항</td><td>${message.replace(/\n/g, "<br>")}</td></tr>
+        <tr><td style="font-weight: bold;">요청 시간</td><td>${requested_time}</td></tr>
+        <tr><td style="font-weight: bold;">섭외비</td><td>${offer_fee}</td></tr>
+        <tr><td style="font-weight: bold;">기타사항</td><td>${additional_notes.replace(/\n/g, "<br>")}</td></tr>
+      </tbody>
+    </table>
+
+    <hr style="margin: 30px 0; border: none; border-top: 1px solid #ccc;" />
+
+    <p style="margin-bottom: 12px;">섭외 요청에 대해 아래 버튼 중 하나를 클릭해 회신해 주세요.</p>
+
+    <div style="margin-top: 20px;">
+      <a href="https://bluespringhaus-rbt5.vercel.app/api/inquiry/handle?inquiryId=${inquiryId}&action=accept&token=${token}"
+        style="display:inline-block; padding:12px 24px; background-color:#4CAF50; color:white; text-decoration:none; border-radius:6px; font-weight:bold; margin-right:10px;">
+        수락
+      </a>
+      <a href="https://bluespringhaus-rbt5.vercel.app/confirm?inquiryId=${inquiryId}&action=reject&token=${token}"
+        style="display:inline-block; padding:12px 24px; background-color:#f44336; color:white; text-decoration:none; border-radius:6px; font-weight:bold;">
+        거절
+      </a>
+    </div>
+
+    <p style="margin-top: 30px; font-size: 14px; color: #999;">※ 도메인은 추후 마이크임팩트 공식 주소로 변경될 예정입니다.</p>
+  </div>
+`,
     });
 
     return res.status(200).json({ success: true });
