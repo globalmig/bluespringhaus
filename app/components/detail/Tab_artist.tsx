@@ -18,7 +18,7 @@ export default function Tab_artist({ total, reviews, artist }: tabProps) {
   return (
     <div>
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-        <TabsList className="w-full flex justify-between mb-6 ">
+        <TabsList className="w-full flex justify-between  ">
           <TabsTrigger value="information" className={`flex-1 text-xl font-bold border-b py-4 ${selectedTab === "information" ? "text-blue-500 border-blue-500" : "text-gray-400 border-transparent"}`}>
             상세 정보
           </TabsTrigger>

@@ -4,7 +4,7 @@ import { FaMicrophoneAlt } from "react-icons/fa";
 
 export default function Footer() {
   return (
-    <div className="border-2 w-full  flex py-12 mt-32 flex-col items-center justify-center text-center bg-zinc-100">
+    <div className="border-2 w-full  flex py-12 flex-col items-center justify-center text-center bg-zinc-100">
       <div className="flex flex-col w-full max-w-[1440px] px-4 mx-auto ">
         <div className="flex mb-4">
           {/* <Link href="/" className="text-sm font-bold">

@@ -49,21 +49,22 @@ export default function artistsDetail() {
   }, [id]);
   return (
     <div>
-      <div className="flex flex-col w-full max-w-[1440px] mx-auto ">
-        {/* <div className="bg-black w-full max-w-[1440px] h-[600px]"></div> */}
-        <HeroSlider gallery_images={artists?.gallery_images} />
-        <div className="min-h-80">
-          <h1 className="text-4xl font-bold mt-16 px-4"> {artists ? `${artists.name}` : ""}</h1>
-          <p className="px-4 my-6">{artists?.short_desc}</p>
-          <div className="flex flex-wrap gap-2 my-10 px-4">
-            {artists?.tags.map((t) => (
-              <span key={t} className="border text-black/70 rounded-full px-3 py-1 text-sm">
-                #{t}
-              </span>
-            ))}
+      <div className="flex flex-col w-full  mx-auto ">
+        <div className="max-w-[1440px] w-full mx-auto">
+          {/* <div className="bg-black w-full max-w-[1440px] h-[600px]"></div> */}
+          <HeroSlider gallery_images={artists?.gallery_images} />
+          <div className="min-h-80">
+            <h1 className="text-4xl font-bold mt-16 px-4"> {artists ? `${artists.name}` : ""}</h1>
+            <p className="px-4 my-6">{artists?.short_desc}</p>
+            <div className="flex flex-wrap gap-2 my-10 px-4">
+              {artists?.tags.map((t) => (
+                <span key={t} className="border text-black/70 rounded-full px-3 py-1 text-sm">
+                  #{t}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
-
         {artists ? <Tab_artist total={reviews.length} reviews={reviews} artist={artists} /> : <p>아티스트 정보를 불러오는 중입니다...</p>}
       </div>
       {artists?.id && <Book_artist id={artists.id} />}
