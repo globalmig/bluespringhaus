@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import Search from "./Search";
+import Image from "next/image";
 import Login from "../login/Login";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { FaMicrophoneAlt } from "react-icons/fa";
@@ -58,16 +58,22 @@ export default function Gnb() {
 
         {/* 내비게이션 */}
         <nav className="flex gap-10 md:gap-20 text-sm md:text-base mx-auto">
-          <Link href="/" className={`font-semibold ${isSelected === "SPEAKERS" ? "text-sky-600 font-bold border-b-2 border-sky-600" : "text-gray-700"}`} onClick={() => handleSelected("SPEAKERS")}>
-            SPEAKERS
+          <Link
+            href="/"
+            className={`flex items-center px-2 font-semibold ${isSelected === "SPEAKERS" ? "text-sky-600 font-bold border-b-2 pb-2 border-sky-600" : "text-gray-700"}`}
+            onClick={() => handleSelected("SPEAKERS")}
+          >
+            <Image src="/icon/speaker_icon.png" alt="스피커 아이콘" width={40} height={40} className="mr-3"></Image>
+            Speaker
           </Link>
 
           <Link
             href="/artists"
-            className={`font-semibold ${isSelected === "ARTIST" ? "text-sky-600 font-bold border-b-2 p border-sky-600" : "text-gray-700"}`}
+            className={`flex items-center px-2 font-semibold ${isSelected === "ARTIST" ? "text-sky-600 font-bold border-b-2 p border-sky-600 pb-2" : "text-gray-700"}`}
             onClick={() => handleSelected("ARTIST")}
           >
-            ARTISTS
+            <Image src="/icon/artist_icon.png" alt="아티스트 아이콘" width={40} height={40} className="mr-3"></Image>
+            Artist
           </Link>
         </nav>
 

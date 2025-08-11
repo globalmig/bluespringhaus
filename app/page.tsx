@@ -53,7 +53,7 @@ export default function Home() {
       <div className="relative h-[280px] md:h-[600px] slider duration-300 transform ease-in-out  mb-12 md:mb-8 z-40">
         <div className="md:absolute w-full md:bottom-1 ">
           <div className="relative w-full z-40">
-            <Search isMoOpen={isMoOpen} setMoOpen={setMoOpen} />
+            <Search isMoOpen={isMoOpen} setMoOpen={setMoOpen} target={"speaker"} />
           </div>
         </div>
         <div className={`absolute md:mt-0 w-full h-[280px] md:h-[650px] bg-zinc-100  ${isMoOpen ? "hidden" : "flex"}`}>

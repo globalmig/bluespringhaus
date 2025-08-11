@@ -203,7 +203,7 @@ export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }
                   setOpenMoMenu(null);
                 }}
               >
-                <div className="bg-gray-500 w-10 h-10 rounded flex items-center justify-center text-white font-bold">{item.icon}</div>
+                <div className={`${item.bgClass} p-2 w-10 h-10 rounded flex items-center justify-center text-white font-bold`}>{item.icon}</div>
                 <div className="flex flex-col text-sm">
                   <p className="font-bold">{item.label}</p>
                 </div>
@@ -315,7 +315,7 @@ export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }
 
         {/* PC: 섭외비 + 검색 버튼 */}
         <div
-          className={`hidden group md:flex items-center justify-center h-full rounded-full px-4 py-4 transform duration-300 ease-out ${
+          className={`hidden group md:flex z-[40] items-center justify-center h-full rounded-full px-4 py-4 transform duration-300 ease-out ${
             openPcMenu === "budget" || openPcMenu === null ? "bg-white" : "bg-zinc-200"
           }`}
         >

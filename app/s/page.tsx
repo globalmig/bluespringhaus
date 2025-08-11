@@ -117,13 +117,13 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
 
     const matchBudget = isDefault(keywordBudget) || speakerText.includes(keywordBudget!);
 
-    const matchCategory =
-      isDefault(keywordCategory) ||
-      categories
-        .filter((c) => c.value === keywordCategory)
-        .flatMap((c) => [c.label, ...(c.subCategories || [])])
-        .some((kw) => speakerText.includes(kw.toLowerCase()));
-
+    // const matchCategory =
+    //   isDefault(keywordCategory) ||
+    //   categories
+    //     .filter((c) => c.value === keywordCategory)
+    //     .flatMap((c) => [c.label, ...(c.subCategories || [])])
+    //     .some((kw) => speakerText.includes(kw.toLowerCase()));
+    const matchCategory = isDefault(keywordBudget) || speakerText.includes(keywordBudget!);
     return matchLocation && matchCategory && matchBudget;
   });
 
