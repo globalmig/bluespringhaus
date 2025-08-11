@@ -14,15 +14,7 @@ type Props = {
   type: SearchType;
 };
 
-export default function SearchSearch({
-  isMoOpen,
-  setMoOpen,
-  target = "speaker", // ✅ 기본값 speaker
-}: {
-  isMoOpen: boolean;
-  setMoOpen: (v: boolean) => void;
-  target: "speaker" | "artist";
-}) {
+export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }: { isMoOpen: boolean; setMoOpen: (v: boolean) => void; target: "speaker" | "artist" }) {
   const router = useRouter();
 
   // 타입별 옵션 세트
@@ -64,8 +56,7 @@ export default function SearchSearch({
     params.set("location", keyword);
     params.set("category", categoryValue);
     params.set("budget", selectedBudgetLabel);
-    // 필요시 type도 전달하려면 아래 주석 해제
-    // params.set("target", type);
+    params.set("target", target);
 
     router.push(`/s?${params.toString()}`);
   }, [keyword, categoryValue, selectedBudgetLabel, router]);

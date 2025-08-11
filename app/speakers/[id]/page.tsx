@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase";
 import Tab from "@/app/components/detail/Tab";
 import { Speaker } from "lucide-react";
 
+// TODO: 타입 파일에서 가져오기
 interface Speaker {
   id: string;
   name: string;

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import SearchArtist from "../components/common/SearchArtist";
+import Search from "../components/common/Search";
 import CardList_artist from "../components/common/CardList_artist";
 import type { Speaker } from "@/types/inquiry";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -54,7 +54,7 @@ export default function Home() {
       <div className="relative h-[280px] md:h-[600px] slider duration-300 transform ease-in-out  mb-12 md:mb-8 z-40">
         <div className="md:absolute w-full md:bottom-1 ">
           <div className="relative w-full z-40">
-            <SearchArtist isMoOpen={isMoOpen} setMoOpen={setMoOpen} />
+            <Search isMoOpen={isMoOpen} setMoOpen={setMoOpen} target={"artist"} />
           </div>
         </div>
         <div className={`absolute md:mt-0 w-full h-[280px] md:h-[650px] bg-zinc-100  ${isMoOpen ? "hidden" : "flex"}`}>

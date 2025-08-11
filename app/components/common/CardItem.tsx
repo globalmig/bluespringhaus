@@ -2,8 +2,6 @@
 import React, { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
@@ -13,9 +11,10 @@ import type { Swiper as SwiperClass } from "swiper";
 interface CardItemProps {
   slides: Speaker[];
   title: string;
+  target: string;
 }
 
-export default function CardItem({ slides, title }: CardItemProps) {
+export default function CardItem({ slides, title, target }: CardItemProps) {
   const swiperRef = useRef<SwiperClass | null>(null);
   const [liked, setLiked] = useState<Set<number | string>>(new Set());
 
@@ -38,7 +37,7 @@ export default function CardItem({ slides, title }: CardItemProps) {
         {slides.map((speaker) => (
           <div className="relative mb-8">
             {/* 카드 본문 */}
-            <Link href={`/speakers/${speaker.id}`} className="no-underline">
+            <Link href={`/${target}s/${speaker.id}`} className="no-underline">
               <div className="aspect-[3/4]  md:min-h-[245px]  w-full relative rounded-2xl overflow-hidden">
                 <Image
                   src={speaker.profile_image && (speaker.profile_image.startsWith("http") || speaker.profile_image.startsWith("/")) ? speaker.profile_image : "/default.png"}
