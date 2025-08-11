@@ -45,7 +45,7 @@ export default function HeroSlider({ gallery_images }: gallery) {
         </Swiper>
 
         {/* 썸네일 */}
-        <Swiper
+        {/* <Swiper
           onSwiper={setThumbsSwiper}
           spaceBetween={10}
           slidesPerView={6}
@@ -59,7 +59,7 @@ export default function HeroSlider({ gallery_images }: gallery) {
               <img src={img} alt={`thumb-${index}`} className="w-full h-full object-cover rounded cursor-pointer object-top" />
             </SwiperSlide>
           ))}
-        </Swiper>
+        </Swiper> */}
       </div>
 
       {/* ✅ 모바일/태블릿용 슬라이더 */}

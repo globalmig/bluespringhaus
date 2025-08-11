@@ -8,6 +8,8 @@ import { supabase } from "@/lib/supabase";
 import type { Artists } from "@/types/inquiry";
 import Tab_artist from "@/app/components/detail/Tab_artist";
 import Book_artist from "@/app/components/detail/Book_artist";
+import ShareBar from "@/app/components/detail/ShareBar";
+import Heart from "@/app/components/detail/Heart";
 
 export default function artistsDetail() {
   const router = useRouter();
@@ -28,7 +30,6 @@ export default function artistsDetail() {
       }
 
       if (data) {
-        console.log("받아온 데이터:", data);
         setArtists(data as Artists);
         fetchReviews(Number(data.id)); // reviews 불러오기
       }
@@ -38,9 +39,9 @@ export default function artistsDetail() {
       const { data, error } = await supabase.from("reviews_artist").select("*").eq("artist_id", artistId).order("created_at", { ascending: false });
 
       if (error) {
-        console.error("리뷰 불러오기 실패:", error);
+        // console.error("리뷰 불러오기 실패:", error);
       } else {
-        console.log("리뷰 데이터:", data);
+        // console.log("리뷰 데이터:", data);
         setReviews(data);
       }
     };
@@ -56,6 +57,10 @@ export default function artistsDetail() {
           <div className="pb-10">
             <h1 className="text-2xl md:text-4xl font-bold mt-8 md:mt-16 px-4"> {artists ? `${artists.name}` : ""}</h1>
             <p className="px-4 my-6 md:text-xl">{artists?.short_desc}</p>
+            <div className="flex w-full justify-end items-center gap-4">
+              {artists?.id !== undefined && <Heart targetId={`artists/${String(artists.id)}`} />}
+              <ShareBar url={`https://micimpact.net/artists/${artists?.id}`} title="공유하기" />
+            </div>
             <div className="flex flex-wrap gap-2 mt-10 px-4">
               {artists?.tags.map((t) => (
                 <span key={t} className="border text-black/70 rounded-full px-3 py-1 text-sm">

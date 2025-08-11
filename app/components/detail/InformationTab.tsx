@@ -67,8 +67,8 @@ export default function InformationTab({ reviews }: ReviewItemProps) {
           <p>이용석님의 영상 포트폴리오입니다!</p>
           {Array.isArray(speaker?.intro_video) &&
             speaker!.intro_video.map((video, index) => (
-              <div className=" my-4">
-                <VideoList key={index} url={video} title={speaker?.name || "소개 영상"} />
+              <div className=" my-4" key={index}>
+                <VideoList url={video} title={speaker?.name || "소개 영상"} />
               </div>
             ))}
         </section>
