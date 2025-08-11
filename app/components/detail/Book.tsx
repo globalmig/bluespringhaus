@@ -28,7 +28,7 @@ export default function Book({ id }: BookProps) {
         setCanApply(res.data.canApply);
       } catch (error) {
         console.error("❌ 문의 체크 실패:", error);
-        setCanApply(false);
+        setCanApply(null); // ← 에러는 false가 아니라 null
       } finally {
         setLoading(false);
       }
@@ -41,6 +41,9 @@ export default function Book({ id }: BookProps) {
     if (!user) {
       alert("로그인 후 문의를 진행하실 수 있습니다.");
       return;
+    }
+    if (setCanApply === null) {
+      alert("잠시후 섭외 부탁드립니다.");
     }
 
     if (!canApply) {

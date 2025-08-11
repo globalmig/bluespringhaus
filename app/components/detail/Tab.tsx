@@ -17,11 +17,17 @@ export default function Tab({ total, reviews, id }: tabProps) {
     <div>
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
         <TabsList className="w-full flex justify-between  ">
-          <TabsTrigger value="information" className={`flex-1 text-xl font-bold border-b py-4 ${selectedTab === "information" ? "text-blue-500 border-blue-500" : "text-gray-400 border-transparent"}`}>
+          <TabsTrigger
+            value="information"
+            className={`flex-1 text-lg md:text-xl font-bold border-b py-4 ${selectedTab === "information" ? "text-blue-500 border-blue-500" : "text-gray-400 border-transparent"}`}
+          >
             상세 정보
           </TabsTrigger>
 
-          <TabsTrigger value="reviews" className={`flex-1 text-xl font-bold border-b py-4 ${selectedTab === "reviews" ? "text-blue-500 border-blue-500" : "text-gray-400 border-transparent"}`}>
+          <TabsTrigger
+            value="reviews"
+            className={`flex-1 text-lg md:text-xl font-bold border-b py-4 ${selectedTab === "reviews" ? "text-blue-500 border-blue-500" : "text-gray-400 border-transparent"}`}
+          >
             리뷰({total})
           </TabsTrigger>
         </TabsList>

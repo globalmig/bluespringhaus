@@ -56,7 +56,7 @@ export default function HeroSlider({ gallery_images }: gallery) {
         >
           {gallery_images?.map((img, index) => (
             <SwiperSlide key={index} className="aspect-square h-full">
-              <img src={img} alt={`thumb-${index}`} className="w-full h-full object-cover rounded cursor-pointer" />
+              <img src={img} alt={`thumb-${index}`} className="w-full h-full object-cover rounded cursor-pointer object-top" />
             </SwiperSlide>
           ))}
         </Swiper>
