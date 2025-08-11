@@ -47,10 +47,13 @@ export default function Agree() {
       return;
     }
 
-    // TODO:이메일인증활성화해야함마지막에
-    // 4️⃣ 완료
-    alert("회원가입이 완료되었습니다! 이메일을 확인해주세요.");
-    router.push("/");
+    const r = await fetch("/api/agree/accept", { method: "POST" });
+    if (!r.ok) {
+      alert("동의 쿠키 설정에 실패했습니다.");
+      return;
+    }
+
+    router.push("/loginFinal");
   };
 
   return (
