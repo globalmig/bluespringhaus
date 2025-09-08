@@ -46,7 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(401).json({ success: false, error: "로그인이 필요합니다." });
     }
 
-    // ✅ 문의 내용 저장
+    // ✅ 섭외 내용 저장
     const { data: insertedInquiry, error: insertError } = await supabase
       .from("inquiries_artist")
       .insert([
@@ -74,8 +74,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .single();
 
     if (insertError || !insertedInquiry) {
-      console.error("문의 저장 실패:", insertError);
-      return res.status(500).json({ success: false, error: "문의 정보 저장에 실패했습니다." });
+      console.error("섭외 저장 실패:", insertError);
+      return res.status(500).json({ success: false, error: "섭외 정보 저장에 실패했습니다." });
     }
 
     const inquiryId = insertedInquiry.id;
@@ -88,7 +88,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (updateError) {
       console.error("토큰 저장 실패:", updateError);
-      return res.status(500).json({ success: false, error: "문의 토큰 저장에 실패했습니다." });
+      return res.status(500).json({ success: false, error: "섭외 토큰 저장에 실패했습니다." });
     }
 
     // ✅ 아티스트 이메일 가져오기
@@ -119,12 +119,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await transporter.sendMail({
       from: `"마이크임팩트" <${process.env.SMTP_USER}>`,
       to: artist.email,
-      subject: "[마이크임팩트] 새 문의가 도착했습니다",
+      subject: "[마이크임팩트] 새 섭외가 도착했습니다",
       html: `
   <div style="font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; font-size: 16px; color: #333; line-height: 1.6;">
     <h2 style="color: #2c3e50;">안녕하세요. 마이크임팩트입니다.</h2>
 
-    <p><strong>${manager_name}</strong> 고객님께서 <strong>『${event_title}』</strong> 강연에 대해 <strong>${event_date}</strong> 일정 문의를 주셨습니다.</p>
+    <p><strong>${manager_name}</strong> 고객님께서 <strong>『${event_title}』</strong> 강연에 대해 <strong>${event_date}</strong> 일정 섭외를 주셨습니다.</p>
     <p>아래와 같이 섭외 요청드립니다.</p>
 
     <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">

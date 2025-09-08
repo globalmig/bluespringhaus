@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const { data: inquiry, error } = await supabase.from(table).select("token").eq("id", inquiryId).single();
 
   if (error || !inquiry) {
-    return res.status(404).json({ success: false, message: "문의 정보 없음" });
+    return res.status(404).json({ success: false, message: "섭외 정보 없음" });
   }
 
   if (inquiry.token !== token) {

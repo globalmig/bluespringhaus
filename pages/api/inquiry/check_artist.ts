@@ -38,10 +38,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (existing && existing.status === "in_progress") {
-      return res.status(403).json({ canApply: false, reason: "이미 진행 중인 문의가 있습니다." });
+      return res.status(403).json({ canApply: false, reason: "이미 진행 중인 섭외가 있습니다." });
     }
 
-    return res.status(200).json({ canApply: true, message: "문의 가능" });
+    return res.status(200).json({ canApply: true, message: "섭외 가능" });
   } catch (e) {
     console.error("🔥 처리 중 예외 발생:", e);
     return res.status(500).json({ canApply: false, error: "서버 내부 오류" });

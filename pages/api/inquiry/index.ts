@@ -34,6 +34,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch (e: any) {
     console.error("❌ DB 조회 실패:", e);
-    return res.status(500).json({ error: "문의 내역을 불러오지 못했습니다." });
+    return res.status(500).json({ error: "섭외 내역을 불러오지 못했습니다." });
   }
 }

@@ -24,15 +24,15 @@ export default function BookPage() {
           setErrorMessage("");
         } else {
           setIsAllowed(false);
-          setErrorMessage(res.data.error || "이미 진행중인 문의가 있습니다.");
+          setErrorMessage(res.data.error || "이미 진행중인 섭외가 있습니다.");
         }
       } catch (error: any) {
-        console.error("🚫 문의 제한:", error);
+        console.error("🚫 섭외 제한:", error);
         setIsAllowed(false);
         if (error.response?.data?.error) {
           setErrorMessage(error.response.data.error);
         } else {
-          setErrorMessage("문의 권한을 확인할 수 없습니다.");
+          setErrorMessage("섭외 권한을 확인할 수 없습니다.");
         }
       }
     };
@@ -46,7 +46,7 @@ export default function BookPage() {
   if (!user) {
     return (
       <div className="text-center py-20">
-        <p className="text-lg mb-4">로그인 후 문의를 이용하실 수 있습니다.</p>
+        <p className="text-lg mb-4">로그인 후 섭외를 이용하실 수 있습니다.</p>
         <button onClick={() => router.push("/login")} className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors">
           로그인하러 가기
         </button>
@@ -80,7 +80,7 @@ export default function BookPage() {
     try {
       const checkRes = await axios.get(`/api/inquiry/check?speakerId=${id}`);
       if (!checkRes.data.canApply) {
-        alert(checkRes.data.error || "이미 처리 중인 문의가 있습니다.");
+        alert(checkRes.data.error || "이미 처리 중인 섭외가 있습니다.");
         window.location.reload();
         return;
       }
@@ -111,16 +111,16 @@ export default function BookPage() {
       );
 
       if (res.status === 200 && res.data.success) {
-        alert("문의가 성공적으로 전송되었습니다!");
+        alert("섭외가 성공적으로 전송되었습니다!");
         form.reset();
         router.push(`/speakers/${id}`);
       } else {
-        alert(res.data.error || "문의 전송에 실패했습니다.");
+        alert(res.data.error || "섭외 전송에 실패했습니다.");
       }
     } catch (error: any) {
-      console.error("문의 전송 오류:", error);
+      console.error("섭외 전송 오류:", error);
       if (error.response?.status === 403) {
-        alert("이미 처리 중인 문의가 있습니다. 페이지를 새로고침합니다.");
+        alert("이미 처리 중인 섭외가 있습니다. 페이지를 새로고침합니다.");
         window.location.reload();
       } else {
         alert("서버 오류가 발생했습니다. 나중에 다시 시도해주세요.");
@@ -242,7 +242,7 @@ export default function BookPage() {
         </div>
 
         <button type="submit" disabled={isSubmitting} className="bg-black text-white font-medium py-4 rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-          {isSubmitting ? "전송 중..." : "문의하기"}
+          {isSubmitting ? "전송 중..." : "섭외하기"}
         </button>
       </form>
     </div>

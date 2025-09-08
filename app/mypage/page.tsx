@@ -105,7 +105,7 @@ export default function Mypage() {
       <p className="px-4 text-center text-sm">섭외 문의 진행상황을 확인해보실 수 있습니다.</p>
       {isLoading ? (
         <div className="w-full mx-auto min-h-screen flex justify-center items-start pt-20">
-          <p>잠시만 기다려주세요. 문의 내역을 확인 중입니다.</p>
+          <p>잠시만 기다려주세요. 섭외 내역을 확인 중입니다.</p>
         </div>
       ) : (
         <>

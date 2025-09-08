@@ -24,7 +24,7 @@ export default function Accordiond() {
           </AccordionContent>
         </AccordionItem>
         <AccordionItem value="item-3">
-          <AccordionTrigger className="text-sm md:text-xl">Q. 연사사전 미팅이 가능한가요?</AccordionTrigger>
+          <AccordionTrigger className="text-sm md:text-xl">Q. 사전 미팅이 가능한가요 ?</AccordionTrigger>
           <AccordionContent className="flex flex-col gap-4 text-balance">
             <p>A. 대부분의 출연자는 행사 취지와 내용을 미리 공유받는 것을 선호합니다. 일정에 따라 조율이 필요할 수 있으니 미팅 가능 여부는 별도로 안내드립니다.</p>
           </AccordionContent>
@@ -39,13 +39,13 @@ export default function Accordiond() {
           </AccordionContent>
         </AccordionItem>
         <AccordionItem value="item-5">
-          <AccordionTrigger className="text-sm md:text-xl">Q. 강연 외에 Q&A나 토크콘서트 등 다른 형식도 가능한가요?</AccordionTrigger>
+          <AccordionTrigger className="text-sm md:text-xl">Q. 강연 / 공연 외에 Q&A나 토크콘서트 등 다른 형식도 가능한가요?</AccordionTrigger>
           <AccordionContent className="flex flex-col gap-4 text-balance">
             <p>A. 네! 대부분의 연사님들은 강연 외에도 대담, 패널 토크, Q&A 등 다양한 형식에 참여가 가능합니다. 원하시는 형식을 미리 알려주시면 가장 적합한 연사를 추천해드립니다.</p>
           </AccordionContent>
         </AccordionItem>
         <AccordionItem value="item-6">
-          <AccordionTrigger className="text-sm md:text-xl">Q. 지방/해외 강연도 가능한가요?</AccordionTrigger>
+          <AccordionTrigger className="text-sm md:text-xl">Q. 지방/해외 강연 / 공연도 가능한가요?</AccordionTrigger>
           <AccordionContent className="flex flex-col gap-4 text-balance">
             <p>A. 네, 가능합니다. 단, 연사의 일정과 교통/숙박 등의 추가 비용이 발생할 수 있으므로 별도 협의가 필요합니다.</p>
           </AccordionContent>
@@ -65,6 +65,12 @@ export default function Accordiond() {
               <br />
               <br /> 행사 진행 강연 후 피드백 및 정산
             </p>
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="item-8">
+          <AccordionTrigger className="text-sm md:text-xl">Q. 해외 연사/아티스트도 섭외 가능한가요?</AccordionTrigger>
+          <AccordionContent className="flex flex-col gap-4 text-balance">
+            <p>A.네, 글로벌 연사 / 아티스트도 섭외 가능합니다.</p>
           </AccordionContent>
         </AccordionItem>
       </Accordion>
