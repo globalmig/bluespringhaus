@@ -1,6 +1,7 @@
 import Link from "next/link";
 import React from "react";
 import { FaMicrophoneAlt } from "react-icons/fa";
+import Image from "next/image";
 
 export default function Footer() {
   return (
@@ -16,8 +17,9 @@ export default function Footer() {
         </div>
 
         <Link href="/" className="font-bold text-lg justify-center md:text-xl text-center w-full flex md:items-center md:gap-2 text-sky-700 ">
-          <FaMicrophoneAlt />
-          MICIMPACT
+          {/* <FaMicrophoneAlt />
+          MICIMPACT */}
+          <Image src={"/micimpact_logo.png"} alt="마이크임팩트 로고" width={100} height={260} />
         </Link>
         <Link href="/manager" className="text-sm font-bold text-zinc-400 mb-4">
           관리자페이지

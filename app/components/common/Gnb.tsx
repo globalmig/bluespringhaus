@@ -52,8 +52,9 @@ export default function Gnb() {
       <div className="w-full max-w-[1440px] h-16 md:h-24 mx-auto flex items-center justify-between px-4">
         {/* 로고 */}
         <Link href="/" className="font-bold text-lg md:text-xl hidden md:flex md:items-center md:gap-2 text-sky-700 " onClick={() => handleSelected("")}>
-          <FaMicrophoneAlt />
-          MICIMPACT
+          {/* <FaMicrophoneAlt />
+          MICIMPACT */}
+          <Image src={"/micimpact_logo.png"} alt="마이크임팩트 로고" width={140} height={300} />
         </Link>
 
         {/* 내비게이션 */}
