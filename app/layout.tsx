@@ -6,8 +6,29 @@ import Footer from "./components/common/Footer";
 import Providers from "./providers";
 
 export const metadata: Metadata = {
-  title: "마이크임팩트",
-  description: "연사, 인플루언서를 손쉽게 연결해드리는 마이크임팩트 사이트입니다",
+  metadataBase: new URL("https://www.micimpact.net"),
+  title: {
+    default: "마이크임팩트 | MICIMPACT",
+    template: "%s | 평원산업",
+  },
+  description: "국내 최고 수준의 스피커/아티스트 섭외 플랫폼. 강연, 공연, 이벤트를 한 곳에서 진행해보세요!",
+  keywords: ["마이크임팩트", "강연", "스피커", "아티스트", "섭외", "이벤트"],
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: "https://www.micimpact.net",
+    siteName: "마이크임팩트",
+    title: "마이크임팩트 | MICIMPACT",
+    description: "스피커/아티스트 섭외, 브랜드 이벤트까지 한 번에.",
+    // images: [{ url: "/og/og-default.jpg", width: 1200, height: 630 }],
+    locale: "ko_KR",
+  },
+  other: {
+    // "google-site-verification": "구글_콘솔에서_받은_코드", // e.g. abcdefg...
+    "naver-site-verification": "456553f7539f16a6b9f5ff2cd3eaa9e5503bdc74", // e.g. 1234567...
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -15,15 +36,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ko">
       <head>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
+        <link rel="icon" href="/favicon.png" sizes="any" type="image/png" />
       </head>
-      <body className="font-pretendard">
+      <body className="font-pretendard flex flex-col">
         <Providers>
           <div className="min-h-screen flex flex-col bg-[#FDFDFD]">
             {/* GNB */}
             <Gnb />
 
             {/* 콘텐츠 */}
-            <main className="flex-grow w-full mx-auto">{children}</main>
+            <main className="flex-grow w-full mx-auto min-h-[1200px]">{children}</main>
 
             {/* Footer */}
             <Footer />
