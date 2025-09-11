@@ -142,7 +142,6 @@ export default function BookPage() {
           { name: "event_location", label: "장소", placeholder: "행사 장소를 입력해주세요" },
           { name: "audience_type", label: "대상", placeholder: "행사 대상을 입력해주세요" },
           { name: "audience_count", label: "행사 인원수", placeholder: "행사에 참여하는 인원수를 입력해주세요" },
-          { name: "requested_time", label: "요청시간", placeholder: "요청시간을 입력해주세요." },
         ].map(({ name, label, placeholder }) => (
           <div key={name} className="flex flex-col">
             <label htmlFor={name} className="text-sm mb-1">
@@ -200,6 +199,41 @@ export default function BookPage() {
         </div>
 
         <div className="flex flex-col">
+          <label htmlFor="requested_time" className="text-sm mb-1">
+            진행시간
+          </label>
+          <input
+            id="requested_time"
+            name="requested_time"
+            type="time"
+            required
+            disabled={isSubmitting}
+            placeholder="진행시간을 입력해주세요."
+            className="py-4 px-4 rounded-xl border border-gray-300 disabled:opacity-50"
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label htmlFor="offer_fee" className="text-sm mb-1">
+            섭외비
+          </label>
+          <div className="flex items-center">
+            <input
+              id="offer_fee"
+              name="offer_fee"
+              type="number"
+              min={0}
+              step={1}
+              required
+              disabled={isSubmitting}
+              placeholder="섭외비를 입력해주세요."
+              className="w-full p-4 rounded-l-xl border text-end border-r-0 border-gray-300 disabled:opacity-50"
+            />
+            <span className="px-3 w-20 h-full flex justify-center items-center py-1 border border-l-0 border-gray-300 rounded-r-xl  text-gray-600">만원</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col">
           <label htmlFor="message" className="text-sm mb-1">
             요청사항
           </label>
@@ -209,20 +243,6 @@ export default function BookPage() {
             required
             disabled={isSubmitting}
             placeholder="요청사항을 입력해주세요"
-            className="min-h-[160px] resize-y p-4 rounded-xl border border-gray-300 disabled:opacity-50"
-          />
-        </div>
-
-        <div className="flex flex-col">
-          <label htmlFor="offer_fee" className="text-sm mb-1">
-            섭외비
-          </label>
-          <textarea
-            id="offer_fee"
-            name="offer_fee"
-            required
-            disabled={isSubmitting}
-            placeholder="섭외비를 입력해주세요."
             className="min-h-[160px] resize-y p-4 rounded-xl border border-gray-300 disabled:opacity-50"
           />
         </div>

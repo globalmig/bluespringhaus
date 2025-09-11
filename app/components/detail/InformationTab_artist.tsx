@@ -32,14 +32,41 @@ export default function InformationTab_artist({ reviews, artist }: ReviewItemPro
   const params = useParams();
   const id = params?.id as string | undefined;
   const [showAllBooks, setShowAllBooks] = useState(false);
+  const modules = {
+    toolbar: [
+      [{ header: [1, 2, 3, false] }],
+      [{ size: [] }], // ✅ 크기 선택 UI
+      ["bold", "italic", "underline", "strike"],
+      [{ color: [] }, { background: [] }],
+      [{ list: "ordered" }, { list: "bullet" }],
+      ["link", "image"],
+      ["clean"],
+    ],
+  };
+
+  const formats = [
+    "header",
+    "size", // ✅ 크기 포맷 저장
+    "bold",
+    "italic",
+    "underline",
+    "strike",
+    "color",
+    "background",
+    "list",
+    "bullet",
+    "link",
+    "image",
+  ];
 
   return (
     <div className="flex flex-col gap-10  py-10 bg-slate-100 px-2">
       <section className="flex flex-col py-6 px-4 md:p-10 bg-white rounded-lg border  w-full max-w-[1440px] mx-auto">
         <h2 className="font-bold text-xl md:text-2xl mb-2">{artist?.name}님을 소개합니다!</h2>
         <div className="flex gap-6">
-          <p>{artist?.full_desc}</p>
+          <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: artist?.full_desc || "" }} />
         </div>
+
         {/* TODO: 리뷰 시각화 */}
       </section>
 

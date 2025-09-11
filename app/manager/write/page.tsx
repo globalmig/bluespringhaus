@@ -1,6 +1,8 @@
 "use client";
 import { supabase } from "@/lib/supabase";
 import { Speaker } from "lucide-react";
+import dynamic from "next/dynamic";
+import "react-quill/dist/quill.snow.css";
 import React, { useState } from "react";
 
 const initialForm = {
@@ -44,8 +46,11 @@ const RECOMMEND_ARTIST_TAGS = [
   { label: "인기 유튜버", value: "topYoutubers" },
 ];
 
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+
 export default function Write() {
   const [password, setPassword] = useState("");
+  const [value, setValue] = useState("");
   const [isAuthorized, setIsAuthorized] = useState(false);
   const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
   const [form, setForm] = useState(initialForm);
@@ -174,6 +179,17 @@ export default function Write() {
     }
   };
 
+  const modules = {
+    toolbar: [
+      [{ header: [1, 2, 3, false] }],
+      ["bold", "italic", "underline", "strike"],
+      [{ color: [] }, { background: [] }], // ✅ 글자색 + 배경색
+      [{ list: "ordered" }, { list: "bullet" }],
+      ["link", "image"],
+      ["clean"], // 서식 제거
+    ],
+  };
+
   return (
     <div className="flex flex-col mx-auto justify-start items-center min-h-screen mt-10 px-4">
       {!isAuthorized ? (
@@ -187,7 +203,7 @@ export default function Write() {
           </form>
         </>
       ) : (
-        <div className="flex flex-col w-full max-w-2xl">
+        <div className="flex flex-col w-full max-w-2xl mb-20 md:mb-40">
           <h1 className="text-2xl font-bold mb-6">아티스트 등록</h1>
           <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
             <label className="mb-4">
@@ -240,11 +256,22 @@ export default function Write() {
               <input name="short_desc" value={form.short_desc} onChange={handleChange} className="border p-2 rounded w-full" />
             </label>
 
-            <label>
+            {/* <label>
               상세 설명
               <textarea name="full_desc" value={form.full_desc} onChange={handleChange} className="border p-2 rounded w-full h-32" />
-            </label>
+            </label> */}
 
+            <label>
+              상세 설명
+              <ReactQuill
+                theme="snow"
+                value={form.full_desc}
+                onChange={(content) =>
+                  setForm((prev) => ({ ...prev, full_desc: content }))
+                }
+                className="h-80 mb-12"
+              />
+            </label>
             <label>
               소개 영상 링크 (쉼표로 구분)
               <input name="intro_video" value={form.intro_video} onChange={handleChange} className="border p-2 rounded w-full" />

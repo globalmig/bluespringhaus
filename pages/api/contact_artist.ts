@@ -148,7 +148,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         <tr><td style="font-weight: bold;">인원수</td><td>${audience_count}</td></tr>
         <tr><td style="font-weight: bold;">요청사항</td><td>${message.replace(/\n/g, "<br>")}</td></tr>
         <tr><td style="font-weight: bold;">요청 시간</td><td>${requested_time}</td></tr>
-        <tr><td style="font-weight: bold;">섭외비</td><td>${offer_fee}</td></tr>
+        <tr><td style="font-weight: bold;">섭외비</td><td>${offer_fee}만원</td></tr>
         <tr><td style="font-weight: bold;">기타사항</td><td>${additional_notes.replace(/\n/g, "<br>")}</td></tr>
       </tbody>
     </table>

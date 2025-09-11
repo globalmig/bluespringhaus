@@ -4,6 +4,7 @@ import "./globals.css";
 import Gnb from "./components/common/Gnb";
 import Footer from "./components/common/Footer";
 import Providers from "./providers";
+import "react-quill/dist/quill.snow.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.micimpact.net"),
@@ -12,6 +13,9 @@ export const metadata: Metadata = {
     template: "%s | 평원산업",
   },
   description: "국내 최고 수준의 스피커/아티스트 섭외 플랫폼. 강연, 공연, 이벤트를 한 곳에서 진행해보세요!",
+  icons: {
+    icon: "/icon.png",
+  },
   keywords: ["마이크임팩트", "강연", "스피커", "아티스트", "섭외", "이벤트"],
   alternates: {
     canonical: "/",
@@ -22,7 +26,7 @@ export const metadata: Metadata = {
     siteName: "마이크임팩트",
     title: "마이크임팩트 | MICIMPACT",
     description: "스피커/아티스트 섭외, 브랜드 이벤트까지 한 번에.",
-    // images: [{ url: "/og/og-default.jpg", width: 1200, height: 630 }],
+    images: [{ url: "/micimpact_logo.png", width: 1200, height: 630 }],
     locale: "ko_KR",
   },
   other: {
@@ -36,7 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ko">
       <head>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" />
-        <link rel="icon" href="/favicon.png" sizes="any" type="image/png" />
+        <link rel="icon" href="/icon.png" sizes="any" type="image/png" />
       </head>
       <body className="font-pretendard flex flex-col">
         <Providers>
