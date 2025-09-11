@@ -160,11 +160,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     <p style="margin-bottom: 12px;">섭외 요청에 대해 아래 버튼 중 하나를 클릭해 회신해 주세요.</p>
 
     <div style="margin-top: 20px;">
-      <a href="https://bluespringhaus-rbt5.vercel.app/api/inquiry_artist/handle?inquiryId=${inquiryId}&action=accept&token=${token}"
+      <a href="https://micimpact.net/api/inquiry_artist/handle?inquiryId=${inquiryId}&action=accept&token=${token}"
         style="display:inline-block; padding:12px 24px; background-color:#4CAF50; color:white; text-decoration:none; border-radius:6px; font-weight:bold; margin-right:10px;">
         수락
       </a>
-      <a href="https://bluespringhaus-rbt5.vercel.app/confirm?inquiryId=${inquiryId}&action=reject&token=${token}"
+      <a href="https://micimpact.net/confirm?inquiryId=${inquiryId}&action=reject&token=${token}"
         style="display:inline-block; padding:12px 24px; background-color:#f44336; color:white; text-decoration:none; border-radius:6px; font-weight:bold;">
         거절
       </a>

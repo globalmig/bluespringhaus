@@ -5,6 +5,7 @@ import Gnb from "./components/common/Gnb";
 import Footer from "./components/common/Footer";
 import Providers from "./providers";
 import "react-quill/dist/quill.snow.css";
+import ChannelProvider from "./components/common/ChannelProvider";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.micimpact.net"),
@@ -49,7 +50,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Gnb />
 
             {/* 콘텐츠 */}
-            <main className="flex-grow w-full mx-auto min-h-[1200px]">{children}</main>
+            <main className="flex-grow w-full mx-auto min-h-[1200px]">
+              {children}
+              <ChannelProvider />
+            </main>
 
             {/* Footer */}
             <Footer />
