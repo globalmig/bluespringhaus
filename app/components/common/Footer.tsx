@@ -27,7 +27,7 @@ export default function Footer() {
         <div className="text-sm font-light text-zinc-500">
           <p>대표자: 김수정 | 사업자등록: 219-86-01868</p>
           {/* <p>전화번호: 000-000-000</p> */}
-          <p>주소: 제주특별자치도 제주시 고마로 105, 5층 501호(일도이동)0</p>
+          <p>주소: 제주특별자치도 제주시 고마로 105, 5층 501호(일도이동)</p>
           <p className="mt-4">© 2025 마이크임팩트. All rights reserved. </p>
           <a href="https://m-mig.com/homepage-development" className="hover:text-blue-700">
             Designed & built by GlobalMig.

@@ -161,12 +161,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         <tr><td style="font-weight: bold; width: 160px;">행사명</td><td>${event_title}</td></tr>
         <tr><td style="font-weight: bold;">행사 설명</td><td>${event_summary}</td></tr>
         <tr><td style="font-weight: bold;">일자</td><td>${event_date}</td></tr>
+        <tr><td style="font-weight: bold;">진행시간</td><td>${requested_time}</td></tr>
         <tr><td style="font-weight: bold;">장소</td><td>${event_location}</td></tr>
         <tr><td style="font-weight: bold;">대상</td><td>${audience_type.replace(/\n/g, "<br>")}</td></tr>
         <tr><td style="font-weight: bold;">인원수</td><td>${audience_count}</td></tr>
-        <tr><td style="font-weight: bold;">요청사항</td><td>${message.replace(/\n/g, "<br>")}</td></tr>
-        <tr><td style="font-weight: bold;">요청 시간</td><td>${requested_time}</td></tr>
         <tr><td style="font-weight: bold;">섭외비</td><td>${offer_fee}만원</td></tr>
+        <tr><td style="font-weight: bold;">요청사항</td><td>${message.replace(/\n/g, "<br>")}</td></tr>
+        
+        
         <tr><td style="font-weight: bold;">기타사항</td><td>${additional_notes.replace(/\n/g, "<br>")}</td></tr>
       </tbody>
     </table>
