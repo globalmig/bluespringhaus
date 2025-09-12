@@ -82,7 +82,7 @@ export default function InformationTab_artist({ reviews, artist }: ReviewItemPro
           ))}
       </section>
 
-      {artist?.intro_book && artist.intro_book.length > 0 ? (
+      {/* {artist?.intro_book && artist.intro_book.length > 0 ? (
         <section className="flex flex-col py-6 px-4 md:p-10 border bg-white rounded-lg  w-full max-w-[1440px] mx-auto">
           <h2 className="font-bold text-xl md:text-2xl">책</h2>
           <p className="mb-4">지필한 책을 확인해보세요</p>
@@ -113,7 +113,7 @@ export default function InformationTab_artist({ reviews, artist }: ReviewItemPro
             )}
           </div>
         </section>
-      ) : null}
+      ) : null} */}
 
       {artist.reviews ? (
         <section className="flex flex-col  p-2 bg-white rounded-lg w-full max-w-[1440px] mx-auto">

@@ -51,27 +51,30 @@ export default function Gnb() {
     <div className="py-2 flex md:flex-col bg-zinc-100">
       <div className="w-full max-w-[1440px] h-16 md:h-24 mx-auto flex items-center justify-between px-4">
         {/* 로고 */}
-        <Link href="/" className="font-bold text-lg md:text-xl hidden md:flex md:items-center md:gap-2 text-sky-700 " onClick={() => handleSelected("")}>
-          {/* <FaMicrophoneAlt />
+        <Link href="/" className="font-bold text-lg md:text-xl flex md:items-center md:gap-2 text-sky-700 " onClick={() => handleSelected("")}>
+          {/* <FaMicrophoneAlt />s
           MICIMPACT */}
-          <Image src={"/micimpact_logo.png"} alt="마이크임팩트 로고" width={140} height={300} />
+          <Image src={"/micimpact_logo.png"} alt="마이크임팩트 로고" width={140} height={180} className="hidden md:flex" />
+          <Image src={"/icon/micimpact_logo_m.png"} alt="마이크임팩트 로고" width={32} height={40} className="md:hidden flex" />
         </Link>
 
         {/* 내비게이션 */}
         <nav className="flex gap-4 md:gap-20 text-sm md:text-base mx-auto">
           <Link
             href="/"
-            className={`flex items-center px-2 font-semibold ${isSelected === "SPEAKERS" ? "text-sky-600 font-bold border-b-2 pb-2 border-sky-600" : "text-gray-700"}`}
+            className={`flex  flex-col md:flex-row w-full mx-auto justify-center items-center px-2 font-semibold ${
+              isSelected === "SPEAKERS" ? "text-sky-600 font-bold border-b-2 pb-2 border-sky-600" : "text-gray-700"
+            }`}
             onClick={() => handleSelected("SPEAKERS")}
           >
-            <Image src="/icon/speaker_icon.png" alt="스피커 아이콘" width={40} height={40} className="mr-3 hidden md:block"></Image>
-            <Image src="/icon/speaker_icon.png" alt="스피커 아이콘" width={30} height={30} className="mr-2 md:hidden block"></Image>
+            <Image src="/icon/speaker_icon.png" alt="스피커 아이콘" width={40} height={40} className="m-0 md:mr-3 hidden md:block"></Image>
+            <Image src="/icon/speaker_icon.png" alt="스피커 아이콘" width={30} height={30} className="m-0 md:mr-2  md:hidden block"></Image>
             Speaker
           </Link>
 
           <Link
             href="/artists"
-            className={`flex items-center px-2 font-semibold ${isSelected === "ARTIST" ? "text-sky-600 font-bold border-b-2 p border-sky-600 pb-2" : "text-gray-700"}`}
+            className={`flex flex-col w-full md:flex-row items-center px-2 font-semibold ${isSelected === "ARTIST" ? "text-sky-600 font-bold border-b-2 p border-sky-600 pb-2" : "text-gray-700"}`}
             onClick={() => handleSelected("ARTIST")}
           >
             <Image src="/icon/artist_icon.png" alt="아티스트 아이콘" width={40} height={40} className="mr-3 hidden md:block"></Image>

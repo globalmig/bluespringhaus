@@ -122,7 +122,7 @@ export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }
           }}
         />
       </div>
-      {openMoMenu === "recommend" && (
+      {/* {openMoMenu === "recommend" && (
         <div className="md:hidden block bg-white shadow-lg rounded-xl mt-4 w-full dropdown-menu">
           <ul className="my-4 mx-4">
             {recommendOptions.map((item, idx) => (
@@ -136,7 +136,7 @@ export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }
             ))}
           </ul>
         </div>
-      )}
+      )} */}
 
       {/* ===== 모바일: 분야 ===== */}
       <div
@@ -261,7 +261,7 @@ export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }
             }}
           />
         </div>
-        {openPcMenu === "recommend" && (
+        {/* {openPcMenu === "recommend" && (
           <div className="hidden md:block absolute left-2 top-20 z-10 bg-white shadow-lg rounded-xl mt-4 w-full max-w-[32%] dropdown-menu">
             <ul className="my-4 mx-4">
               {recommendOptions.map((item, idx) => (
@@ -275,7 +275,7 @@ export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }
               ))}
             </ul>
           </div>
-        )}
+        )} */}
 
         {/* PC: 분야 */}
         <div
