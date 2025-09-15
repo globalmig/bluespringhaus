@@ -15,7 +15,7 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     try {
       // 운영/로컬 모두 동작하도록 origin 계산
-      const origin = typeof window !== "undefined" ? window.location.origin : process.env.NEXT_PUBLIC_SITE_URL;
+      const origin = process.env.NEXT_PUBLIC_SITE_URL!;
       const redirectTo = `${origin}/auth/reset`;
 
       // ✅ 비밀번호 재설정 이메일 발송
