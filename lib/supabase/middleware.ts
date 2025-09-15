@@ -1,11 +1,29 @@
-import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
-import { type NextRequest, NextResponse } from "next/server";
+// lib/supabase/middleware.ts
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
-  const response = NextResponse.next();
-  const supabase = createMiddlewareClient({ req: request, res: response });
+  let supabaseResponse = NextResponse.next({
+    request,
+  });
 
-  await supabase.auth.getSession(); // 세션 복호화 (꼭 필요)
+  const supabase = createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        supabaseResponse = NextResponse.next({
+          request,
+        });
+        cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options));
+      },
+    },
+  });
 
-  return response;
+  // refreshing the auth token
+  await supabase.auth.getUser();
+
+  return supabaseResponse;
 }

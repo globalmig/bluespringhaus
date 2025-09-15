@@ -88,9 +88,9 @@ export default function Login({ onClose }: LoginProps) {
             <Link href="/agree" onClick={onClose}>
               <span className="cursor-pointer text-blue-500">회원가입</span>
             </Link>
-            <button type="button" className="text-blue-500">
-              아이디/비번찾기
-            </button>
+            <Link href="/account/recovery" onClick={onClose}>
+              <span className="cursor-pointer text-blue-500">비밀번호 찾기</span>
+            </Link>
           </div>
         </form>
 
