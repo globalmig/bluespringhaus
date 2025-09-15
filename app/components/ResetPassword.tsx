@@ -5,9 +5,7 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 export default function ResetPassword() {
   // ✅ PKCE 플로우 명시
-  const supabase = createClientComponentClient({
-    options: { auth: { flowType: "pkce" } },
-  });
+  const supabase = createClientComponentClient();
 
   const router = useRouter();
   const sp = useSearchParams();
