@@ -263,14 +263,7 @@ export default function Write() {
 
             <label>
               상세 설명
-              <ReactQuill
-                theme="snow"
-                value={form.full_desc}
-                onChange={(content) =>
-                  setForm((prev) => ({ ...prev, full_desc: content }))
-                }
-                className="h-80 mb-12"
-              />
+              <ReactQuill theme="snow" value={form.full_desc} onChange={(content) => setForm((prev) => ({ ...prev, full_desc: content }))} className="h-80 mb-12" />
             </label>
             <label>
               소개 영상 링크 (쉼표로 구분)
