@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.micimpact.net"),
   title: {
     default: "마이크임팩트 | MICIMPACT",
-    template: "%s | 평원산업",
+    template: "%s | 마이크임팩트",
   },
   description: "국내 최고 수준의 스피커/아티스트 섭외 플랫폼. 강연, 공연, 이벤트를 한 곳에서 진행해보세요!",
   icons: {
