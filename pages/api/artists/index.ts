@@ -20,15 +20,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     query = query.contains("tags", [category]);
   }
 
-  // budget이 있으면 is_recommended 배열에 budget이 포함되는지 검사
-  // if (budget && typeof budget === "string") {
-  //   query = query.contains("is_recommended", [budget]);
-  // }
+  // budget이 있으면 pay와 비교
   if (budget && typeof budget === "string") {
     query = query.eq("pay", budget);
   }
 
-  const { data, error } = await query.range(0, 9);
+  // ✅ 최신순 정렬 + 넉넉한 개수 (예: 100개)
+  query = query.order("created_at", { ascending: false }).limit(100);
+
+  const { data, error } = await query;
 
   if (error) return res.status(500).json({ error: error.message });
   return res.status(200).json(data);

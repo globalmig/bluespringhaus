@@ -1,12 +1,11 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
-import "swiper/css/pagination";
 import type { Speaker, Artists } from "@/types/inquiry";
 import type { Swiper as SwiperClass } from "swiper";
 
@@ -27,6 +26,15 @@ export default function CardList({ slides, title, type }: CardItemProps) {
       return next;
     });
   };
+
+  // ✅ 최신순 정렬: created_at 우선, 없으면 id로
+  const sortedSlides = useMemo(() => {
+    return [...slides].sort((a, b) => {
+      const ta = "created_at" in a && a.created_at ? new Date(a.created_at as any).getTime() : Number(a.id) || 0;
+      const tb = "created_at" in b && b.created_at ? new Date(b.created_at as any).getTime() : Number(b.id) || 0;
+      return tb - ta; // 내림차순(최신 우선)
+    });
+  }, [slides]);
 
   return (
     <div className="px-4 py-4 md:py-6 border-b transform duration-300 ease-in-out">
@@ -53,8 +61,7 @@ export default function CardList({ slides, title, type }: CardItemProps) {
         modules={[Navigation]}
         className="mySwiper"
       >
-        {slides.map((item) => {
-          const isLiked = liked.has(item.id);
+        {sortedSlides.map((item) => {
           const href = `/${type}s/${item.id}`;
           const img = item.profile_image && (item.profile_image.startsWith("http") || item.profile_image.startsWith("/")) ? item.profile_image : "/default.png";
 
@@ -70,10 +77,7 @@ export default function CardList({ slides, title, type }: CardItemProps) {
                     <p className="h-12 text-sm">{item.short_desc?.length > 30 ? item.short_desc.slice(0, 25) + "..." : item.short_desc}</p>
                     <div className="flex flex-wrap md:gap-2 gap-1 mt-2 max-h-[64px] overflow-hidden">
                       {(item.tags ?? []).map((t) => (
-                        <span
-                          key={`${item.id}-${t}`} // ← key 안정성 보강
-                          className="text-zinc-600 bg-slate-200 rounded-full px-2 md:px-3 py-1 md:text-sm text-xs hidden md:block"
-                        >
+                        <span key={`${item.id}-${t}`} className="text-zinc-600 bg-slate-200 rounded-full px-2 md:px-3 py-1 md:text-sm text-xs hidden md:block">
                           {t}
                         </span>
                       ))}

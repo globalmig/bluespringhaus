@@ -13,6 +13,7 @@ export interface Speaker {
   intro_book: string[];
   is_recommended: string[];
   pay: string;
+  created_at: string;
 }
 
 export interface Artists {
@@ -30,6 +31,7 @@ export interface Artists {
   intro_book: string[];
   is_recommended: string[];
   pay: string;
+  created_at: string;
 }
 
 export interface Inquiry {
@@ -44,6 +46,7 @@ export interface Inquiry {
   speakers: Speaker;
   reason: string;
   pay: string;
+
   //     host: string;
   //     manager_name: string;
   //     manager_phone: string;

@@ -12,8 +12,8 @@ interface CardItemProps {
   slides: Speaker[];
   title: string;
   target: string;
+  created_at: string;
 }
-
 export default function CardItem({ slides, title, target }: CardItemProps) {
   const swiperRef = useRef<SwiperClass | null>(null);
   const [liked, setLiked] = useState<Set<number | string>>(new Set());
@@ -26,6 +26,11 @@ export default function CardItem({ slides, title, target }: CardItemProps) {
     });
   };
 
+  // ✅ 최신순 정렬 (created_at 기준, 최신이 위로)
+  const sortedSlides = [...slides].sort((a, b) => {
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
   return (
     <div className="px-4 transform">
       {/* 제목 */}
@@ -34,11 +39,11 @@ export default function CardItem({ slides, title, target }: CardItemProps) {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4">
-        {slides.map((speaker) => (
-          <div className="relative mb-8">
+        {sortedSlides.map((speaker) => (
+          <div key={speaker.id} className="relative mb-8">
             {/* 카드 본문 */}
             <Link href={`/${target}s/${speaker.id}`} className="no-underline">
-              <div className="aspect-[3/4]  md:min-h-[245px]  w-full relative rounded-2xl overflow-hidden">
+              <div className="aspect-[3/4] md:min-h-[245px] w-full relative rounded-2xl overflow-hidden">
                 <Image
                   src={speaker.profile_image && (speaker.profile_image.startsWith("http") || speaker.profile_image.startsWith("/")) ? speaker.profile_image : "/default.png"}
                   alt={speaker.name}
@@ -52,7 +57,7 @@ export default function CardItem({ slides, title, target }: CardItemProps) {
                 <p className="h-12 text-sm">{speaker.short_desc.length > 30 ? speaker.short_desc.slice(0, 25) + "..." : speaker.short_desc}</p>
                 <div className="flex flex-wrap md:gap-2 gap-1 mt-2 max-h-[64px] overflow-hidden">
                   {(speaker.tags ?? []).map((t) => (
-                    <span key={t} className=" text-zinc-600 bg-slate-200 rounded-full px-2 md:px-3 py-1 md:text-sm text-xs md:block hidden">
+                    <span key={t} className="text-zinc-600 bg-slate-200 rounded-full px-2 md:px-3 py-1 md:text-sm text-xs md:block hidden">
                       {t}
                     </span>
                   ))}
