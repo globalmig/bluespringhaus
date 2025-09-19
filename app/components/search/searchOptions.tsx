@@ -49,7 +49,7 @@ type CategoryOption = {
   icon: ReactNode; // JSX 아이콘
 };
 
-type BudgetOption = { label: string; icon: ReactNode; bgClass: string };
+type BudgetOption = { label: string; icon: ReactNode; bgClass: string; value: string };
 
 export type SearchConfig = {
   recommendOptions: RecommendOption[];
@@ -59,10 +59,12 @@ export type SearchConfig = {
 
 // 공통 예산
 const commonBudget: BudgetOption[] = [
-  { label: "~300만원", bgClass: "bg-[#E6FAF5]", icon: <FaMoneyBillWave className="w-full h-full" color="#84dbc6" /> },
-  { label: "300~500만원", bgClass: "bg-[#e6f2fd]", icon: <FaMoneyCheckAlt className="w-full h-full" color="#87baec" /> },
-  { label: "500~1000만원", bgClass: "bg-[#FFE4E1]", icon: <FaTrophy className="w-full h-full" color="#ec8977" /> },
-  { label: "1000만원 이상", bgClass: "bg-[#FFFDE6]", icon: <FaCrown className="w-full h-full" color="#e0d665" /> },
+  { label: "전제", value: "", bgClass: "bg-[#F3E8FF]", icon: <FaMoneyBillWave className="w-full h-full" color="#b787eb" /> },
+
+  { label: "~300만원", value: "300", bgClass: "bg-[#E6FAF5]", icon: <FaMoneyBillWave className="w-full h-full" color="#84dbc6" /> },
+  { label: "300~500만원", value: "300-500", bgClass: "bg-[#e6f2fd]", icon: <FaMoneyCheckAlt className="w-full h-full" color="#87baec" /> },
+  { label: "500~1000만원", value: "500-1000", bgClass: "bg-[#FFE4E1]", icon: <FaTrophy className="w-full h-full" color="#ec8977" /> },
+  { label: "1000만원 이상", value: "1000", bgClass: "bg-[#FFFDE6]", icon: <FaCrown className="w-full h-full" color="#e0d665" /> },
 ];
 
 export const SEARCH_OPTIONS: Record<"speaker" | "artist", SearchConfig> = {

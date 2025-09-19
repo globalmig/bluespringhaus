@@ -5,7 +5,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const supabase = createPagesServerClient({ req, res });
 
   if (req.method === "POST") {
-    const { type, name, gallery_images, short_desc, full_desc, intro_video, career, tags, email, profile_image, is_recommended } = req.body;
+    const { type, name, gallery_images, short_desc, full_desc, intro_video, career, tags, email, profile_image, is_recommended, pay } = req.body;
 
     console.log("👉 받은 데이터:", req.body);
 
@@ -22,6 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       gallery_images: Array.isArray(gallery_images) ? gallery_images : [],
       short_desc,
       full_desc,
+      pay,
       intro_video: typeof intro_video === "string" ? intro_video.split(",").map((v: string) => v.trim()) : Array.isArray(intro_video) ? intro_video : [],
       career,
       tags: typeof tags === "string" ? tags.split(",").map((tag: string) => tag.trim()) : Array.isArray(tags) ? tags : [],

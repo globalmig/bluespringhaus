@@ -21,8 +21,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   // budget이 있으면 is_recommended 배열에 budget이 포함되는지 검사
+  // if (budget && typeof budget === "string") {
+  //   query = query.contains("is_recommended", [budget]);
+  // }
   if (budget && typeof budget === "string") {
-    query = query.contains("is_recommended", [budget]);
+    query = query.eq("pay", budget);
   }
 
   const { data, error } = await query.range(0, 9);

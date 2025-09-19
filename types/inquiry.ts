@@ -12,6 +12,7 @@ export interface Speaker {
   email: string;
   intro_book: string[];
   is_recommended: string[];
+  pay: string;
 }
 
 export interface Artists {
@@ -28,6 +29,7 @@ export interface Artists {
   email: string;
   intro_book: string[];
   is_recommended: string[];
+  pay: string;
 }
 
 export interface Inquiry {
@@ -41,6 +43,7 @@ export interface Inquiry {
   token: string | null;
   speakers: Speaker;
   reason: string;
+  pay: string;
   //     host: string;
   //     manager_name: string;
   //     manager_phone: string;

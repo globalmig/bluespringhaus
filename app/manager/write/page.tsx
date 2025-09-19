@@ -16,6 +16,7 @@ const initialForm = {
   email: "",
   profile_image: null as FileList | null,
   is_recommended: [] as string[],
+  pay: "",
 };
 
 const RECOMMEND_SPEAKER_TAGS = [
@@ -44,6 +45,14 @@ const RECOMMEND_ARTIST_TAGS = [
   { label: "글로벌 아이돌", value: "globalIdolArtists" },
   { label: "방송인", value: "broadcasters" },
   { label: "인기 유튜버", value: "topYoutubers" },
+];
+
+const budgetOptions = [
+  { label: "전체", value: "", bgClass: "bg-[#F3E8FF]" },
+  { label: "~300만원", value: "0-300", bgClass: "bg-[#E6FAF5]" },
+  { label: "300~500만원", value: "300-500", bgClass: "bg-[#e6f2fd]" },
+  { label: "500~1000만원", value: "500-1000", bgClass: "bg-[#FFE4E1]" },
+  { label: "1000만원 이상", value: "1000", bgClass: "bg-[#FFFDE6]" },
 ];
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
@@ -81,9 +90,9 @@ export default function Write() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const target = e.target;
-    const { name, type } = target;
+    const { name, type } = target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
 
     if (type === "file") {
       setForm((prev) => ({
@@ -97,7 +106,7 @@ export default function Write() {
         [name]: checked,
       }));
     } else {
-      const value = (target as HTMLInputElement).value;
+      const value = (target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value;
       setForm((prev) => ({
         ...prev,
         [name]: value,
@@ -288,6 +297,17 @@ export default function Write() {
             <label>
               프로필 이미지
               <input name="profile_image" type="file" onChange={handleChange} className="border p-2 rounded w-full" />
+            </label>
+
+            <label className="block">
+              섭외비용
+              <select name="pay" value={form.pay} onChange={handleChange} className="border p-2 rounded w-full">
+                {budgetOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </label>
 
             <button type="submit" className="bg-black text-white py-2 rounded">

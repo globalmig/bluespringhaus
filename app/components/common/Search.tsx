@@ -11,14 +11,14 @@ type SearchType = "artist" | "speaker";
 type Props = {
   isMoOpen: boolean;
   setMoOpen: (v: boolean) => void;
-  type: SearchType;
+  target?: SearchType;
 };
 
-export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }: { isMoOpen: boolean; setMoOpen: (v: boolean) => void; target: "speaker" | "artist" }) {
+export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }: Props) {
   const router = useRouter();
 
-  // 타입별 옵션 세트
-  const { recommendOptions, categoryOptions, budgetOptions } = SEARCH_OPTIONS[target];
+  // 타입별 옵션 세트 - null 체크 추가
+  const { recommendOptions = [], categoryOptions = [], budgetOptions = [] } = SEARCH_OPTIONS?.[target] || {};
 
   // 열림 상태
   const [openPcMenu, setOpenPcMenu] = useState<MenuKey | null>(null);
@@ -27,6 +27,7 @@ export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }
   const togglePcMenu = useCallback((key: MenuKey | null) => {
     setOpenPcMenu((prev) => (prev === key ? null : key));
   }, []);
+
   const toggleMoMenu = useCallback((key: MenuKey | null) => {
     setOpenMoMenu((prev) => (prev === key ? null : key));
   }, []);
@@ -59,7 +60,7 @@ export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }
     params.set("target", target);
 
     router.push(`/s?${params.toString()}`);
-  }, [keyword, categoryValue, selectedBudgetLabel, router]);
+  }, [keyword, categoryValue, selectedBudgetLabel, router, target]);
 
   // 바깥 클릭 닫기
   useEffect(() => {
@@ -96,6 +97,7 @@ export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }
           </div>
         </div>
       </div>
+
       {/* ===== 모바일: 키워드 ===== */}
       <div
         className={`md:hidden relative group flex-col text-start border-r pr-6 py-4 rounded-full pl-10 cursor-pointer dropdown-trigger h-full justify-center ${
@@ -122,21 +124,6 @@ export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }
           }}
         />
       </div>
-      {/* {openMoMenu === "recommend" && (
-        <div className="md:hidden block bg-white shadow-lg rounded-xl mt-4 w-full dropdown-menu">
-          <ul className="my-4 mx-4">
-            {recommendOptions.map((item, idx) => (
-              <li key={idx} className="hover:bg-slate-300 cursor-pointer flex items-center py-4 px-4 rounded-md" onClick={() => setKeyword(item.title)}>
-                <div className={`${item.bgClass} w-18 h-12 rounded p-2`}>{item.icon}</div>
-                <div className="flex flex-col text-sm ml-4">
-                  <p className="font-bold">{item.title}</p>
-                  <p className="text-slate-500">{item.subTitle}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )} */}
 
       {/* ===== 모바일: 분야 ===== */}
       <div
@@ -261,21 +248,6 @@ export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }
             }}
           />
         </div>
-        {/* {openPcMenu === "recommend" && (
-          <div className="hidden md:block absolute left-2 top-20 z-10 bg-white shadow-lg rounded-xl mt-4 w-full max-w-[32%] dropdown-menu">
-            <ul className="my-4 mx-4">
-              {recommendOptions.map((item, idx) => (
-                <li key={idx} className="hover:bg-slate-300 cursor-pointer flex items-center py-4 px-4 rounded-md" onClick={() => setKeyword(item.title)}>
-                  <div className={`${item.bgClass} w-18 h-12 rounded p-2`}>{item.icon}</div>
-                  <div className="flex flex-col text-sm ml-4">
-                    <p className="font-bold">{item.title}</p>
-                    <p className="text-slate-500">{item.subTitle}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )} */}
 
         {/* PC: 분야 */}
         <div
@@ -333,12 +305,12 @@ export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }
           {openPcMenu === "budget" && (
             <div className="hidden md:block absolute top-20 right-4 z-40 bg-white shadow-lg rounded-xl mt-4 w-full max-w-[90%] dropdown-menu">
               <ul className="my-4 mx-4">
-                {budgetOptions.map(({ label, icon, bgClass }) => (
+                {budgetOptions.map(({ label, icon, bgClass, value }) => (
                   <li
-                    key={label}
+                    key={value}
                     className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md"
                     onClick={() => {
-                      setSelectedBudgetLabel(label);
+                      setSelectedBudgetLabel(value);
                       setOpenPcMenu(null);
                     }}
                   >
