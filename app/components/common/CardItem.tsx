@@ -12,7 +12,7 @@ interface CardItemProps {
   slides: Speaker[];
   title: string;
   target: string;
-  created_at: string;
+  created_at?: string;
 }
 export default function CardItem({ slides, title, target }: CardItemProps) {
   const swiperRef = useRef<SwiperClass | null>(null);
