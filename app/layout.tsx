@@ -50,7 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Gnb />
 
             {/* 콘텐츠 */}
-            <main className="flex-grow w-full mx-auto min-h-[1200px]">
+            <main className="flex-grow w-full mx-auto min-h-screen">
               {children}
               <ChannelProvider />
             </main>

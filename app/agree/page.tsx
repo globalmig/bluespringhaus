@@ -4,65 +4,154 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function Agree() {
   const [termsChecked, setTermsChecked] = useState(false);
   const [privacyChecked, setPrivacyChecked] = useState(false);
   const [thirdPartyChecked, setThirdPartyChecked] = useState(false);
-
   const allAgreed = termsChecked && privacyChecked && thirdPartyChecked;
 
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [rePw, setRePw] = useState("");
-
   const allInput = email && pw && rePw && pw === rePw;
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [infoMsg, setInfoMsg] = useState<string | null>(null);
+
+  // 가입 후 “메일 확인 대기” 단계 표시
+  const [waitingVerify, setWaitingVerify] = useState(false);
+
+  // 재전송 쿨다운(초)
+  const [cooldown, setCooldown] = useState(0);
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const t = setInterval(() => setCooldown((c) => c - 1), 1000);
+    return () => clearInterval(t);
+  }, [cooldown]);
 
   const router = useRouter();
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault(); // 폼 제출 막기
-    const trimmedEmail = email.trim(); // ← 이거 꼭 추가
+  const emailRedirectTo = (process.env.NEXT_PUBLIC_SITE_URL || "") + "/loginFinal";
 
-    // 1️⃣ 가입 전 profiles 테이블에서 이메일 중복 확인
-    const { data: existing, error: profileError } = await supabase.from("profiles").select("email").eq("email", trimmedEmail).single();
+  const safeAlert = (msg: string) => {
+    setInfoMsg(msg);
+  };
 
-    if (existing) {
-      alert("이미 가입된 이메일입니다. 로그인 또는 비밀번호 찾기를 이용해주세요.");
-      return;
+  const handleResend = async (targetEmail: string) => {
+    if (!targetEmail) return;
+    if (cooldown > 0) return;
+
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: targetEmail.trim(),
+      options: { emailRedirectTo },
+    });
+
+    if (error) {
+      safeAlert(`재전송 실패: ${error.message}`);
+    } else {
+      safeAlert("인증 메일을 다시 보냈습니다. 메일함(스팸함 포함)을 확인해 주세요.");
+      setCooldown(60);
     }
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setInfoMsg(null);
+
+    const trimmedEmail = email.trim();
+
+    // (선택) profiles 중복 확인은 경합/지연으로 신뢰도가 낮아 생략하거나 참고용으로만 쓰세요.
+    // Auth 레벨에서 이미 존재여부를 판단하는 쪽이 확실합니다.
 
     // 2️⃣ Supabase 유저 등록
     const { data, error } = await supabase.auth.signUp({
       email: trimmedEmail,
       password: pw,
+      options: { emailRedirectTo },
     });
 
     if (error) {
-      if (error.message.includes("already registered")) {
-        alert("이미 가입된 이메일입니다. 로그인 또는 비밀번호 찾기를 이용해주세요.");
+      // 이미 가입된 이메일 케이스 → 인증 메일 재전송 시도
+      const msg = (error.message || "").toLowerCase();
+      if (error.status === 422 || msg.includes("already")) {
+        const { error: resendErr } = await supabase.auth.resend({
+          type: "signup",
+          email: trimmedEmail,
+          options: { emailRedirectTo },
+        });
+        if (resendErr) {
+          safeAlert(`이미 가입된 이메일입니다. 재전송도 실패: ${resendErr.message}`);
+        } else {
+          safeAlert("이미 가입된 이메일입니다. 인증 메일을 다시 보냈습니다.");
+          setWaitingVerify(true);
+          setCooldown(60);
+        }
       } else {
-        alert("회원가입에 실패했습니다: " + error.message);
+        safeAlert("회원가입에 실패했습니다: " + error.message);
       }
+      setIsSubmitting(false);
       return;
     }
 
+    // 3️⃣ 약관 동의 쿠키 설정
     const r = await fetch("/api/agree/accept", { method: "POST" });
     if (!r.ok) {
-      alert("동의 쿠키 설정에 실패했습니다.");
-      return;
+      safeAlert("동의 쿠키 설정에 실패했습니다. 그래도 인증 완료 후 로그인은 가능합니다.");
     }
 
-    router.push("/loginFinal");
+    // 4️⃣ 인증 대기 화면으로 전환 (로그인 페이지로 곧장 보내지 않고, 먼저 인증 유도)
+    setWaitingVerify(true);
+    safeAlert("입력하신 이메일로 인증 링크를 보냈습니다. 메일함을 확인해 주세요.");
+    setIsSubmitting(false);
   };
+
+  // 인증 대기 화면
+  if (waitingVerify) {
+    return (
+      <div className="flex flex-col min-h-screen items-center w-full max-w-[640px] px-4 py-10 mx-auto">
+        <h1 className="text-3xl font-bold mb-2">이메일 인증을 완료해 주세요</h1>
+        <p className="text-slate-600 mb-6">{infoMsg ?? "메일함(스팸함 포함)에서 인증 메일을 확인하고 링크를 클릭해 주세요."}</p>
+
+        <Image src="/image/auth/mail_check.jpg" alt="이메일 인증" width={200} height={200} className="w-full max-w-[280px] mx-auto" />
+
+        <div className="w-full space-y-4 mt-4">
+          <button
+            onClick={() => handleResend(email)}
+            disabled={cooldown > 0}
+            className={`w-full h-12 rounded-xl font-semibold border transition ${cooldown > 0 ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "border-gray-300  text-zinc-800 hover:bg-zinc-100"}`}
+          >
+            {cooldown > 0 ? `재전송 (${cooldown}s)` : "인증 메일 재전송"}
+          </button>
+
+          <button onClick={() => router.push("/login")} className="w-full h-12 rounded-xl  border border-gray-300 hover:bg-blue-900 bg-blue-700 text-white">
+            이미 인증을 마쳤어요! (로그인하기)
+          </button>
+
+          <div className="text-sm text-slate-500 text-center py-4">
+            메일이 계속 안 온다면, 다른 이메일로 다시 가입하거나
+            <br />
+            비밀번호 재설정을 시도해 보세요.
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen items-center w-full max-w-[1440px] px-4 py-10 mx-auto">
       <h1 className="text-3xl font-bold mb-2">약관동의</h1>
       <p className="text-slate-600 mb-6">필수항목 및 선택항목 약관에 동의해주세요.</p>
 
-      {/* 약관 1~3 내용 */}
+      {infoMsg && <div className="mb-6 w-full max-w-[600px] rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700">{infoMsg}</div>}
+
       {[
+        // 약관 섹션들 (원문 유지)
         {
           label: "[필수] 서비스 이용약관 동의",
           checked: termsChecked,
@@ -136,11 +225,12 @@ export default function Agree() {
         </section>
       ))}
 
-      {/* 입력 폼 노출 조건 */}
+      {/* 입력 폼 */}
       {allAgreed && (
         <section className="w-full max-w-[600px] flex flex-col justify-center items-center mt-20 border-t-2 pt-20">
           <h2 className="text-3xl font-bold mb-2">회원정보 입력</h2>
           <p className="text-slate-600 mb-6">필수항목 및 선택항목 약관에 동의해주세요.</p>
+
           <form className="w-full flex flex-col gap-6" onSubmit={handleSignUp}>
             <div>
               <p className="pl-2 text-lg">이메일</p>
@@ -167,23 +257,21 @@ export default function Agree() {
               <input
                 type="password"
                 value={rePw}
-                placeholder=""
                 onChange={(e) => setRePw(e.target.value)}
                 className={`w-full border rounded-lg h-16 px-4 focus:outline-none focus:ring-2 ${rePw && pw !== rePw ? "ring-red-400 border-red-400" : "focus:ring-blue-400 focus:border-blue-400"}`}
                 required
               />
               {rePw && pw !== rePw && <p className="text-red-500 text-sm pl-2 mt-1">비밀번호가 일치하지 않습니다.</p>}
             </div>
-            {/* 가입하기 버튼 */}
+
             <div className="w-full flex justify-center mt-10 mb-32">
               <button
-                disabled={!(allInput && allAgreed)}
+                disabled={!(allInput && allAgreed) || isSubmitting}
                 type="submit"
                 className={`mt-8 text-lg font-semibold px-8 py-4 rounded-xl transition-all w-full max-w-[600px]
-      ${allInput && allAgreed ? "bg-blue-700 text-white hover:bg-gray-800" : "bg-gray-300 text-gray-500 cursor-not-allowed"}
-    `}
+                  ${allInput && allAgreed && !isSubmitting ? "bg-blue-700 text-white hover:bg-gray-800" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}
               >
-                가입하기
+                {isSubmitting ? "처리 중..." : "가입하기"}
               </button>
             </div>
           </form>

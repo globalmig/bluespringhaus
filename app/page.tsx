@@ -52,7 +52,7 @@ export default function Home() {
     <div className="main w-full justify-center items-center mx-auto min-h-screen">
       <div className="relative h-[280px] md:h-[600px] slider duration-300 transform ease-in-out  mb-12 md:mb-8 z-40">
         <div className="md:absolute w-full md:bottom-1 ">
-          <div className="relative w-full z-40">
+          <div className="relative w-full z-40 px-4">
             <Search isMoOpen={isMoOpen} setMoOpen={setMoOpen} target={"speaker"} />
           </div>
         </div>
