@@ -1,7 +1,7 @@
 "use client";
 
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useMemo, useCallback } from "react";
 import { FaSearch } from "react-icons/fa";
 import { SEARCH_OPTIONS } from "../search/searchOptions";
 
@@ -14,11 +14,32 @@ type Props = {
   target?: SearchType;
 };
 
+// 옵션 타입 (필요한 키만 명시)
+type Option = {
+  label: string;
+  value: string;
+  icon?: React.ReactNode;
+  bgClass?: string;
+  desc?: string;
+};
+
 export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }: Props) {
   const router = useRouter();
 
-  // 타입별 옵션 세트 - null 체크 추가
-  const { recommendOptions = [], categoryOptions = [], budgetOptions = [] } = SEARCH_OPTIONS?.[target] || {};
+  // 타입별 옵션 세트 - null/undefined 방어
+  const {
+    recommendOptions = [],
+    categoryOptions = [],
+    budgetOptions = [],
+  }: {
+    recommendOptions: Option[];
+    categoryOptions: Option[];
+    budgetOptions: Option[];
+  } = (SEARCH_OPTIONS as Record<SearchType, any>)?.[target] || {
+    recommendOptions: [],
+    categoryOptions: [],
+    budgetOptions: [],
+  };
 
   // 열림 상태
   const [openPcMenu, setOpenPcMenu] = useState<MenuKey | null>(null);
@@ -34,8 +55,13 @@ export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }
 
   // 검색 상태
   const [keyword, setKeyword] = useState("");
-  const [selectedCategoryLabel, setSelectedCategoryLabel] = useState("분야 선택");
-  const [selectedBudgetLabel, setSelectedBudgetLabel] = useState("섭외비 선택");
+  // ✅ value를 상태로 저장
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedBudget, setSelectedBudget] = useState<string>("");
+
+  // ✅ 표시용 label 계산
+  const selectedCategoryLabel = useMemo(() => categoryOptions.find((c) => c.value === selectedCategory)?.label || "분야 선택", [categoryOptions, selectedCategory]);
+  const selectedBudgetLabel = useMemo(() => budgetOptions.find((b) => b.value === selectedBudget)?.label || "섭외비 선택", [budgetOptions, selectedBudget]);
 
   const closeAll = useCallback(() => {
     setMoOpen(false);
@@ -45,28 +71,22 @@ export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }
 
   const onOpenMobileBar = () => setMoOpen(!isMoOpen);
 
-  // label -> value 매핑
-  const categoryValue = useMemo(() => {
-    const found = categoryOptions.find((c) => c.label === selectedCategoryLabel);
-    return found?.value ?? "";
-  }, [categoryOptions, selectedCategoryLabel]);
-
-  // 검색 실행
+  // 검색 실행 (URL엔 value가 들어감)
   const handleSearch = useCallback(() => {
     const params = new URLSearchParams();
     params.set("location", keyword);
-    params.set("category", categoryValue);
-    params.set("budget", selectedBudgetLabel);
+    params.set("category", selectedCategory); // ✅ value
+    params.set("budget", selectedBudget); // ✅ value
     params.set("target", target);
 
     router.push(`/s?${params.toString()}`);
-  }, [keyword, categoryValue, selectedBudgetLabel, router, target]);
+  }, [keyword, selectedCategory, selectedBudget, router, target]);
 
-  // 바깥 클릭 닫기
+  // 바깥 클릭 시 드롭닫기
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!target.closest(".dropdown-menu") && !target.closest(".dropdown-trigger")) {
+      const el = e.target as HTMLElement;
+      if (!el.closest(".dropdown-menu") && !el.closest(".dropdown-trigger")) {
         setOpenPcMenu(null);
         setOpenMoMenu(null);
       }
@@ -77,8 +97,8 @@ export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }
 
   return (
     <div className="wrap">
+      {/* 상단 모바일 토글 바 */}
       <div className="w-full z-40 bg-zinc-100 md:bg-transparent my-0 px-4 h-[72px] md:hidden ">
-        {/* 모바일 상단 토글 버튼 */}
         <div className="wrap w-full max-w-[1440px] mx-auto mb-0 md:mb-2 rounded-full gap-4 justify-center items-center relative">
           <div className={`absolute w-full ${openMoMenu === "recommend" || openMoMenu === null ? "bg-red-300" : "bg-zinc-200"} transform duration-300 ease-out`} />
           <div className={`w-full flex ${isMoOpen ? "justify-end" : "justify-center"}`}>
@@ -141,12 +161,12 @@ export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }
       {openMoMenu === "category" && (
         <div className="md:hidden block bg-white shadow-lg rounded-xl mt-4 w-full max-h-[400px] overflow-y-auto dropdown-menu">
           <ul className="my-4 mx-4">
-            {categoryOptions.map((item, idx) => (
+            {categoryOptions.map((item) => (
               <li
-                key={idx}
+                key={item.value}
                 className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md"
                 onClick={() => {
-                  setSelectedCategoryLabel(item.label);
+                  setSelectedCategory(item.value); // ✅ value 저장
                   setOpenMoMenu(null);
                 }}
               >
@@ -181,12 +201,12 @@ export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }
       {openMoMenu === "budget" && (
         <div className="md:hidden block bg-white shadow-lg rounded-xl mt-4 w-full dropdown-menu">
           <ul className="my-4 mx-4">
-            {budgetOptions.map((item, idx) => (
+            {budgetOptions.map((item) => (
               <li
-                key={idx}
+                key={item.value}
                 className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md"
                 onClick={() => {
-                  setSelectedBudgetLabel(item.label);
+                  setSelectedBudget(item.value); // ✅ value 저장
                   setOpenMoMenu(null);
                 }}
               >
@@ -265,12 +285,12 @@ export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }
         {openPcMenu === "category" && (
           <div className="hidden md:block absolute top-20 z-10 left-1/2 -translate-x-1/2 bg-white shadow-lg rounded-xl mt-4 w-full max-w-[32%] max-h-[400px] overflow-y-auto dropdown-menu">
             <ul className="my-4 mx-4">
-              {categoryOptions.map((item, idx) => (
+              {categoryOptions.map((item) => (
                 <li
-                  key={idx}
+                  key={item.value}
                   className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md"
                   onClick={() => {
-                    setSelectedCategoryLabel(item.label);
+                    setSelectedCategory(item.value); // ✅ value 저장
                     setOpenPcMenu(null);
                   }}
                 >
@@ -305,18 +325,18 @@ export default function SearchSearch({ isMoOpen, setMoOpen, target = "speaker" }
           {openPcMenu === "budget" && (
             <div className="hidden md:block absolute top-20 right-4 z-40 bg-white shadow-lg rounded-xl mt-4 w-full max-w-[90%] dropdown-menu">
               <ul className="my-4 mx-4">
-                {budgetOptions.map(({ label, icon, bgClass, value }) => (
+                {budgetOptions.map((item) => (
                   <li
-                    key={value}
+                    key={item.value}
                     className="hover:bg-slate-300 cursor-pointer flex items-center gap-2 py-4 px-4 rounded-md"
                     onClick={() => {
-                      setSelectedBudgetLabel(value);
+                      setSelectedBudget(item.value); // ✅ value 저장
                       setOpenPcMenu(null);
                     }}
                   >
-                    <div className={`${bgClass} w-10 h-10 p-2 rounded flex items-center justify-center text-white font-bold`}>{icon}</div>
+                    <div className={`${item.bgClass} w-10 h-10 p-2 rounded flex items-center justify-center text-white font-bold`}>{item.icon}</div>
                     <div className="flex flex-col text-sm">
-                      <p className="font-bold">{label}</p>
+                      <p className="font-bold">{item.label}</p>
                     </div>
                   </li>
                 ))}
