@@ -87,6 +87,8 @@ export const SEARCH_OPTIONS: Record<"speaker" | "artist", SearchConfig> = {
     //   { label: "글로벌", value: "global", desc: "국제정세, 해외 시장 진출 등", bgClass: "bg-[#E6FAF5]", icon: <AiOutlineGlobal color="#84dbc6" className="w-full h-full" /> },
     // ],
     categoryOptions: [
+      { label: "전체", value: "", desc: "전체", bgClass: "bg-[#F3E8FF]", icon: <FaRegUserCircle color="#b787eb" className="w-full h-full" /> },
+
       { label: "인문 & 철학", value: "humanities", desc: "인문학,철학,심리학,문학...", bgClass: "bg-[#e6f2fd]", icon: <IoBookOutline color="#87baec" className="w-full h-full" /> },
       { label: "인문학", value: "인문학", desc: "인간·문화·역사를 다각도로 탐구", bgClass: "bg-[#e6f2fd]", icon: <IoBookOutline color="#87baec" className="w-full h-full" /> },
       { label: "철학", value: "철학", desc: "존재·인식·윤리를 사유하고 토론", bgClass: "bg-[#e6f2fd]", icon: <IoBookOutline color="#87baec" className="w-full h-full" /> },
@@ -162,6 +164,8 @@ export const SEARCH_OPTIONS: Record<"speaker" | "artist", SearchConfig> = {
       { title: "세상을 움직이는 유튜버", subTitle: "콘텐츠로 세상을 바꾸는 크리에이터", bgClass: "bg-[#F3E8FF]", icon: <LuYoutube color="#c094ee" className="w-full h-full" /> },
     ],
     categoryOptions: [
+      { label: "전체", value: "", desc: "전체", bgClass: "bg-[#F3E8FF]", icon: <FaRegUserCircle color="#b787eb" className="w-full h-full" /> },
+
       { label: "인디", value: "indie", desc: "진심을 노래하는 감성 음악", bgClass: "bg-[#FFE4E1]", icon: <FaGuitar color="#ec8977" className="w-full h-full" /> },
       { label: "발라드", value: "ballad", desc: "감성을 자극하는 감미로운 목소리", bgClass: "bg-[#e6f2fd]", icon: <FaMicrophoneAlt color="#87baec" className="w-full h-full" /> },
       { label: "힙합", value: "hiphop", desc: "거침없는 플로우, 리듬 위의 메시지", bgClass: "bg-[#E6FAF5]", icon: <FaFire color="#84dbc6" className="w-full h-full" /> },

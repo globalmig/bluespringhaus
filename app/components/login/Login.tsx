@@ -1,9 +1,10 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation"; // ✅ 추가
 import Link from "next/link";
 import { useAuth } from "@/app/contexts/AuthContext";
+import KakaoLoginButton from "./KakaoLoginButton";
 
 interface LoginProps {
   onClose: () => void;
@@ -12,15 +13,22 @@ interface LoginProps {
 export default function Login({ onClose }: LoginProps) {
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { signIn } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams(); // ✅ 추가
+
+  // ✅ query → useSearchParams로 대체
+  useEffect(() => {
+    const err = searchParams?.get("error");
+    if (err) setError(err);
+  }, [searchParams]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
+    setError(null); // ✅ 빈 문자열 대신 null
 
     try {
       const { error, user } = await signIn(email, pw);
@@ -47,7 +55,7 @@ export default function Login({ onClose }: LoginProps) {
         onClose();
         router.refresh();
       }
-    } catch (err) {
+    } catch {
       setError("로그인 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
@@ -94,10 +102,22 @@ export default function Login({ onClose }: LoginProps) {
           </div>
         </form>
 
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+            <span className="block sm:inline">
+              {error === "access_denied" && "로그인이 취소되었습니다."}
+              {error === "invalid_state" && "보안 오류가 발생했습니다. 다시 시도해주세요."}
+              {error === "login_failed" && "로그인 처리 중 오류가 발생했습니다."}
+              {!["access_denied", "invalid_state", "login_failed"].includes(error) && error}
+            </span>
+          </div>
+        )}
+
         {/* 간편 로그인 자리 */}
-        {/* <div className="mt-12 w-full max-w-md">
-          <div className="bg-black text-white text-sm h-11 flex items-center justify-center rounded">간편로그인03</div>
-        </div> */}
+        <div className="mt-12 w-full max-w-md">
+          <KakaoLoginButton />
+          {/* <div className="bg-black text-white text-sm h-11 flex items-center justify-center rounded">간편로그인03</div> */}
+        </div>
       </div>
     </div>
   );

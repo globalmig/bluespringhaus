@@ -1,7 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ["bluespringhaus-rbt5.vercel.app", "kghdzpscgyzamqtorjuo.supabase.co"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "bluespringhaus-rbt5.vercel.app",
+      },
+      {
+        protocol: "https",
+        hostname: "kghdzpscgyzamqtorjuo.supabase.co",
+      },
+    ],
   },
 };
 

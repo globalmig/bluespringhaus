@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
 import "./globals.css";
 import Gnb from "./components/common/Gnb";
 import Footer from "./components/common/Footer";
-import Providers from "./providers";
+import Providers from "./providers"; // ← 이게 클라이언트라면 유지
 import "react-quill/dist/quill.snow.css";
 import ChannelProvider from "./components/common/ChannelProvider";
+import AuthSessionProvider from "./components/auth/AuthSessionProvider";
+// ✅ 추가 (클라 래퍼)
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.micimpact.net"),
@@ -14,13 +15,9 @@ export const metadata: Metadata = {
     template: "%s | 마이크임팩트",
   },
   description: "국내 최고 수준의 스피커/아티스트 섭외 플랫폼. 강연, 공연, 이벤트를 한 곳에서 진행해보세요!",
-  icons: {
-    icon: "/icon.png",
-  },
+  icons: { icon: "/icon.png" },
   keywords: ["마이크임팩트", "강연", "스피커", "아티스트", "섭외", "이벤트"],
-  alternates: {
-    canonical: "/",
-  },
+  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     url: "https://www.micimpact.net",
@@ -31,8 +28,7 @@ export const metadata: Metadata = {
     locale: "ko_KR",
   },
   other: {
-    // "google-site-verification": "구글_콘솔에서_받은_코드", // e.g. abcdefg...
-    "naver-site-verification": "456553f7539f16a6b9f5ff2cd3eaa9e5503bdc74", // e.g. 1234567...
+    "naver-site-verification": "456553f7539f16a6b9f5ff2cd3eaa9e5503bdc74",
   },
 };
 
@@ -44,21 +40,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" href="/icon.png" sizes="any" type="image/png" />
       </head>
       <body className="font-pretendard flex flex-col">
-        <Providers>
-          <div className="min-h-screen flex flex-col bg-[#FDFDFD]">
-            {/* GNB */}
-            <Gnb />
-
-            {/* 콘텐츠 */}
-            <main className="flex-grow w-full mx-auto min-h-screen">
-              {children}
-              <ChannelProvider />
-            </main>
-
-            {/* Footer */}
-            <Footer />
-          </div>
-        </Providers>
+        {/* ✅ 서버 컴포넌트에서 클라이언트 Provider로 감싸기 */}
+        <AuthSessionProvider>
+          <Providers>
+            <div className="min-h-screen flex flex-col bg-[#FDFDFD]">
+              <Gnb /> {/* ✅ Gnb는 "use client"여야 하고 여기 내부에서 렌더 */}
+              <main className="flex-grow w-full mx-auto min-h-screen">
+                {children}
+                <ChannelProvider />
+              </main>
+              <Footer />
+            </div>
+          </Providers>
+        </AuthSessionProvider>
       </body>
     </html>
   );
