@@ -1,58 +1,108 @@
+// app/components/login/Login.tsx
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { useRouter, useSearchParams } from "next/navigation"; // ✅ 추가
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/app/contexts/AuthContext";
 import KakaoLoginButton from "./KakaoLoginButton";
+import axios from "axios";
+import { useSession } from "next-auth/react";
 
-interface LoginProps {
-  onClose: () => void;
-}
+axios.defaults.withCredentials = true; // ✅ 전역으로 쿠키 포함
 
-export default function Login({ onClose }: LoginProps) {
+export default function Login({ onClose }: { onClose: () => void }) {
+  // ── local states (원래 있던 것 유지)
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
   const { signIn } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams(); // ✅ 추가
+  const searchParams = useSearchParams();
 
-  // ✅ query → useSearchParams로 대체
+  // ✅ NextAuth 세션 (카카오)
+  const { status } = useSession();
+
+  // ✅ 중복 동기화 방지 + 성공 여부 캐시
+  const syncing = useRef(false);
+  const syncedOnce = useRef(false);
+
+  // ✅ 쿼리의 next 파라미터
+  const next = searchParams?.get("next") || "";
+
+  // ✅ 카카오 로그인 완료되면 프로필 동기화 → next로 이동
+  useEffect(() => {
+    const run = async () => {
+      if (status !== "authenticated") return;
+      if (syncing.current || syncedOnce.current) return;
+
+      syncing.current = true;
+      try {
+        const res = await axios.post("/api/user/sync", {});
+        // 성공 플래그
+        syncedOnce.current = true;
+
+        // 모달 닫기
+        onClose?.();
+
+        // 이동 우선순위: next → refresh
+        if (next) {
+          router.push(next);
+        } else {
+          router.refresh();
+        }
+      } catch (e) {
+        console.error("user/sync 실패", e);
+        // 동기화 실패해도 로그인은 된 상태라 UX상 리다이렉트는 해줄 수 있음
+        if (next) router.push(next);
+      } finally {
+        syncing.current = false;
+      }
+    };
+    run();
+  }, [status, next, router, onClose]);
+
+  // ── 에러 쿼리 처리
   useEffect(() => {
     const err = searchParams?.get("error");
     if (err) setError(err);
   }, [searchParams]);
 
+  // ── 이메일/비번 로그인
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null); // ✅ 빈 문자열 대신 null
+    setError(null);
 
     try {
       const { error, user } = await signIn(email, pw);
       if (error) {
         setError(error.message);
-      } else {
-        if (user && !user.email_confirmed_at) {
-          alert("이메일 인증이 완료되지 않았습니다.");
-        }
+        return;
+      }
 
-        alert("로그인 성공!");
-        const userId = user?.id;
+      if (user && !user.email_confirmed_at) {
+        alert("이메일 인증이 완료되지 않았습니다.");
+      }
+
+      // 프로필 upsert (Supabase 경로)
+      if (user?.id) {
         const trimmedEmail = email.trim();
-
-        if (userId) {
-          const { error: upsertError } = await supabase.from("profiles").upsert({ id: userId, email: trimmedEmail }, { onConflict: "id" });
-
-          if (upsertError) {
-            console.error("❌ 프로필 upsert 실패:", upsertError);
-            alert("프로필 저장 중 문제가 발생했습니다.");
-          }
+        const { error: upsertError } = await supabase.from("profiles").upsert({ id: user.id, email: trimmedEmail }, { onConflict: "id" });
+        if (upsertError) {
+          console.error("❌ 프로필 upsert 실패:", upsertError);
         }
+      }
 
-        onClose();
+      alert("로그인 성공!");
+      onClose?.();
+
+      // next 우선 이동
+      if (next) {
+        router.push(next);
+      } else {
         router.refresh();
       }
     } catch {
@@ -71,13 +121,13 @@ export default function Login({ onClose }: LoginProps) {
         </svg>
       </button>
 
-      {/* PC 배경 비디오 */}
+      {/* 좌측 비디오 */}
       <div className="hidden lg:block lg:w-1/2 h-full">
         <video src="/videos/login_pc_2.mp4" autoPlay muted loop playsInline className="w-full h-full object-cover rounded-l-2xl" />
       </div>
 
       {/* 로그인 영역 */}
-      <div className="w-full  lg:w-1/2 flex flex-col justify-center items-center py-28 px-6">
+      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center py-28 px-6">
         <div className="w-full max-w-md text-center mb-8">
           <h3 className="text-3xl lg:text-4xl font-semibold mb-1">성공적인 섭외,</h3>
           <h3 className="text-3xl lg:text-4xl font-semibold">로그인으로 시작됩니다.</h3>
@@ -103,7 +153,7 @@ export default function Login({ onClose }: LoginProps) {
         </form>
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-4">
             <span className="block sm:inline">
               {error === "access_denied" && "로그인이 취소되었습니다."}
               {error === "invalid_state" && "보안 오류가 발생했습니다. 다시 시도해주세요."}
@@ -113,10 +163,9 @@ export default function Login({ onClose }: LoginProps) {
           </div>
         )}
 
-        {/* 간편 로그인 자리 */}
+        {/* 간편 로그인 */}
         <div className="mt-12 w-full max-w-md">
           <KakaoLoginButton />
-          {/* <div className="bg-black text-white text-sm h-11 flex items-center justify-center rounded">간편로그인03</div> */}
         </div>
       </div>
     </div>
