@@ -2,7 +2,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createPagesServerClient } from "@supabase/auth-helpers-nextjs"; // Supabase 세션 체크 용
 import { getServerSession } from "next-auth/next"; // NextAuth(카카오)
-import { authOptions } from "./auth/[...nextauth]"; // 경로 프로젝트에 맞게
+import { authOptions } from "@/lib/auth";
 import { createClient } from "@supabase/supabase-js"; // service-role
 import crypto from "crypto";
 
