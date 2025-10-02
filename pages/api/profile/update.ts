@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { createPagesServerClient } from "@supabase/auth-helpers-nextjs";
 import { createClient } from "@supabase/supabase-js";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../auth/[...nextauth]";
+import { authOptions } from "@/lib/auth";
 // ↓ 경로는 프로젝트에 맞게 (pages/api/auth/[...nextauth].ts 에서 export)
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
