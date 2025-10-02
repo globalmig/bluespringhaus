@@ -2,8 +2,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createPagesServerClient } from "@supabase/auth-helpers-nextjs"; // Supabase 세션 확인용
 import { getServerSession } from "next-auth/next"; // NextAuth(카카오) 세션 확인용
-import { authOptions } from "../auth/[...nextauth]"; // 경로 프로젝트에 맞추세요
+
 import { createClient } from "@supabase/supabase-js"; // service-role 클라이언트
+import { authOptions } from "@/lib/auth";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "GET") {

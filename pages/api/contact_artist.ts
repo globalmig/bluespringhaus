@@ -2,9 +2,10 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createPagesServerClient } from "@supabase/auth-helpers-nextjs";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "./auth/[...nextauth]"; // 경로 프로젝트에 맞게 조정
+
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
+import { authOptions } from "@/lib/auth";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // 캐시 금지

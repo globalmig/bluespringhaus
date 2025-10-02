@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { createPagesServerClient } from "@supabase/auth-helpers-nextjs";
 import { createClient } from "@supabase/supabase-js";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../auth/[...nextauth]";
+import { authOptions } from "@/lib/auth";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // 🔒 절대 캐시 금지 (권한/상태는 매번 달라질 수 있음)
