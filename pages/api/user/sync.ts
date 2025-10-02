@@ -1,8 +1,9 @@
 // pages/api/user/sync.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "../auth/[...nextauth]"; // 경로 맞게
+
 import { createClient } from "@supabase/supabase-js";
+import { authOptions } from "../auth/[...nextauth]";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
