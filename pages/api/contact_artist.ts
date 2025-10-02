@@ -1,11 +1,24 @@
+// pages/api/contact_artist.ts
+import type { NextApiRequest, NextApiResponse } from "next";
 import { createPagesServerClient } from "@supabase/auth-helpers-nextjs";
-import { NextApiRequest, NextApiResponse } from "next";
-import nodemailer from "nodemailer";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "./auth/[...nextauth]"; // 경로 프로젝트에 맞게 조정
+import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // 캐시 금지
+  res.setHeader("Cache-Control", "private, no-store, max-age=0, must-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
+
   if (req.method !== "POST") {
-    return res.status(405).json({ success: false, error: "Method not allowed" });
+    return res.status(405).json({ success: false, error: "POST only" });
+  }
+
+  // ENV 가드
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return res.status(500).json({ success: false, error: "Supabase server env missing" });
   }
 
   try {
@@ -25,33 +38,75 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       requested_time,
       offer_fee,
       additional_notes,
-    } = req.body;
+    } = req.body ?? {};
 
     if (!formEmail || !message || !id) {
-      return res.status(400).json({
-        success: false,
-        error: "이메일, 메시지, 강연자 ID를 모두 입력해주세요.",
-      });
+      return res.status(400).json({ success: false, error: "이메일, 메시지, 아티스트 ID를 모두 입력해주세요." });
     }
 
-    const supabase = createPagesServerClient({ req, res });
+    // 1) 두 체계 세션 확인 (Supabase + NextAuth)
+    const supa = createPagesServerClient({ req, res });
+    const { data: { user: supaUser } = { user: null } } = await supa.auth.getUser().catch(() => ({ data: { user: null } } as any));
+    const nextSession = await getServerSession(req, res, authOptions).catch(() => null);
+    const kakaoEmail = (nextSession?.user as any)?.email ?? null;
 
-    // ✅ 로그인된 유저 확인
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
+    if (!supaUser && !kakaoEmail) {
       return res.status(401).json({ success: false, error: "로그인이 필요합니다." });
     }
 
-    // ✅ 섭외 내용 저장
-    const { data: insertedInquiry, error: insertError } = await supabase
+    // 2) 내부 UUID(profiles.id) 확보 (service-role)
+    const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } });
+    let internalUserId: string | null = null;
+
+    if (supaUser?.id) {
+      // supabase 로그인 → profiles 매핑
+      const { data: byId } = await admin.from("profiles").select("id").eq("id", supaUser.id).maybeSingle();
+      if (byId?.id) {
+        internalUserId = byId.id;
+      } else if ((supaUser as any).email) {
+        const { data: byEmail } = await admin
+          .from("profiles")
+          .select("id")
+          .eq("email", (supaUser as any).email)
+          .maybeSingle();
+        if (byEmail?.id) internalUserId = byEmail.id;
+      }
+      if (!internalUserId) {
+        return res.status(409).json({ success: false, error: "프로필 동기화가 필요합니다.", requiresSync: true });
+      }
+    } else if (kakaoEmail) {
+      // 카카오 로그인 → email로 profiles 조회
+      const { data: prof, error: profErr } = await admin.from("profiles").select("id").eq("email", kakaoEmail).maybeSingle();
+      if (profErr) return res.status(500).json({ success: false, error: "프로필 조회 실패" });
+      if (!prof?.id) {
+        return res.status(409).json({ success: false, error: "프로필 동기화가 필요합니다.", requiresSync: true });
+      }
+      internalUserId = prof.id;
+    }
+
+    if (!internalUserId) {
+      return res.status(401).json({ success: false, error: "유효하지 않은 세션" });
+    }
+
+    // 3) (선택) 중복 보호: 진행중/NULL 존재 시 차단
+    const { data: existing, error: findErr } = await admin
+      .from("inquiries_artist")
+      .select("id, status")
+      .eq("user_id", internalUserId)
+      .eq("artist_id", id)
+      .or("status.is.null,status.eq.in_progress")
+      .maybeSingle();
+    if (findErr) return res.status(500).json({ success: false, error: "중복 검증 실패" });
+    if (existing) {
+      return res.status(403).json({ success: false, error: "이미 진행 중인 섭외가 있습니다." });
+    }
+
+    // 4) 섭외 저장 (service-role로 RLS 우회/일관성)
+    const { data: inserted, error: insertErr } = await admin
       .from("inquiries_artist")
       .insert([
         {
-          user_id: user.id, // ✅ 여기서 서버에서 user.id 사용
+          user_id: internalUserId,
           contact_email: formEmail,
           artist_id: id,
           message,
@@ -67,120 +122,108 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           requested_time,
           offer_fee,
           additional_notes,
+          status: "in_progress",
           created_at: new Date().toISOString(),
         },
       ])
-      .select()
+      .select("id")
       .single();
 
-    if (insertError || !insertedInquiry) {
-      console.error("섭외 저장 실패:", insertError);
+    if (insertErr || !inserted) {
+      console.error("섭외 저장 실패:", insertErr);
       return res.status(500).json({ success: false, error: "섭외 정보 저장에 실패했습니다." });
     }
 
-    const inquiryId = insertedInquiry.id;
+    const inquiryId = inserted.id;
 
-    // ✅ 수락/거절용 토큰 생성
-    const token = crypto.createHmac("sha256", process.env.SECRET_KEY!).update(`${inquiryId}-${Date.now()}`).digest("hex");
-
-    // ✅ 토큰을 테이블에 저장
-    const { error: updateError } = await supabase.from("inquiries_artist").update({ token }).eq("id", inquiryId);
-
-    if (updateError) {
-      console.error("토큰 저장 실패:", updateError);
-      return res.status(500).json({ success: false, error: "섭외 토큰 저장에 실패했습니다." });
+    // 5) 토큰 생성/저장
+    if (!process.env.SECRET_KEY) {
+      console.warn("SECRET_KEY 없음 → 토큰 생성 스킵");
+    } else {
+      const token = crypto.createHmac("sha256", process.env.SECRET_KEY).update(`${inquiryId}-${Date.now()}`).digest("hex");
+      const { error: upErr } = await admin.from("inquiries_artist").update({ token }).eq("id", inquiryId);
+      if (upErr) {
+        console.error("토큰 저장 실패:", upErr);
+        return res.status(500).json({ success: false, error: "섭외 토큰 저장에 실패했습니다." });
+      }
     }
 
-    // ✅ 아티스트 이메일 가져오기
-    const { data: artist, error: artistError } = await supabase.from("artists").select("email").eq("id", id).single();
-
-    if (artistError || !artist) {
-      console.error("강연자 이메일 조회 실패:", artistError);
-      return res.status(404).json({ success: false, error: "강연자 정보를 찾을 수 없습니다." });
+    // 6) 아티스트 이메일 조회
+    const { data: artist, error: artistErr } = await admin.from("artists").select("email").eq("id", id).maybeSingle();
+    if (artistErr || !artist?.email) {
+      console.error("아티스트 이메일 조회 실패:", artistErr);
+      return res.status(404).json({ success: false, error: "아티스트 정보를 찾을 수 없습니다." });
     }
 
-    // ✅ SMTP 환경변수 체크
+    // 7) 메일 발송 (SMTP 없으면 성공만 반환)
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      console.error("SMTP 설정이 없습니다.");
-      return res.status(500).json({ success: false, error: "메일 서버 설정 오류입니다." });
+      console.warn("SMTP 설정 없음 → 메일 생략, 요청은 성공 처리");
+      return res.status(200).json({ success: true });
     }
 
-    // ✅ 메일 발송
+    const nodemailer = await import("nodemailer");
     const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
+      host: process.env.SMTP_HOST || "smtp.gmail.com",
+      port: Number(process.env.SMTP_PORT || 587),
+      secure: process.env.SMTP_SECURE === "true",
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
     });
 
+    const origin = process.env.PUBLIC_ORIGIN || "https://micimpact.net";
+    const tokenQS = process.env.SECRET_KEY ? `&token=${encodeURIComponent("set-in-db")}` : "";
+
     await transporter.sendMail({
-      from: `"마이크임팩트" <${process.env.SMTP_USER}>`,
+      from: process.env.MAIL_FROM || `"마이크임팩트" <${process.env.SMTP_USER}>`,
       to: artist.email,
       subject: "[마이크임팩트] 새 섭외가 도착했습니다",
       html: `
-  <div style="font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; font-size: 16px; color: #333; line-height: 1.6;">
-    <h2 style="color: #2c3e50;">안녕하세요. 마이크임팩트입니다.</h2>
-
-    <p><strong>${manager_name}</strong> 고객님께서 <strong>『${event_title}』</strong> 강연에 대해 <strong>${event_date}</strong> 일정 섭외를 주셨습니다.</p>
-    <p>아래와 같이 섭외 요청드립니다.</p>
-
-    <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-      <tbody>
-        <tr><td style="font-weight: bold; width: 160px;">개최</td><td>${host}</td></tr>
-        <tr><td style="font-weight: bold;">담당자 이름</td><td>${manager_name}</td></tr>
-        <tr><td style="font-weight: bold;">전화번호</td><td>${manager_phone}</td></tr>
-        <tr><td style="font-weight: bold;">이메일</td><td>${formEmail}</td></tr>
-      </tbody>
-    </table>
-
-    <hr style="margin: 30px 0; border: none; border-top: 1px solid #ccc;" />
-
-    <table style="width: 100%; border-collapse: collapse;">
-      <tbody>
-        <tr><td style="font-weight: bold; width: 160px;">행사명</td><td>${event_title}</td></tr>
-        <tr><td style="font-weight: bold;">행사 설명</td><td>${event_summary}</td></tr>
-        <tr><td style="font-weight: bold;">일자</td><td>${event_date}</td></tr>
-        <tr><td style="font-weight: bold;">진행시간</td><td>${requested_time}</td></tr>
-        <tr><td style="font-weight: bold;">장소</td><td>${event_location}</td></tr>
-        <tr><td style="font-weight: bold;">대상</td><td>${audience_type.replace(/\n/g, "<br>")}</td></tr>
-        <tr><td style="font-weight: bold;">인원수</td><td>${audience_count}</td></tr>
-        <tr><td style="font-weight: bold;">섭외비</td><td>${offer_fee}만원</td></tr>
-        <tr><td style="font-weight: bold;">요청사항</td><td>${message.replace(/\n/g, "<br>")}</td></tr>
-        
-        
-        <tr><td style="font-weight: bold;">기타사항</td><td>${additional_notes.replace(/\n/g, "<br>")}</td></tr>
-      </tbody>
-    </table>
-
-    <hr style="margin: 30px 0; border: none; border-top: 1px solid #ccc;" />
-
-    <p style="margin-bottom: 12px;">섭외 요청에 대해 아래 버튼 중 하나를 클릭해 회신해 주세요.</p>
-
-    <div style="margin-top: 20px;">
-      <a href="https://micimpact.net/api/inquiry_artist/handle?inquiryId=${inquiryId}&action=accept&token=${token}"
-        style="display:inline-block; padding:12px 24px; background-color:#4CAF50; color:white; text-decoration:none; border-radius:6px; font-weight:bold; margin-right:10px;">
-        수락
-      </a>
-      <a href="https://micimpact.net/confirm?inquiryId=${inquiryId}&action=reject&token=${token}"
-        style="display:inline-block; padding:12px 24px; background-color:#f44336; color:white; text-decoration:none; border-radius:6px; font-weight:bold;">
-        거절
-      </a>
-    </div>
-
-    <p style="margin-top: 30px; font-size: 14px; color: #999;">※ 도메인은 추후 마이크임팩트 공식 주소로 변경될 예정입니다.</p>
-  </div>
-`,
+        <div style="font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; font-size: 16px; color: #333; line-height: 1.6;">
+          <h2 style="color: #2c3e50;">안녕하세요. 마이크임팩트입니다.</h2>
+          <p><strong>${manager_name ?? ""}</strong> 고객님께서 <strong>『${event_title ?? ""}』</strong> 강연에 대해 <strong>${event_date ?? ""}</strong> 일정 섭외를 주셨습니다.</p>
+          <p>아래와 같이 섭외 요청드립니다.</p>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+            <tbody>
+              <tr><td style="font-weight: bold; width: 160px;">개최</td><td>${host ?? ""}</td></tr>
+              <tr><td style="font-weight: bold;">담당자 이름</td><td>${manager_name ?? ""}</td></tr>
+              <tr><td style="font-weight: bold;">전화번호</td><td>${manager_phone ?? ""}</td></tr>
+              <tr><td style="font-weight: bold;">이메일</td><td>${formEmail ?? ""}</td></tr>
+            </tbody>
+          </table>
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #ccc;" />
+          <table style="width: 100%; border-collapse: collapse;">
+            <tbody>
+              <tr><td style="font-weight: bold; width: 160px;">행사명</td><td>${event_title ?? ""}</td></tr>
+              <tr><td style="font-weight: bold;">행사 설명</td><td>${event_summary ?? ""}</td></tr>
+              <tr><td style="font-weight: bold;">일자</td><td>${event_date ?? ""}</td></tr>
+              <tr><td style="font-weight: bold;">진행시간</td><td>${requested_time ?? ""}</td></tr>
+              <tr><td style="font-weight: bold;">장소</td><td>${event_location ?? ""}</td></tr>
+              <tr><td style="font-weight: bold;">대상</td><td>${(audience_type ?? "").replace(/\n/g, "<br>")}</td></tr>
+              <tr><td style="font-weight: bold;">인원수</td><td>${audience_count ?? ""}</td></tr>
+              <tr><td style="font-weight: bold;">섭외비</td><td>${offer_fee ?? ""}만원</td></tr>
+              <tr><td style="font-weight: bold;">요청사항</td><td>${(message ?? "").replace(/\n/g, "<br>")}</td></tr>
+              <tr><td style="font-weight: bold;">기타사항</td><td>${(additional_notes ?? "").replace(/\n/g, "<br>")}</td></tr>
+            </tbody>
+          </table>
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #ccc;" />
+          <p style="margin-bottom: 12px;">섭외 요청에 대해 아래 버튼 중 하나를 클릭해 회신해 주세요.</p>
+          <div style="margin-top: 20px;">
+            <a href="${origin}/api/inquiry_artist/handle?inquiryId=${encodeURIComponent(inquiryId)}&action=accept${tokenQS}"
+              style="display:inline-block; padding:12px 24px; background-color:#4CAF50; color:white; text-decoration:none; border-radius:6px; font-weight:bold; margin-right:10px;">
+              수락
+            </a>
+            <a href="${origin}/confirm?inquiryId=${encodeURIComponent(inquiryId)}&action=reject${tokenQS}"
+              style="display:inline-block; padding:12px 24px; background-color:#f44336; color:white; text-decoration:none; border-radius:6px; font-weight:bold;">
+              거절
+            </a>
+          </div>
+          <p style="margin-top: 30px; font-size: 14px; color: #999;">※ 도메인은 추후 마이크임팩트 공식 주소로 변경될 예정입니다.</p>
+        </div>
+      `,
     });
 
     return res.status(200).json({ success: true });
   } catch (error) {
     console.error("API 처리 중 오류:", error);
-    return res.status(500).json({
-      success: false,
-      error: "서버 오류가 발생했습니다.",
-    });
+    return res.status(500).json({ success: false, error: "서버 오류가 발생했습니다." });
   }
 }

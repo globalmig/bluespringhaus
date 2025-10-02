@@ -59,7 +59,7 @@ export type SearchConfig = {
 
 // 공통 예산
 const commonBudget: BudgetOption[] = [
-  { label: "전제", value: "", bgClass: "bg-[#F3E8FF]", icon: <FaMoneyBillWave className="w-full h-full" color="#b787eb" /> },
+  { label: "전체", value: "", bgClass: "bg-[#F3E8FF]", icon: <FaMoneyBillWave className="w-full h-full" color="#b787eb" /> },
 
   { label: "~300만원", value: "300", bgClass: "bg-[#E6FAF5]", icon: <FaMoneyBillWave className="w-full h-full" color="#84dbc6" /> },
   { label: "300~500만원", value: "300-500", bgClass: "bg-[#e6f2fd]", icon: <FaMoneyCheckAlt className="w-full h-full" color="#87baec" /> },

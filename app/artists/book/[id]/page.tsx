@@ -1,77 +1,125 @@
+// app/artists/book/[id]/page.tsx
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/app/contexts/AuthContext";
+import { useSession } from "next-auth/react";
 import axios from "axios";
 
 export default function BookPage() {
-  const params = useParams();
+  const params = useParams<{ id: string }>();
   const router = useRouter();
-  const { user, loading } = useAuth();
-  const id = params?.id as string | undefined;
 
-  const [isAllowed, setIsAllowed] = useState<boolean | null>(null);
+  // Supabase + NextAuth(Kakao)
+  const { user, loading: authLoading } = useAuth();
+  const { status } = useSession();
+  const sessionLoading = status === "loading";
+  const isAuthed = !!user || status === "authenticated";
+
+  const id = params?.id;
+
+  // true = 가능 / false = 불가 / null = 판단불가(비로그인/오류) / undefined = 초기
+  const [isAllowed, setIsAllowed] = useState<boolean | null | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
 
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+
   useEffect(() => {
     const checkEligibility = async () => {
-      if (!id || !user) return;
+      if (!id) {
+        setIsAllowed(null);
+        setErrorMessage("잘못된 접근입니다. 페이지 ID가 없습니다.");
+        return;
+      }
+      if (authLoading || sessionLoading) return;
+
+      if (!isAuthed) {
+        setIsAllowed(null);
+        setErrorMessage("로그인 후 섭외를 이용하실 수 있습니다.");
+        return;
+      }
 
       try {
-        const res = await axios.get(`/api/inquiry/check_artist?artistId=${id}`);
-
-        // ✅ API 응답 형식에 맞춘 처리
-        if (res.data.canApply) {
-          setIsAllowed(true);
-          setErrorMessage("");
-        } else {
-          setIsAllowed(false);
-          setErrorMessage(res.data.reason || "이미 진행중인 섭외가 있습니다");
-        }
+        const res = await axios.get("/api/inquiry/check_artist", {
+          params: { artistId: id, _t: Date.now() }, // 캐시 버스터
+          withCredentials: true,
+          headers: { "Cache-Control": "no-cache" },
+        });
+        if (!mounted.current) return;
+        setIsAllowed(res.data?.canApply === true);
+        setErrorMessage("");
       } catch (error: any) {
-        console.error("🚫 섭외 제한:", error);
-        setIsAllowed(false);
+        if (!mounted.current) return;
+        const status = error?.response?.status;
+        const data = error?.response?.data;
 
-        // ✅ 서버에서 반환된 에러 메시지 사용
-        if (error.response?.data?.error) {
-          setErrorMessage(error.response.data.error);
-        } else {
-          setErrorMessage("섭외 권한을 확인할 수 없습니다.");
+        // 409 → 프로필 동기화 후 재시도
+        if (status === 409 || data?.requiresSync) {
+          try {
+            await axios.post("/api/user/sync", {}, { withCredentials: true });
+            const r2 = await axios.get("/api/inquiry/check_artist", {
+              params: { artistId: id, _t: Date.now() },
+              withCredentials: true,
+              headers: { "Cache-Control": "no-cache" },
+            });
+            setIsAllowed(r2.data?.canApply === true);
+            setErrorMessage(r2.data?.canApply ? "" : r2.data?.reason || "섭외 권한을 확인할 수 없습니다.");
+          } catch (e2: any) {
+            setIsAllowed(null);
+            setErrorMessage(e2?.response?.data?.error || "섭외 권한을 확인할 수 없습니다.");
+          }
+          return;
         }
+
+        if (status === 403) {
+          setIsAllowed(false);
+          setErrorMessage(data?.reason || "이미 진행중인 섭외가 있습니다.");
+          return;
+        }
+
+        if (status === 401) {
+          setIsAllowed(null);
+          setErrorMessage("로그인이 필요합니다.");
+          return;
+        }
+
+        setIsAllowed(null);
+        setErrorMessage(data?.error || "섭외 권한을 확인할 수 없습니다.");
       }
     };
 
-    if (!loading && user) {
-      checkEligibility();
-    }
-  }, [id, user, loading]);
+    checkEligibility();
+  }, [id, isAuthed, authLoading, sessionLoading]);
 
-  // ✅ 로딩 중이거나 로그인하지 않은 경우
-  if (!id) {
-    return <p className="text-center py-20 text-lg">잘못된 접근입니다. 페이지 ID가 없습니다.</p>;
-  }
+  // ─ UI 분기 ─
+  if (!id) return <p className="text-center py-20 text-lg">잘못된 접근입니다. 페이지 ID가 없습니다.</p>;
 
-  if (loading || isAllowed === null) {
+  if (authLoading || sessionLoading || isAllowed === undefined) {
     return <p className="text-center py-20 text-lg">접근 가능 여부 확인 중...</p>;
   }
 
-  if (!user) {
+  if (!isAuthed) {
     return (
       <div className="text-center py-20">
-        <p className="text-lg mb-4">로그인 후 섭외를 이용하실 수 있습니다.</p>
-        <button onClick={() => router.push("/login")} className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors">
+        <p className="text-lg mb-4">{errorMessage || "로그인 후 섭외를 이용하실 수 있습니다."}</p>
+        <button onClick={() => router.push(`/login?next=/artists/book/${id}`)} className="bg-black text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors">
           로그인하러 가기
         </button>
       </div>
     );
   }
 
-  // ✅ 섭외 불가능한 경우 (이미 처리 중인 섭외가 있는 경우)
   if (isAllowed === false) {
     return (
       <div className="text-center py-20">
-        <p className="text-lg mb-4">{errorMessage}</p>
+        <p className="text-lg mb-4">{errorMessage || "이미 진행중인 섭외가 있습니다."}</p>
         <button onClick={() => router.push(`/artists/${id}`)} className="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-colors">
           아티스트 페이지로 돌아가기
         </button>
@@ -79,13 +127,30 @@ export default function BookPage() {
     );
   }
 
+  // ─ 제출 ─
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isSubmitting) return;
 
-    const form = e.currentTarget;
-    const userEmail = (form.elements.namedItem("userEmail") as HTMLInputElement | null)?.value;
-    const message = (form.elements.namedItem("message") as HTMLTextAreaElement | null)?.value;
+    const form = e.currentTarget as HTMLFormElement & {
+      host: HTMLInputElement;
+      manager_name: HTMLInputElement;
+      manager_phone: HTMLInputElement;
+      event_title: HTMLInputElement;
+      event_summary: HTMLInputElement;
+      event_date: HTMLInputElement;
+      event_location: HTMLInputElement;
+      audience_type: HTMLInputElement;
+      audience_count: HTMLInputElement;
+      requested_time: HTMLInputElement;
+      offer_fee: HTMLInputElement;
+      additional_notes: HTMLTextAreaElement;
+      userEmail: HTMLInputElement;
+      message: HTMLTextAreaElement;
+    };
+
+    const userEmail = form.userEmail?.value;
+    const message = form.message?.value;
 
     if (!userEmail) return alert("이메일을 입력해주세요!");
     if (!message) return alert("메시지를 입력해주세요!");
@@ -93,11 +158,14 @@ export default function BookPage() {
     setIsSubmitting(true);
 
     try {
-      // ✅ 섭외 전송 전 다시 한 번 권한 확인
-      const checkRes = await axios.get(`/api/inquiry/check_artist?artistId=${id}`);
-
-      if (!checkRes.data.canApply) {
-        alert(checkRes.data.reason || "이미 처리 중인 섭외가 있습니다.");
+      // 전송 직전 재확인 (캐시 버스터)
+      const checkRes = await axios.get("/api/inquiry/check_artist", {
+        params: { artistId: id, _t: Date.now() },
+        withCredentials: true,
+        headers: { "Cache-Control": "no-cache" },
+      });
+      if (!checkRes.data?.canApply) {
+        alert(checkRes.data?.reason || "이미 처리 중인 섭외가 있습니다.");
         window.location.reload();
         return;
       }
@@ -121,28 +189,33 @@ export default function BookPage() {
           offer_fee: form.offer_fee.value,
           additional_notes: form.additional_notes.value,
         },
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "application/json" },
-        }
+        { withCredentials: true, headers: { "Content-Type": "application/json" } }
       );
 
-      if (res.status === 200 && res.data.success) {
+      if (res.status === 200 && res.data?.success) {
         alert("섭외가 성공적으로 전송되었습니다!");
         form.reset();
         router.push(`/artists/${id}`);
       } else {
-        alert(res.data.error || "섭외 전송에 실패했습니다.");
+        alert(res.data?.error || "섭외 전송에 실패했습니다.");
       }
     } catch (error: any) {
-      console.error("섭외 전송 오류:", error);
-
-      // ✅ 권한 체크 실패 시 특별 처리
-      if (error.response?.status === 403) {
+      if (error?.response?.status === 409 || error?.response?.data?.requiresSync) {
+        // 동기화 후 재시도 안내
+        try {
+          await axios.post("/api/user/sync", {}, { withCredentials: true });
+          alert("프로필이 동기화되었습니다. 다시 시도해 주세요.");
+        } catch {
+          alert("프로필 동기화에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+        }
+      } else if (error?.response?.status === 403) {
         alert("이미 처리 중인 섭외가 있습니다. 페이지를 새로고침합니다.");
-
         window.location.reload();
+      } else if (error?.response?.status === 401) {
+        alert("로그인이 필요합니다.");
+        router.push(`/login?next=/artists/book/${id}`);
       } else {
+        console.error("섭외 전송 오류:", error);
         alert("서버 오류가 발생했습니다. 나중에 다시 시도해주세요.");
       }
     } finally {
@@ -150,6 +223,7 @@ export default function BookPage() {
     }
   };
 
+  // ─ 폼 UI ─
   return (
     <div className="mx-auto px-4 mt-10 pb-40 gap-10 flex flex-col justify-center items-center">
       <h1 className="text-center text-3xl mb-2 font-bold">섭외하기</h1>
@@ -223,15 +297,7 @@ export default function BookPage() {
             <label htmlFor="requested_time" className="text-sm mb-1">
               진행시간
             </label>
-            <input
-              id="requested_time"
-              name="requested_time"
-              type="time"
-              required
-              disabled={isSubmitting}
-              placeholder="진행시간을 입력해주세요."
-              className="py-4 px-4 rounded-xl border border-gray-300 disabled:opacity-50"
-            />
+            <input id="requested_time" name="requested_time" type="time" required disabled={isSubmitting} className="py-4 px-4 rounded-xl border border-gray-300 disabled:opacity-50" />
           </div>
 
           <div className="flex flex-col">
@@ -250,7 +316,7 @@ export default function BookPage() {
                 placeholder="섭외비를 입력해주세요."
                 className="w-full p-4 rounded-l-xl border text-end border-r-0 border-gray-300 disabled:opacity-50"
               />
-              <span className="px-3 w-20 h-full flex justify-center items-center py-1 border border-l-0 border-gray-300 rounded-r-xl  text-gray-600">만원</span>
+              <span className="px-3 w-20 h-full flex justify-center items-center py-1 border border-l-0 border-gray-300 rounded-r-xl text-gray-600">만원</span>
             </div>
           </div>
 

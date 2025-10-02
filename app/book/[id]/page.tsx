@@ -1,3 +1,4 @@
+// app/book/[id]/page.tsx
 "use client";
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -151,9 +152,139 @@ export default function BookPage() {
   return (
     /* ...현재 폼 그대로... */
     <div className="mx-4 mt-10 pb-40 flex flex-col items-center">
-      {/* 생략: 질문에 준 폼 그대로 유지 */}
-      {/* handleSubmit만 교체됨 */}
-      {/* ... */}
+      <h1 className="text-3xl mb-6 font-bold text-center">섭외하기</h1>
+      <form onSubmit={handleSubmit} className="w-full max-w-2xl grid gap-6">
+        {[
+          { name: "host", label: "주최", placeholder: "주최정보를 입력해주세요" },
+          { name: "manager_name", label: "담당자 이름", placeholder: "주최 담당자 이름을 입력해주세요" },
+          { name: "event_title", label: "행사명", placeholder: "행사명을 입력해주세요" },
+          { name: "event_summary", label: "행사 한줄 설명", placeholder: "행사를 간략하게 설명해주세요." },
+          { name: "event_location", label: "장소", placeholder: "행사 장소를 입력해주세요" },
+          { name: "audience_type", label: "대상", placeholder: "행사 대상을 입력해주세요" },
+          { name: "audience_count", label: "행사 인원수", placeholder: "행사에 참여하는 인원수를 입력해주세요" },
+        ].map(({ name, label, placeholder }) => (
+          <div key={name} className="flex flex-col">
+            <label htmlFor={name} className="text-sm mb-1">
+              {label}
+            </label>
+            <input id={name} name={name} required disabled={isSubmitting} placeholder={placeholder} className="py-4 px-4 rounded-xl border border-gray-300 disabled:opacity-50" />
+          </div>
+        ))}
+
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="flex flex-col">
+            <label htmlFor="manager_phone" className="text-sm mb-1">
+              전화번호
+            </label>
+            <input
+              id="manager_phone"
+              name="manager_phone"
+              type="tel"
+              required
+              disabled={isSubmitting}
+              placeholder="담당자 전화번호를 입력해주세요"
+              className="py-4 px-4 rounded-xl border border-gray-300 disabled:opacity-50"
+            />
+          </div>
+
+          <div className="flex flex-col">
+            <label htmlFor="userEmail" className="text-sm mb-1">
+              이메일
+            </label>
+            <input
+              id="userEmail"
+              name="userEmail"
+              type="email"
+              required
+              disabled={isSubmitting}
+              placeholder="답변받으실 이메일을 입력해주세요"
+              className="py-4 px-4 rounded-xl border border-gray-300 disabled:opacity-50"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-col">
+          <label htmlFor="event_date" className="text-sm mb-1">
+            일자
+          </label>
+          <input
+            id="event_date"
+            name="event_date"
+            type="date"
+            min={new Date().toISOString().split("T")[0]}
+            required
+            disabled={isSubmitting}
+            className="py-4 px-4 rounded-xl border border-gray-300 disabled:opacity-50"
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label htmlFor="requested_time" className="text-sm mb-1">
+            진행시간
+          </label>
+          <input
+            id="requested_time"
+            name="requested_time"
+            type="time"
+            required
+            disabled={isSubmitting}
+            placeholder="진행시간을 입력해주세요."
+            className="py-4 px-4 rounded-xl border border-gray-300 disabled:opacity-50"
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label htmlFor="offer_fee" className="text-sm mb-1">
+            섭외비
+          </label>
+          <div className="flex items-center">
+            <input
+              id="offer_fee"
+              name="offer_fee"
+              type="number"
+              min={0}
+              step={1}
+              required
+              disabled={isSubmitting}
+              placeholder="섭외비를 입력해주세요."
+              className="w-full p-4 rounded-l-xl border text-end border-r-0 border-gray-300 disabled:opacity-50"
+            />
+            <span className="px-3 w-20 h-full flex justify-center items-center py-1 border border-l-0 border-gray-300 rounded-r-xl  text-gray-600">만원</span>
+          </div>
+        </div>
+
+        <div className="flex flex-col">
+          <label htmlFor="message" className="text-sm mb-1">
+            요청사항
+          </label>
+          <textarea
+            id="message"
+            name="message"
+            required
+            disabled={isSubmitting}
+            placeholder="요청사항을 입력해주세요"
+            className="min-h-[160px] resize-y p-4 rounded-xl border border-gray-300 disabled:opacity-50"
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label htmlFor="additional_notes" className="text-sm mb-1">
+            기타사항
+          </label>
+          <textarea
+            id="additional_notes"
+            name="additional_notes"
+            required
+            disabled={isSubmitting}
+            placeholder="기타사항을 입력해주세요."
+            className="min-h-[160px] resize-y p-4 rounded-xl border border-gray-300 disabled:opacity-50"
+          />
+        </div>
+
+        <button type="submit" disabled={isSubmitting} className="bg-black text-white font-medium py-4 rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          {isSubmitting ? "전송 중..." : "섭외하기"}
+        </button>
+      </form>
     </div>
   );
 }

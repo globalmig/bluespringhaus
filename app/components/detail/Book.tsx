@@ -1,5 +1,6 @@
+// app/components/detail/Book.tsx
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useAuth } from "@/app/contexts/AuthContext";
@@ -13,65 +14,75 @@ export default function Book({ id }: BookProps) {
   const router = useRouter();
 
   // 두 체계 모두 읽기
-  const { user, loading: authLoading } = useAuth();
-  const { data: session, status } = useSession();
-
+  const { user, loading: authLoading } = useAuth(); // Supabase
+  const { status } = useSession(); // NextAuth(Kakao)
   const sessionLoading = status === "loading";
   const isAuthed = !!user || status === "authenticated";
 
-  const [canApply, setCanApply] = useState<boolean | null>(null);
+  // canApply: true(가능)/false(불가)/null(판단불가)/undefined(초기)
+  const [canApply, setCanApply] = useState<boolean | null | undefined>(undefined);
   const [loading, setLoading] = useState(true);
+  const mounted = useRef(true);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     const check = async () => {
-      // 아직 로그인 판단 전이면 대기
       if (authLoading || sessionLoading) return;
 
+      // 비로그인은 판단불가로 표시(버튼 비활성)
       if (!isAuthed) {
-        setCanApply(null);
-        setLoading(false);
+        if (mounted.current) {
+          setCanApply(null);
+          setLoading(false);
+        }
         return;
       }
 
       try {
-        const res = await axios.get(`/api/inquiry/check?speakerId=${id}`, {
+        const res = await axios.get(`/api/inquiry/check`, {
+          params: { speakerId: id, _t: Date.now() }, // 캐시 버스터
           withCredentials: true,
+          headers: { "Cache-Control": "no-cache" }, // 캐시 금지
         });
-        setCanApply(res.data.canApply);
-      } catch (error) {
-        console.error("❌ 섭외 체크 실패:", error);
-        setCanApply(null); // 에러는 판단불가(null)로
+        if (mounted.current) setCanApply(res.data?.canApply === true);
+      } catch (err: any) {
+        // 409 → 프로필 동기화 후 재시도
+        if (err?.response?.status === 409 || err?.response?.data?.requiresSync) {
+          try {
+            await axios.post("/api/user/sync", {}, { withCredentials: true });
+            const r2 = await axios.get(`/api/inquiry/check`, {
+              params: { speakerId: id, _t: Date.now() },
+              withCredentials: true,
+              headers: { "Cache-Control": "no-cache" },
+            });
+            if (mounted.current) setCanApply(r2.data?.canApply === true);
+          } catch {
+            if (mounted.current) setCanApply(null); // 판단불가로
+          }
+        } else {
+          if (mounted.current) setCanApply(null);
+        }
       } finally {
-        setLoading(false);
+        if (mounted.current) setLoading(false);
       }
     };
 
     check();
   }, [id, isAuthed, authLoading, sessionLoading]);
 
+  // "가능"으로 확정됐을 때만 활성화
+  const disabled = loading || !isAuthed || canApply !== true;
+
   const handleClick = () => {
-    // 아직 판단 전이면 막기
-    if (authLoading || sessionLoading || loading) return;
-
-    if (!isAuthed) {
-      alert("로그인 후 섭외를 진행하실 수 있습니다.");
-      return;
-    }
-
-    if (canApply === null) {
-      alert("잠시 후 다시 시도해주세요.");
-      return;
-    }
-
-    if (!canApply) {
-      alert("이미 진행 중인 섭외가 있습니다.");
-      return;
-    }
-
+    if (disabled) return;
     router.push(`/book/${id}`);
   };
-
-  const disabled = loading || !isAuthed || canApply === false;
 
   return (
     <div className="fixed bottom-0 w-full z-40 shadow-xl">
@@ -81,7 +92,7 @@ export default function Book({ id }: BookProps) {
           disabled={disabled}
           className={`rounded-xl px-32 py-3 text-lg text-white transition-colors ${disabled ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"}`}
         >
-          {loading ? "확인 중..." : !isAuthed ? "로그인 필요" : canApply === false ? "이미 섭외하셨습니다" : "섭외하기"}
+          {loading ? "확인 중..." : !isAuthed ? "로그인 필요" : canApply === true ? "섭외하기" : canApply === false ? "이미 섭외하셨습니다" : "확인 중..."}
         </button>
       </div>
     </div>
