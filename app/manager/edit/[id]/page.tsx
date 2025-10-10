@@ -1,3 +1,4 @@
+// app/manager/edit/[id]/page.tsx
 "use client";
 import { supabase } from "@/lib/supabase";
 import axios from "axios";
@@ -6,6 +7,10 @@ import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import type { Speaker, Artists } from "@/types/inquiry";
+import dynamic from "next/dynamic";
+import "react-quill/dist/quill.snow.css";
+
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 const initialForm = {
   name: "",
@@ -73,6 +78,10 @@ export default function Edit() {
 
   const id = params?.id as string;
   const typeParam = searchParams?.get("type") as "artist" | "speaker" | null;
+
+  const modules = {
+    toolbar: [[{ header: [1, 2, 3, false] }], ["bold", "italic", "underline", "strike"], [{ color: [] }, { background: [] }], [{ list: "ordered" }, { list: "bullet" }], ["link", "image"], ["clean"]],
+  };
 
   // 세션 체크
   useEffect(() => {
@@ -288,7 +297,7 @@ export default function Edit() {
 
   return (
     <div className="flex flex-col mx-auto justify-start items-center min-h-screen mt-10 px-4 my-40">
-      <div className="flex flex-col w-full max-w-2xl">
+      <div className="flex flex-col w-full max-w-2xl mb-20">
         <h1 className="text-2xl font-bold mb-6">{isEditing ? `${type === "artist" ? "아티스트" : "연사"} 수정` : `${type === "artist" ? "아티스트" : "연사"} 등록`}</h1>
 
         <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
@@ -352,8 +361,9 @@ export default function Edit() {
 
           <label className="flex flex-col gap-1">
             <span className="font-medium">상세 설명</span>
-            <textarea name="full_desc" value={form.full_desc} onChange={handleChange} className="border p-2 rounded w-full h-32" />
+            <ReactQuill theme="snow" value={form.full_desc} onChange={(content) => setForm((prev) => ({ ...prev, full_desc: content }))} modules={modules} className="h-80 mb-12" />
           </label>
+
           {type === "speaker" ? (
             <label className="flex flex-col gap-1">
               <span className="font-medium">책 URL (쉼표로 구분)</span>
