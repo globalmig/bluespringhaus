@@ -73,7 +73,7 @@ export default function Home() {
               <Image src="/image/banner1.jpg" alt="세일할인배너" fill className="object-contain" />
             </SwiperSlide> */}
             <SwiperSlide>
-              <Image src="/image/banner3.jpg" alt="세일할인배너" fill className="object-contain" />
+              <Image src="/image/banner1.jpg" alt="세일할인배너" fill className="object-contain" />
             </SwiperSlide>
             <SwiperSlide>
               <Image src="/image/banner2.jpg" alt="세일할인배너" fill className="object-contain" />

@@ -21,7 +21,7 @@ export default function KakaoLoginButton({ className = "", onClick }: Props) {
       type="button"
       onClick={handleLogin}
       className={`flex items-center justify-center bg-[#FEE500] hover:bg-[#FFDD00]
-                  text-black font-medium px-4 py-3 rounded-lg transition-colors duration-200
+                  text-black font-medium px-4  w-full py-3 rounded-lg transition-colors duration-200
                   min-w-[300px] ${className}`}
       aria-label="카카오로 간편 로그인"
     >
@@ -37,5 +37,3 @@ export default function KakaoLoginButton({ className = "", onClick }: Props) {
     </button>
   );
 }
-
-
