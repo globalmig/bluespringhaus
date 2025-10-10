@@ -1,38 +1,33 @@
 // app/components/login/Login.tsx
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import { supabase } from "@/lib/supabase";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useAuth } from "@/app/contexts/AuthContext";
 import KakaoLoginButton from "./KakaoLoginButton";
 import axios from "axios";
-import { useSession } from "next-auth/react";
+import { useSession, signIn as nextAuthSignIn } from "next-auth/react";
 
-axios.defaults.withCredentials = true; // ✅ 전역으로 쿠키 포함
+axios.defaults.withCredentials = true;
 
 export default function Login({ onClose }: { onClose: () => void }) {
-  // ── local states (원래 있던 것 유지)
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const { signIn } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // ✅ NextAuth 세션 (카카오)
-  const { status } = useSession();
+  // ✅ NextAuth 세션
+  const { data: session, status } = useSession();
 
-  // ✅ 중복 동기화 방지 + 성공 여부 캐시
+  // ✅ 중복 동기화 방지
   const syncing = useRef(false);
   const syncedOnce = useRef(false);
 
-  // ✅ 쿼리의 next 파라미터
   const next = searchParams?.get("next") || "";
 
-  // ✅ 카카오 로그인 완료되면 프로필 동기화 → next로 이동
+  // ✅ 카카오 로그인 완료되면 프로필 동기화
   useEffect(() => {
     const run = async () => {
       if (status !== "authenticated") return;
@@ -40,22 +35,18 @@ export default function Login({ onClose }: { onClose: () => void }) {
 
       syncing.current = true;
       try {
-        const res = await axios.post("/api/user/sync", {});
-        // 성공 플래그
+        await axios.post("/api/profile/update", {});
         syncedOnce.current = true;
 
-        // 모달 닫기
         onClose?.();
 
-        // 이동 우선순위: next → refresh
         if (next) {
           router.push(next);
         } else {
           router.refresh();
         }
       } catch (e) {
-        console.error("user/sync 실패", e);
-        // 동기화 실패해도 로그인은 된 상태라 UX상 리다이렉트는 해줄 수 있음
+        console.error("/api/profile/update 실패", e);
         if (next) router.push(next);
       } finally {
         syncing.current = false;
@@ -64,53 +55,63 @@ export default function Login({ onClose }: { onClose: () => void }) {
     run();
   }, [status, next, router, onClose]);
 
-  // ── 에러 쿼리 처리
+  // ✅ 에러 쿼리 처리
   useEffect(() => {
     const err = searchParams?.get("error");
     if (err) setError(err);
   }, [searchParams]);
 
-  // ── 이메일/비번 로그인
+  // ✅ NextAuth를 사용한 이메일 로그인
+  // ✅ 이메일 로그인
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      const { error, user } = await signIn(email, pw);
-      if (error) {
-        setError(error.message);
+      const result = await nextAuthSignIn("credentials", {
+        email: email.trim(),
+        password: pw,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError("이메일 또는 비밀번호가 올바르지 않습니다.");
         return;
       }
 
-      if (user && !user.email_confirmed_at) {
-        alert("이메일 인증이 완료되지 않았습니다.");
-      }
+      if (result?.ok) {
+        // ✅ 이메일 로그인 성공 시에도 프로필 동기화
+        try {
+          await axios.post("/api/profile/update", {});
+        } catch (syncError) {
+          console.error("프로필 동기화 실패:", syncError);
+          // 동기화 실패해도 로그인은 유지
+        }
+        // onClose?.();
+        alert("안녕하세요. 성공적인 섭외를 해보세요!");
 
-      // 프로필 upsert (Supabase 경로)
-      if (user?.id) {
-        const trimmedEmail = email.trim();
-        const { error: upsertError } = await supabase.from("profiles").upsert({ id: user.id, email: trimmedEmail }, { onConflict: "id" });
-        if (upsertError) {
-          console.error("❌ 프로필 upsert 실패:", upsertError);
+        if (next) {
+          router.push(next);
+        } else {
+          window.location.href = "/";
         }
       }
-
-      alert("로그인 성공!");
-      onClose?.();
-
-      // next 우선 이동
-      if (next) {
-        router.push(next);
-      } else {
-        router.refresh();
-      }
-    } catch {
+    } catch (err) {
+      console.error("로그인 오류:", err);
       setError("로그인 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
     }
   };
+
+  // ✅ 이미 로그인된 상태면 자동으로 닫기
+  useEffect(() => {
+    if (session) {
+      onClose?.();
+      if (next) router.push(next);
+    }
+  }, [session, next, router, onClose]);
 
   return (
     <div className="w-full max-w-[1400px] h-[760px] flex flex-col lg:flex-row rounded-2xl bg-white relative z-50 overflow-hidden">
