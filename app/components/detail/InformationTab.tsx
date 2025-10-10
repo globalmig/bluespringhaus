@@ -30,6 +30,32 @@ export default function InformationTab({ reviews }: ReviewItemProps) {
   const router = useRouter();
   const params = useParams();
   const id = params?.id as string | undefined;
+  const modules = {
+    toolbar: [
+      [{ header: [1, 2, 3, false] }],
+      [{ size: [] }], // ✅ 크기 선택 UI
+      ["bold", "italic", "underline", "strike"],
+      [{ color: [] }, { background: [] }],
+      [{ list: "ordered" }, { list: "bullet" }],
+      ["link", "image"],
+      ["clean"],
+    ],
+  };
+
+  const formats = [
+    "header",
+    "size", // ✅ 크기 포맷 저장
+    "bold",
+    "italic",
+    "underline",
+    "strike",
+    "color",
+    "background",
+    "list",
+    "bullet",
+    "link",
+    "image",
+  ];
 
   const [speaker, setSpeaker] = useState<Speaker | null>(null);
   const [showAllBooks, setShowAllBooks] = useState(false);
@@ -58,7 +84,7 @@ export default function InformationTab({ reviews }: ReviewItemProps) {
         <section className="flex flex-col py-6 px-4 md:p-10 bg-white rounded-lg border">
           <h2 className="font-bold text-xl md:text-2xl mb-2">{speaker?.name}님을 소개합니다!</h2>
           <div className="flex gap-6">
-            <p className="md:text-base">{speaker?.full_desc}</p>
+            <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: speaker?.full_desc || "" }} />
           </div>
         </section>
 
