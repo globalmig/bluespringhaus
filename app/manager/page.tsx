@@ -3,6 +3,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import axios from "axios";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Search, Plus, Edit, Trash2, User, Music, Loader2 } from "lucide-react";
 import type { Speaker, Artists } from "@/types/inquiry";
 
@@ -12,19 +14,14 @@ interface CombinedItem extends Partial<Speaker & Artists> {
 }
 
 export default function Manager() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
   const normalizeImageSrc = (src?: string) => {
     if (!src) return "/default.jpg";
-    // 절대 URL 또는 루트(/) 경로면 허용
     if (/^(https?:\/\/|\/)/.test(src)) return src;
-
-    // 파일명만 저장돼 오는 경우(예: 'test.png')라면 public 하위 경로로 매핑
-    // 실제 파일 위치에 맞춰 '/uploads' 등으로 바꿔주세요.
     return `/uploads/${src}`;
   };
-
-  // 인증 관련 상태
-  const [password, setPassword] = useState("");
-  const [isAuthorized, setIsAuthorized] = useState(false);
 
   // 데이터 상태
   const [speakers, setSpeakers] = useState<Speaker[]>([]);
@@ -35,6 +32,21 @@ export default function Manager() {
   const [loadingArtists, setLoadingArtists] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState<"all" | "speaker" | "artist">("all");
+
+  // 세션 체크
+  useEffect(() => {
+    if (status === "loading") return;
+
+    if (!session) {
+      router.push("/");
+      return;
+    }
+
+    if (!(session.user as any).manager) {
+      alert("관리자 권한이 필요합니다.");
+      router.push("/");
+    }
+  }, [session, status, router]);
 
   // 통합 리스트 생성
   const combinedList = useMemo(() => {
@@ -53,12 +65,10 @@ export default function Manager() {
   const filteredList = useMemo(() => {
     let filtered = combinedList;
 
-    // 타입 필터
     if (filterType !== "all") {
       filtered = filtered.filter((item) => item.type === filterType);
     }
 
-    // 검색 필터
     if (searchTerm) {
       filtered = filtered.filter((item) => item.name?.toLowerCase().includes(searchTerm.toLowerCase()) || item.short_desc?.toLowerCase().includes(searchTerm.toLowerCase()));
     }
@@ -66,14 +76,15 @@ export default function Manager() {
     return filtered;
   }, [combinedList, searchTerm, filterType]);
 
-  // 데이터 로딩 상태
   const isLoading = loadingSpeakers || loadingArtists;
 
   // 데이터 페칭
   useEffect(() => {
-    fetchSpeakers();
-    fetchArtists();
-  }, []);
+    if (session && (session.user as any).manager) {
+      fetchSpeakers();
+      fetchArtists();
+    }
+  }, [session]);
 
   const fetchSpeakers = async () => {
     try {
@@ -99,26 +110,6 @@ export default function Manager() {
     }
   };
 
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await fetch("/api/admin-auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
-      });
-
-      if (res.ok) {
-        setIsAuthorized(true);
-      } else {
-        alert("비밀번호가 틀렸습니다.");
-      }
-    } catch (error) {
-      console.error("인증 오류:", error);
-      alert("인증 중 오류가 발생했습니다.");
-    }
-  };
-
   const handleDelete = async (item: CombinedItem) => {
     const confirmed = confirm(`'${item.name}'을(를) 정말 삭제하시겠습니까?`);
     if (!confirmed) return;
@@ -127,7 +118,6 @@ export default function Manager() {
       const res = await axios.delete(`/api/manager/delete?id=${item.id}&type=${item.type}`);
 
       if (res.status === 200) {
-        // 상태 업데이트
         if (item.type === "speaker") {
           setSpeakers((prev) => prev.filter((s) => s.id !== item.id));
         } else {
@@ -143,32 +133,18 @@ export default function Manager() {
     }
   };
 
-  // 인증되지 않은 경우
-  if (!isAuthorized) {
+  // 로딩 중
+  if (status === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="max-w-md w-full space-y-8 p-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">관리자 로그인</h2>
-            <p className="text-lg text-gray-600 mb-8">관리자님 안녕하세요 :)</p>
-          </div>
-
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
-            <input
-              type="password"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="비밀번호를 입력하세요"
-              required
-            />
-            <button type="submit" className="w-full bg-black text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition-colors font-medium">
-              로그인
-            </button>
-          </form>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
+  }
+
+  // 권한 없음
+  if (!session || !(session.user as any).manager) {
+    return null;
   }
 
   return (
@@ -262,20 +238,12 @@ export default function Manager() {
                 <tbody className="divide-y divide-gray-200">
                   {filteredList.map((item) => (
                     <tr key={`${item.type}-${item.id}`} className="hover:bg-gray-50">
-                      {/* 프로필 이미지 */}
                       <td className="px-6 py-4">
                         <div className="w-16 h-16 relative rounded-full overflow-hidden bg-gray-200">
-                          <Image
-                            src={normalizeImageSrc(item.profile_image)}
-                            alt={item.name || "프로필"}
-                            fill
-                            sizes="64px" // (선택) 64×64 컨테이너에 맞는 사이즈 힌트
-                            className="object-cover"
-                          />
+                          <Image src={normalizeImageSrc(item.profile_image)} alt={item.name || "프로필"} fill sizes="64px" className="object-cover" />
                         </div>
                       </td>
 
-                      {/* 정보 */}
                       <td className="px-6 py-4">
                         <div>
                           <div className="font-medium text-gray-900">{item.name}</div>
@@ -284,7 +252,6 @@ export default function Manager() {
                         </div>
                       </td>
 
-                      {/* 타입 */}
                       <td className="px-6 py-4">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -296,7 +263,6 @@ export default function Manager() {
                         </span>
                       </td>
 
-                      {/* 관리 버튼 */}
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-center gap-2">
                           <Link
