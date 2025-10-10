@@ -2,7 +2,9 @@
 import { supabase } from "@/lib/supabase";
 import axios from "axios";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 import type { Speaker, Artists } from "@/types/inquiry";
 
 const initialForm = {
@@ -17,6 +19,7 @@ const initialForm = {
   email: "",
   profile_image: null as FileList | null,
   is_recommended: [] as string[],
+  pay: "",
 };
 
 const RECOMMEND_SPEAKER_TAGS = [
@@ -47,9 +50,17 @@ const RECOMMEND_ARTIST_TAGS = [
   { label: "인기 유튜버", value: "topYoutubers" },
 ];
 
+const budgetOptions = [
+  { label: "전체", value: "", bgClass: "bg-[#F3E8FF]" },
+  { label: "~300만원", value: "0-300", bgClass: "bg-[#E6FAF5]" },
+  { label: "300~500만원", value: "300-500", bgClass: "bg-[#e6f2fd]" },
+  { label: "500~1000만원", value: "500-1000", bgClass: "bg-[#FFE4E1]" },
+  { label: "1000만원 이상", value: "1000", bgClass: "bg-[#FFFDE6]" },
+];
+
 export default function Edit() {
-  const [password, setPassword] = useState("");
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [form, setForm] = useState(initialForm);
   const [type, setType] = useState<"artist" | "speaker">("artist");
   const [loading, setLoading] = useState(false);
@@ -59,10 +70,24 @@ export default function Edit() {
 
   const params = useParams();
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   const id = params?.id as string;
   const typeParam = searchParams?.get("type") as "artist" | "speaker" | null;
+
+  // 세션 체크
+  useEffect(() => {
+    if (status === "loading") return;
+
+    if (!session) {
+      router.push("/");
+      return;
+    }
+
+    if (!(session.user as any).manager) {
+      alert("관리자 권한이 필요합니다.");
+      router.push("/");
+    }
+  }, [session, status, router]);
 
   // 타입 설정
   useEffect(() => {
@@ -73,13 +98,13 @@ export default function Edit() {
 
   // 데이터 로딩
   useEffect(() => {
-    if (id && type) {
+    if (id && type && session && (session.user as any).manager) {
       setIsEditing(true);
       fetchData();
-    } else {
+    } else if (session && (session.user as any).manager) {
       setLoading(false);
     }
-  }, [id, type]);
+  }, [id, type, session]);
 
   const fetchData = async () => {
     if (!id || !type) return;
@@ -88,25 +113,23 @@ export default function Edit() {
       setLoading(true);
       console.log(`API 호출: /api/manager/detail?id=${id}&type=${type}`);
 
-      // type 파라미터를 포함하여 API 호출
       const res = await axios.get(`/api/manager/detail?id=${id}&type=${type}`);
       const data = res.data;
 
       console.log("받은 데이터:", data);
 
-      // 폼 데이터 설정
       setForm({
         ...initialForm,
         ...data,
         tags: Array.isArray(data.tags) ? data.tags.join(", ") : data.tags || "",
         intro_video: Array.isArray(data.intro_video) ? data.intro_video.join(", ") : data.intro_video || "",
+        intro_book: Array.isArray(data.intro_book) ? data.intro_book.join(", ") : data.intro_book || "",
         is_recommended: data.is_recommended || [],
-        // 파일 필드는 초기화 (기존 파일을 직접 설정할 수 없음)
+        pay: data.pay || "",
         gallery_images: null,
         profile_image: null,
       });
 
-      // 기존 이미지 URL들을 별도로 저장
       setExistingGalleryImages(Array.isArray(data.gallery_images) ? data.gallery_images : []);
       setExistingProfileImage(data.profile_image || "");
     } catch (err) {
@@ -127,22 +150,7 @@ export default function Edit() {
     });
   };
 
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const res = await fetch("/api/admin-auth", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password }),
-    });
-
-    if (res.ok) {
-      setIsAuthorized(true);
-    } else {
-      alert("비밀번호가 틀렸습니다.");
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const target = e.target;
     const { name, type } = target;
 
@@ -158,7 +166,7 @@ export default function Edit() {
         [name]: checked,
       }));
     } else {
-      const value = (target as HTMLInputElement).value;
+      const value = (target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value;
       setForm((prev) => ({
         ...prev,
         [name]: value,
@@ -169,7 +177,6 @@ export default function Edit() {
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 기존 이미지를 기본값으로 설정
     let galleryUrls: string[] = [...existingGalleryImages];
     let profileImageUrl = existingProfileImage;
     const uploadFolder = `gallery/${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
@@ -196,7 +203,6 @@ export default function Edit() {
           newGalleryUrls.push(url);
         }
 
-        // 수정 모드에서는 기존 이미지에 추가, 새 등록에서는 새 이미지만
         galleryUrls = isEditing ? [...galleryUrls, ...newGalleryUrls] : newGalleryUrls;
       }
 
@@ -217,7 +223,6 @@ export default function Edit() {
         profileImageUrl = supabase.storage.from("gallery").getPublicUrl(data.path).data.publicUrl;
       }
 
-      // API 요청 데이터 준비
       const payload = {
         ...form,
         id: isEditing ? id : undefined,
@@ -232,12 +237,15 @@ export default function Edit() {
           .split(",")
           .map((v) => v.trim())
           .filter((v) => v),
+        intro_book: form.intro_book
+          .split(",")
+          .map((book) => book.trim())
+          .filter((book) => book),
         is_recommended: form.is_recommended,
       };
 
       console.log("전송할 데이터:", payload);
 
-      // 수정인지 새 등록인지에 따라 HTTP 메서드 결정
       const method = isEditing ? "PUT" : "POST";
       const res = await fetch("/api/manager/post", {
         method,
@@ -264,139 +272,139 @@ export default function Edit() {
     }
   };
 
-  // 로딩 화면
-  if (loading) {
+  // 로딩 중
+  if (status === "loading" || loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="text-lg font-medium">{isEditing ? "데이터를 불러오는 중..." : "준비 중..."}</div>
+        <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
   }
 
+  // 권한 없음
+  if (!session || !(session.user as any).manager) {
+    return null;
+  }
+
   return (
     <div className="flex flex-col mx-auto justify-start items-center min-h-screen mt-10 px-4 my-40">
-      {!isAuthorized ? (
-        <>
-          <p className="text-2xl mb-10 mt-40">관리자님 안녕하세요 :)</p>
-          <form onSubmit={handlePasswordSubmit} className="flex items-center">
-            <input type="password" className="px-4 py-2 border rounded" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="비밀번호 입력" />
-            <button type="submit" className="bg-black text-white py-2 px-4 rounded-lg ml-4">
-              확인
-            </button>
-          </form>
-        </>
-      ) : (
-        <div className="flex flex-col w-full max-w-2xl">
-          <h1 className="text-2xl font-bold mb-6">{isEditing ? `${type === "artist" ? "아티스트" : "연사"} 수정` : `${type === "artist" ? "아티스트" : "연사"} 등록`}</h1>
+      <div className="flex flex-col w-full max-w-2xl">
+        <h1 className="text-2xl font-bold mb-6">{isEditing ? `${type === "artist" ? "아티스트" : "연사"} 수정` : `${type === "artist" ? "아티스트" : "연사"} 등록`}</h1>
 
-          <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
-            <label className="mb-4">
-              등록 타입:
-              <select
-                value={type}
-                onChange={(e) => setType(e.target.value as "artist" | "speaker")}
-                className="ml-2 border p-1 rounded"
-                disabled={isEditing} // 수정 모드에서는 타입 변경 불가
-              >
-                <option value="artist">아티스트</option>
-                <option value="speaker">연사</option>
-              </select>
-              {isEditing && <span className="text-sm text-gray-600 ml-2">(수정 시 타입 변경 불가)</span>}
-            </label>
+        <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
+          <label className="mb-4">
+            등록 타입:
+            <select value={type} onChange={(e) => setType(e.target.value as "artist" | "speaker")} className="ml-2 border p-1 rounded" disabled={isEditing}>
+              <option value="artist">아티스트</option>
+              <option value="speaker">연사</option>
+            </select>
+            {isEditing && <span className="text-sm text-gray-600 ml-2">(수정 시 타입 변경 불가)</span>}
+          </label>
 
-            <label className="flex flex-col gap-2">
-              <span className="font-medium">추천 태그 선택</span>
-              {type === "speaker" ? (
-                <div className="grid grid-cols-2 gap-2">
-                  {RECOMMEND_SPEAKER_TAGS.map((tag) => (
-                    <label key={tag.value} className="flex items-center gap-2 text-sm">
-                      <input type="checkbox" value={tag.value} checked={form.is_recommended.includes(tag.value)} onChange={() => handleRecommendedChange(tag.value)} />
-                      {tag.label}
-                    </label>
-                  ))}
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-2">
-                  {RECOMMEND_ARTIST_TAGS.map((tag) => (
-                    <label key={tag.value} className="flex items-center gap-2 text-sm">
-                      <input type="checkbox" value={tag.value} checked={form.is_recommended.includes(tag.value)} onChange={() => handleRecommendedChange(tag.value)} />
-                      {tag.label}
-                    </label>
-                  ))}
-                </div>
-              )}
-            </label>
+          <label className="flex flex-col gap-2">
+            <span className="font-medium">추천 태그 선택</span>
+            {type === "speaker" ? (
+              <div className="grid grid-cols-2 gap-2">
+                {RECOMMEND_SPEAKER_TAGS.map((tag) => (
+                  <label key={tag.value} className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" value={tag.value} checked={form.is_recommended.includes(tag.value)} onChange={() => handleRecommendedChange(tag.value)} />
+                    {tag.label}
+                  </label>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {RECOMMEND_ARTIST_TAGS.map((tag) => (
+                  <label key={tag.value} className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" value={tag.value} checked={form.is_recommended.includes(tag.value)} onChange={() => handleRecommendedChange(tag.value)} />
+                    {tag.label}
+                  </label>
+                ))}
+              </div>
+            )}
+          </label>
 
+          <label className="flex flex-col gap-1">
+            <span className="font-medium">이름 *</span>
+            <input name="name" value={form.name} onChange={handleChange} className="border p-2 rounded w-full" required />
+          </label>
+
+          <label className="flex flex-col gap-1">
+            <span className="font-medium">
+              갤러리 이미지
+              {isEditing && existingGalleryImages.length > 0 && <span className="text-sm text-gray-600">{` (현재 ${existingGalleryImages.length}개 이미지)`}</span>}
+            </span>
+            <input
+              name="gallery_images"
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={(e) => setForm((prev) => ({ ...prev, gallery_images: e.target.files }))}
+              className="border p-2 rounded w-full"
+            />
+            {isEditing && existingGalleryImages.length > 0 && <div className="text-sm text-gray-600">새 이미지를 선택하면 기존 이미지에 추가됩니다.</div>}
+          </label>
+
+          <label className="flex flex-col gap-1">
+            <span className="font-medium">한 줄 소개</span>
+            <input name="short_desc" value={form.short_desc} onChange={handleChange} className="border p-2 rounded w-full" />
+          </label>
+
+          <label className="flex flex-col gap-1">
+            <span className="font-medium">상세 설명</span>
+            <textarea name="full_desc" value={form.full_desc} onChange={handleChange} className="border p-2 rounded w-full h-32" />
+          </label>
+          {type === "speaker" ? (
             <label className="flex flex-col gap-1">
-              <span className="font-medium">이름 *</span>
-              <input name="name" value={form.name} onChange={handleChange} className="border p-2 rounded w-full" required />
-            </label>
-
-            <label className="flex flex-col gap-1">
-              <span className="font-medium">
-                갤러리 이미지
-                {isEditing && existingGalleryImages.length > 0 && <span className="text-sm text-gray-600">{` (현재 ${existingGalleryImages.length}개 이미지)`}</span>}
-              </span>
-              <input
-                name="gallery_images"
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={(e) => setForm((prev) => ({ ...prev, gallery_images: e.target.files }))}
-                className="border p-2 rounded w-full"
-              />
-              {isEditing && existingGalleryImages.length > 0 && <div className="text-sm text-gray-600">새 이미지를 선택하면 기존 이미지에 추가됩니다.</div>}
-            </label>
-
-            <label className="flex flex-col gap-1">
-              <span className="font-medium">한 줄 소개</span>
-              <input name="short_desc" value={form.short_desc} onChange={handleChange} className="border p-2 rounded w-full" />
-            </label>
-
-            <label className="flex flex-col gap-1">
-              <span className="font-medium">상세 설명</span>
-              <textarea name="full_desc" value={form.full_desc} onChange={handleChange} className="border p-2 rounded w-full h-32" />
-            </label>
-
-            <label className="flex flex-col gap-1">
-              <span className="font-medium">책 (쉼표로 구분)</span>
+              <span className="font-medium">책 URL (쉼표로 구분)</span>
               <input name="intro_book" value={form.intro_book} onChange={handleChange} className="border p-2 rounded w-full" />
             </label>
+          ) : null}
 
-            <label className="flex flex-col gap-1">
-              <span className="font-medium">소개 영상 링크 (쉼표로 구분)</span>
-              <input name="intro_video" value={form.intro_video} onChange={handleChange} className="border p-2 rounded w-full" />
-            </label>
+          <label className="flex flex-col gap-1">
+            <span className="font-medium">소개 영상 링크 (쉼표로 구분)</span>
+            <input name="intro_video" value={form.intro_video} onChange={handleChange} className="border p-2 rounded w-full" />
+          </label>
 
-            <label className="flex flex-col gap-1">
-              <span className="font-medium">경력 사항</span>
-              <textarea name="career" value={form.career} onChange={handleChange} className="border p-2 rounded w-full h-24" />
-            </label>
+          <label className="flex flex-col gap-1">
+            <span className="font-medium">경력 사항</span>
+            <textarea name="career" value={form.career} onChange={handleChange} className="border p-2 rounded w-full h-24" />
+          </label>
 
-            <label className="flex flex-col gap-1">
-              <span className="font-medium">태그 (쉼표로 구분)</span>
-              <input name="tags" value={form.tags} onChange={handleChange} className="border p-2 rounded w-full" />
-            </label>
+          <label className="flex flex-col gap-1">
+            <span className="font-medium">태그 (쉼표로 구분)</span>
+            <input name="tags" value={form.tags} onChange={handleChange} className="border p-2 rounded w-full" />
+          </label>
 
-            <label className="flex flex-col gap-1">
-              <span className="font-medium">이메일</span>
-              <input type="email" name="email" value={form.email} onChange={handleChange} className="border p-2 rounded w-full" />
-            </label>
+          <label className="flex flex-col gap-1">
+            <span className="font-medium">이메일</span>
+            <input type="email" name="email" value={form.email} onChange={handleChange} className="border p-2 rounded w-full" />
+          </label>
 
-            <label className="flex flex-col gap-1">
-              <span className="font-medium">
-                프로필 이미지
-                {isEditing && existingProfileImage && <span className="text-sm text-gray-600"> (현재 이미지 있음)</span>}
-              </span>
-              <input name="profile_image" type="file" accept="image/*" onChange={handleChange} className="border p-2 rounded w-full" />
-            </label>
+          <label className="flex flex-col gap-1">
+            <span className="font-medium">
+              프로필 이미지
+              {isEditing && existingProfileImage && <span className="text-sm text-gray-600"> (현재 이미지 있음)</span>}
+            </span>
+            <input name="profile_image" type="file" accept="image/*" onChange={handleChange} className="border p-2 rounded w-full" />
+          </label>
 
-            <button type="submit" className="bg-black text-white py-3 rounded font-medium hover:bg-gray-800 transition-colors">
-              {isEditing ? "수정하기" : "등록하기"}
-            </button>
-          </form>
-        </div>
-      )}
+          <label className="block">
+            <span className="font-medium">섭외비용</span>
+            <select name="pay" value={form.pay} onChange={handleChange} className="border p-2 rounded w-full mt-1">
+              {budgetOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <button type="submit" className="bg-black text-white py-3 rounded font-medium hover:bg-gray-800 transition-colors mt-5">
+            {isEditing ? "수정하기" : "등록하기"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

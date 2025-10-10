@@ -269,10 +269,12 @@ export default function Write() {
               <input name="short_desc" value={form.short_desc} onChange={handleChange} className="border p-2 rounded w-full" />
             </label>
 
-            <label>
-              책 URL (쉼표로 구분)
-              <input name="intro_book" value={form.intro_book} onChange={handleChange} className="border p-2 rounded w-full" />
-            </label>
+            {type === "speaker" ? (
+              <label className="flex flex-col gap-1">
+                <span className="font-medium">책 URL (쉼표로 구분)</span>
+                <input name="intro_book" value={form.intro_book} onChange={handleChange} className="border p-2 rounded w-full" />
+              </label>
+            ) : null}
 
             {/* <label>
               상세 설명
