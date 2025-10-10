@@ -4,6 +4,7 @@ import { Speaker } from "lucide-react";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const initialForm = {
   name: "",
@@ -11,6 +12,7 @@ const initialForm = {
   short_desc: "",
   full_desc: "",
   intro_video: "",
+  intro_book: "",
   career: "",
   tags: "",
   email: "",
@@ -58,6 +60,7 @@ const budgetOptions = [
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
 export default function Write() {
+  const router = useRouter();
   const [password, setPassword] = useState("");
   const [value, setValue] = useState("");
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -179,6 +182,7 @@ export default function Write() {
       if (res.ok && result.success) {
         alert("등록 성공!");
         setForm(initialForm);
+        router.push("/manager");
       } else {
         alert(result.error || "등록 실패");
       }
@@ -265,6 +269,11 @@ export default function Write() {
               <input name="short_desc" value={form.short_desc} onChange={handleChange} className="border p-2 rounded w-full" />
             </label>
 
+            <label>
+              책 URL (쉼표로 구분)
+              <input name="intro_book" value={form.intro_book} onChange={handleChange} className="border p-2 rounded w-full" />
+            </label>
+
             {/* <label>
               상세 설명
               <textarea name="full_desc" value={form.full_desc} onChange={handleChange} className="border p-2 rounded w-full h-32" />
@@ -310,7 +319,7 @@ export default function Write() {
               </select>
             </label>
 
-            <button type="submit" className="bg-black text-white py-2 rounded">
+            <button type="submit" className="bg-black text-white py-2 mt-5 md:mt-10  rounded">
               등록하기
             </button>
           </form>

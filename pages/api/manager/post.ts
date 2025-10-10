@@ -13,6 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       short_desc,
       full_desc,
       intro_video,
+      intro_book, // ✅ 추가
       career,
       tags,
       email,
@@ -41,6 +42,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       full_desc,
       pay,
       intro_video: typeof intro_video === "string" ? intro_video.split(",").map((v: string) => v.trim()) : Array.isArray(intro_video) ? intro_video : [],
+      intro_book:
+        typeof intro_book === "string"
+          ? intro_book
+              .split(",")
+              .map((book: string) => book.trim())
+              .filter((b: string) => b !== "")
+          : Array.isArray(intro_book)
+          ? intro_book
+          : [], // ✅ 추가
       career,
       tags: typeof tags === "string" ? tags.split(",").map((tag: string) => tag.trim()) : Array.isArray(tags) ? tags : [],
       email,
