@@ -1,7 +1,7 @@
 "use client";
 import { supabase } from "@/lib/supabase";
 import axios from "axios";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import type { Speaker, Artists } from "@/types/inquiry";
 
@@ -59,6 +59,7 @@ export default function Edit() {
 
   const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const id = params?.id as string;
   const typeParam = searchParams?.get("type") as "artist" | "speaker" | null;
@@ -248,6 +249,7 @@ export default function Edit() {
 
       if (res.ok && result.success) {
         alert(isEditing ? "수정이 완료되었습니다!" : "등록이 완료되었습니다!");
+        router.push("/manager");
         if (!isEditing) {
           setForm(initialForm);
           setExistingGalleryImages([]);
@@ -272,7 +274,7 @@ export default function Edit() {
   }
 
   return (
-    <div className="flex flex-col mx-auto justify-start items-center min-h-screen mt-10 px-4">
+    <div className="flex flex-col mx-auto justify-start items-center min-h-screen mt-10 px-4 my-40">
       {!isAuthorized ? (
         <>
           <p className="text-2xl mb-10 mt-40">관리자님 안녕하세요 :)</p>

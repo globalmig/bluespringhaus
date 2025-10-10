@@ -12,6 +12,16 @@ interface CombinedItem extends Partial<Speaker & Artists> {
 }
 
 export default function Manager() {
+  const normalizeImageSrc = (src?: string) => {
+    if (!src) return "/default.jpg";
+    // 절대 URL 또는 루트(/) 경로면 허용
+    if (/^(https?:\/\/|\/)/.test(src)) return src;
+
+    // 파일명만 저장돼 오는 경우(예: 'test.png')라면 public 하위 경로로 매핑
+    // 실제 파일 위치에 맞춰 '/uploads' 등으로 바꿔주세요.
+    return `/uploads/${src}`;
+  };
+
   // 인증 관련 상태
   const [password, setPassword] = useState("");
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -255,7 +265,13 @@ export default function Manager() {
                       {/* 프로필 이미지 */}
                       <td className="px-6 py-4">
                         <div className="w-16 h-16 relative rounded-full overflow-hidden bg-gray-200">
-                          <Image src={item.profile_image || "/default.jpg"} alt={item.name || "프로필"} fill className="object-cover" />
+                          <Image
+                            src={normalizeImageSrc(item.profile_image)}
+                            alt={item.name || "프로필"}
+                            fill
+                            sizes="64px" // (선택) 64×64 컨테이너에 맞는 사이즈 힌트
+                            className="object-cover"
+                          />
                         </div>
                       </td>
 
