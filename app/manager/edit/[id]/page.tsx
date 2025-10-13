@@ -1,10 +1,11 @@
 // app/manager/edit/[id]/page.tsx
 "use client";
+
 import { supabase } from "@/lib/supabase";
 import axios from "axios";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import React, { useEffect, useRef, useState } from "react"; // ✅ useRef 추가
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import type { Speaker, Artists } from "@/types/inquiry";
 import dynamic from "next/dynamic";
@@ -63,7 +64,7 @@ const budgetOptions = [
   { label: "1000만원 이상", value: "1000", bgClass: "bg-[#FFFDE6]" },
 ];
 
-export default function Edit() {
+function EditInner() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [form, setForm] = useState(initialForm);
@@ -83,11 +84,9 @@ export default function Edit() {
     toolbar: [[{ header: [1, 2, 3, false] }], ["bold", "italic", "underline", "strike"], [{ color: [] }, { background: [] }], [{ list: "ordered" }, { list: "bullet" }], ["link", "image"], ["clean"]],
   };
 
-  // ✅ StrictMode/의존성 변화로 인한 중복 호출 방지용
+  // 중복 호출/경쟁 상태 방지
   const fetchedOnce = useRef(false);
-  // ✅ 마지막 요청만 반영하기 위한 시퀀스
   const reqSeq = useRef(0);
-  // ✅ 이전 요청 취소(원하면 사용)
   const controllerRef = useRef<AbortController | null>(null);
 
   // 세션/권한 체크
@@ -105,7 +104,7 @@ export default function Edit() {
     }
   }, [session, status, router]);
 
-  // ✅ typeParam이 준비된 이후, 딱 한 번만 fetch
+  // typeParam 준비 후 단 1회 fetch
   useEffect(() => {
     if (status !== "authenticated") return;
     if (!(session?.user as any)?.manager) return;
@@ -116,10 +115,10 @@ export default function Edit() {
     fetchedOnce.current = true;
     setIsEditing(true);
     setType(typeParam);
-    fetchData(typeParam); // 올바른 타입으로 1회만
+    fetchData(typeParam);
   }, [status, session, id, typeParam]);
 
-  // ✅ 가장 마지막 요청만 반영
+  // 가장 마지막 요청만 반영
   const fetchData = async (t: "artist" | "speaker") => {
     if (!id) return;
     const mySeq = ++reqSeq.current;
@@ -127,13 +126,12 @@ export default function Edit() {
     try {
       setLoading(true);
 
-      // 이전 요청 취소(선택)
       if (controllerRef.current) controllerRef.current.abort();
       const controller = new AbortController();
       controllerRef.current = controller;
 
-      const timestamp = Date.now();
-      const res = await axios.get(`/api/manager/detail?id=${id}&type=${t}&_t=${timestamp}`, {
+      const res = await axios.get(`/api/manager/detail`, {
+        params: { id, type: t, _t: Date.now() },
         headers: {
           "Cache-Control": "no-cache",
           Pragma: "no-cache",
@@ -142,8 +140,7 @@ export default function Edit() {
         signal: controller.signal as any,
       });
 
-      // 뒤늦게 도착한 응답이면 무시
-      if (mySeq !== reqSeq.current) return;
+      if (mySeq !== reqSeq.current) return; // 늦은 응답 무시
 
       const data = res.data;
 
@@ -163,9 +160,8 @@ export default function Edit() {
       setExistingGalleryImages(Array.isArray(data.gallery_images) ? data.gallery_images : []);
       setExistingProfileImage(data.profile_image || "");
     } catch (err: any) {
-      if (axios.isCancel?.(err) || err?.name === "CanceledError") return; // 취소된 요청은 무시
-      // 뒤늦게 온 에러면 무시
-      if (mySeq !== reqSeq.current) return;
+      if (axios.isCancel?.(err) || err?.name === "CanceledError") return;
+      if (mySeq !== reqSeq.current) return; // 늦은 에러 무시
       console.error("데이터 로드 실패", err);
       alert("데이터를 불러오는데 실패했습니다. 다시 시도해주세요.");
     } finally {
@@ -286,7 +282,7 @@ export default function Edit() {
 
       if (res.ok && result.success) {
         alert(isEditing ? "수정이 완료되었습니다!" : "등록이 완료되었습니다!");
-        // ✅ 네비게이션은 한 번만 (쿼리버스터 포함)
+        // 네비게이션은 한 번만 (쿼리버스터 포함)
         router.replace(`/manager?ts=${Date.now()}`);
 
         if (!isEditing) {
@@ -436,5 +432,20 @@ export default function Edit() {
         </form>
       </div>
     </div>
+  );
+}
+
+// 기본 export: Suspense 경계로 감싸기 (useSearchParams 안전)
+export default function EditPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center min-h-screen">
+          <Loader2 className="w-8 h-8 animate-spin" />
+        </div>
+      }
+    >
+      <EditInner />
+    </Suspense>
   );
 }

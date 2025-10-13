@@ -1,7 +1,7 @@
 // app/manager/page.tsx
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import axios from "axios";
@@ -15,10 +15,11 @@ interface CombinedItem extends Partial<Speaker & Artists> {
   type: "speaker" | "artist";
 }
 
-export default function Manager() {
+/** 실제 페이지 로직은 Inner 컴포넌트에 넣고 Suspense 안에서 렌더링 */
+function ManagerInner() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams(); // ✅ Suspense 내부에서 안전하게 사용
   const ts = searchParams?.get("ts"); // ✅ 쿼리버스터
 
   const normalizeImageSrc = (src?: string) => {
@@ -74,7 +75,8 @@ export default function Manager() {
     }
 
     if (searchTerm) {
-      filtered = filtered.filter((item) => item.name?.toLowerCase().includes(searchTerm.toLowerCase()) || item.short_desc?.toLowerCase().includes(searchTerm.toLowerCase()));
+      const q = searchTerm.toLowerCase();
+      filtered = filtered.filter((item) => item.name?.toLowerCase().includes(q) || item.short_desc?.toLowerCase().includes(q));
     }
 
     return filtered;
@@ -82,19 +84,19 @@ export default function Manager() {
 
   const isLoading = loadingSpeakers || loadingArtists;
 
-  // 데이터 페칭 - 캐싱 방지
+  // 데이터 페칭 - ts가 바뀔 때마다 재요청
   useEffect(() => {
     if (session && (session.user as any).manager) {
       fetchSpeakers();
       fetchArtists();
     }
-  }, [session, ts]);
+  }, [session, ts]); // ✅ ts 의존
 
   const fetchSpeakers = async () => {
     try {
       setLoadingSpeakers(true);
-      const timestamp = new Date().getTime();
-      const res = await axios.get<Speaker[]>(`/api/speakers?_t=${timestamp}`, {
+      const res = await axios.get<Speaker[]>("/api/speakers", {
+        params: { _t: Date.now() }, // ✅ 캐시 버스터
         headers: {
           "Cache-Control": "no-cache",
           Pragma: "no-cache",
@@ -112,8 +114,8 @@ export default function Manager() {
   const fetchArtists = async () => {
     try {
       setLoadingArtists(true);
-      const timestamp = new Date().getTime();
-      const res = await axios.get<Artists[]>(`/api/artists?_t=${timestamp}`, {
+      const res = await axios.get<Artists[]>("/api/artists", {
+        params: { _t: Date.now() }, // ✅ 캐시 버스터
         headers: {
           "Cache-Control": "no-cache",
           Pragma: "no-cache",
@@ -316,5 +318,20 @@ export default function Manager() {
         )}
       </main>
     </div>
+  );
+}
+
+/** 기본 export: Suspense로 감싸 빌드 에러 해결 */
+export default function ManagerPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin" />
+        </div>
+      }
+    >
+      <ManagerInner />
+    </Suspense>
   );
 }
