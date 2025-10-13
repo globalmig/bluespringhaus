@@ -90,7 +90,7 @@ export default function InformationTab({ reviews }: ReviewItemProps) {
 
         <section className="flex flex-col  py-6 px-4 md:p-10 border bg-white rounded-lg">
           <h2 className="font-bold text-xl md:text-2xl">소개영상</h2>
-          <p>이용석님의 영상 포트폴리오입니다!</p>
+          <p>{speaker?.name}님의 영상 포트폴리오입니다!</p>
           {Array.isArray(speaker?.intro_video) &&
             speaker!.intro_video.map((video, index) => (
               <div className=" my-4" key={index}>

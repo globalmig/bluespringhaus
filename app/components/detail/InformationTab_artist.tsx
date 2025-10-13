@@ -72,7 +72,7 @@ export default function InformationTab_artist({ reviews, artist }: ReviewItemPro
 
       <section className="flex flex-col p-6 md:p-10 border bg-white rounded-lg  w-full max-w-[1440px] mx-auto">
         <h2 className="font-bold text-xl md:text-2xl">소개영상</h2>
-        <p>이용석님의 영상 포트폴리오입니다!</p>
+        <p>{artist?.name}의 영상 포트폴리오입니다!</p>
         {/* TODO: 유튜브영상 */}
         {Array.isArray(artist?.intro_video) &&
           artist!.intro_video.map((video, index) => (
