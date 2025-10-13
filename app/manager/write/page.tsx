@@ -205,7 +205,7 @@ export default function Write() {
 
   return (
     <div className="flex flex-col mx-auto justify-start items-center min-h-screen mt-10 px-4">
-      {!isAuthorized ? (
+      {/* {!isAuthorized ? (
         <>
           <p className="text-2xl mb-10 mt-40">관리자님 안녕하세요 :)</p>
           <form onSubmit={handlePasswordSubmit} className="flex items-center">
@@ -215,118 +215,117 @@ export default function Write() {
             </button>
           </form>
         </>
-      ) : (
-        <div className="flex flex-col w-full max-w-2xl mb-20 md:mb-40">
-          <h1 className="text-2xl font-bold mb-6">아티스트 등록</h1>
-          <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
-            <label className="mb-4">
-              등록 타입:
-              <select value={type} onChange={(e) => setType(e.target.value as "artist" | "speaker")} className="ml-2 border p-1">
-                <option value="artist">아티스트</option>
-                <option value="speaker">연사</option>
-              </select>
-            </label>
+      ) : ( */}
+      <div className="flex flex-col w-full max-w-2xl mb-20 md:mb-40">
+        <h1 className="text-2xl font-bold mb-6">아티스트 등록</h1>
+        <form onSubmit={handleFormSubmit} className="flex flex-col gap-4">
+          <label className="mb-4">
+            등록 타입:
+            <select value={type} onChange={(e) => setType(e.target.value as "artist" | "speaker")} className="ml-2 border p-1">
+              <option value="artist">아티스트</option>
+              <option value="speaker">연사</option>
+            </select>
+          </label>
 
-            <label className="flex flex-col gap-2">
-              추천 태그 선택
-              {type === "speaker" ? (
-                <>
-                  <div className="grid grid-cols-2 gap-2">
-                    {RECOMMEND_SPEAKER_TAGS.map((tag) => (
-                      <label key={tag.value} className="flex items-center gap-2 text-sm">
-                        <input type="checkbox" value={tag.value} checked={form.is_recommended.includes(tag.value)} onChange={() => handleRecommendedChange(tag.value)} />
-                        {tag.label}
-                      </label>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="grid grid-cols-2 gap-2">
-                    {RECOMMEND_ARTIST_TAGS.map((tag) => (
-                      <label key={tag.value} className="flex items-center gap-2 text-sm">
-                        <input type="checkbox" value={tag.value} checked={form.is_recommended.includes(tag.value)} onChange={() => handleRecommendedChange(tag.value)} />
-                        {tag.label}
-                      </label>
-                    ))}
-                  </div>
-                </>
-              )}
-            </label>
-
-            <label>
-              이름
-              <input name="name" value={form.name} onChange={handleChange} className="border p-2 rounded w-full" />
-            </label>
-
-            <label>
-              갤러리 이미지 URL (쉼표로 구분)
-              <input name="gallery_images" type="file" multiple onChange={(e) => setForm((prev) => ({ ...prev, gallery_images: e.target.files }))} className="border p-2 rounded w-full" />
-            </label>
-
-            <label>
-              한 줄 소개
-              <input name="short_desc" value={form.short_desc} onChange={handleChange} className="border p-2 rounded w-full" />
-            </label>
-
+          <label className="flex flex-col gap-2">
+            추천 태그 선택
             {type === "speaker" ? (
-              <label className="flex flex-col gap-1">
-                <span className="font-medium">책 URL (쉼표로 구분)</span>
-                <input name="intro_book" value={form.intro_book} onChange={handleChange} className="border p-2 rounded w-full" />
-              </label>
-            ) : null}
+              <>
+                <div className="grid grid-cols-2 gap-2">
+                  {RECOMMEND_SPEAKER_TAGS.map((tag) => (
+                    <label key={tag.value} className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" value={tag.value} checked={form.is_recommended.includes(tag.value)} onChange={() => handleRecommendedChange(tag.value)} />
+                      {tag.label}
+                    </label>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-2">
+                  {RECOMMEND_ARTIST_TAGS.map((tag) => (
+                    <label key={tag.value} className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" value={tag.value} checked={form.is_recommended.includes(tag.value)} onChange={() => handleRecommendedChange(tag.value)} />
+                      {tag.label}
+                    </label>
+                  ))}
+                </div>
+              </>
+            )}
+          </label>
 
-            {/* <label>
+          <label>
+            이름
+            <input name="name" value={form.name} onChange={handleChange} className="border p-2 rounded w-full" />
+          </label>
+
+          <label>
+            갤러리 이미지 URL (쉼표로 구분)
+            <input name="gallery_images" type="file" multiple onChange={(e) => setForm((prev) => ({ ...prev, gallery_images: e.target.files }))} className="border p-2 rounded w-full" />
+          </label>
+
+          <label>
+            한 줄 소개
+            <input name="short_desc" value={form.short_desc} onChange={handleChange} className="border p-2 rounded w-full" />
+          </label>
+
+          {type === "speaker" ? (
+            <label className="flex flex-col gap-1">
+              <span className="font-medium">책 URL (쉼표로 구분)</span>
+              <input name="intro_book" value={form.intro_book} onChange={handleChange} className="border p-2 rounded w-full" />
+            </label>
+          ) : null}
+
+          {/* <label>
               상세 설명
               <textarea name="full_desc" value={form.full_desc} onChange={handleChange} className="border p-2 rounded w-full h-32" />
             </label> */}
 
-            <label>
-              상세 설명
-              <ReactQuill theme="snow" value={form.full_desc} onChange={(content) => setForm((prev) => ({ ...prev, full_desc: content }))} className="h-80 mb-12" />
-            </label>
-            <label>
-              소개 영상 링크 (쉼표로 구분)
-              <input name="intro_video" value={form.intro_video} onChange={handleChange} className="border p-2 rounded w-full" />
-            </label>
+          <label>
+            상세 설명
+            <ReactQuill theme="snow" value={form.full_desc} onChange={(content) => setForm((prev) => ({ ...prev, full_desc: content }))} className="h-80 mb-12" />
+          </label>
+          <label>
+            소개 영상 링크 (쉼표로 구분)
+            <input name="intro_video" value={form.intro_video} onChange={handleChange} className="border p-2 rounded w-full" />
+          </label>
 
-            <label>
-              경력 사항
-              <textarea name="career" value={form.career} onChange={handleChange} className="border p-2 rounded w-full h-24" />
-            </label>
+          <label>
+            경력 사항
+            <textarea name="career" value={form.career} onChange={handleChange} className="border p-2 rounded w-full h-24" />
+          </label>
 
-            <label>
-              태그 (쉼표로 구분)
-              <input name="tags" value={form.tags} onChange={handleChange} className="border p-2 rounded w-full" />
-            </label>
+          <label>
+            태그 (쉼표로 구분)
+            <input name="tags" value={form.tags} onChange={handleChange} className="border p-2 rounded w-full" />
+          </label>
 
-            <label>
-              이메일
-              <input type="email" name="email" value={form.email} onChange={handleChange} className="border p-2 rounded w-full" />
-            </label>
+          <label>
+            이메일
+            <input type="email" name="email" value={form.email} onChange={handleChange} className="border p-2 rounded w-full" />
+          </label>
 
-            <label>
-              프로필 이미지
-              <input name="profile_image" type="file" onChange={handleChange} className="border p-2 rounded w-full" />
-            </label>
+          <label>
+            프로필 이미지
+            <input name="profile_image" type="file" onChange={handleChange} className="border p-2 rounded w-full" />
+          </label>
 
-            <label className="block">
-              섭외비용
-              <select name="pay" value={form.pay} onChange={handleChange} className="border p-2 rounded w-full">
-                {budgetOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+          <label className="block">
+            섭외비용
+            <select name="pay" value={form.pay} onChange={handleChange} className="border p-2 rounded w-full">
+              {budgetOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
-            <button type="submit" className="bg-black text-white py-2 mt-5 md:mt-10  rounded">
-              등록하기
-            </button>
-          </form>
-        </div>
-      )}
+          <button type="submit" className="bg-black text-white py-2 mt-5 md:mt-10  rounded">
+            등록하기
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

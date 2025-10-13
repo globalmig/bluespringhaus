@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase";
 import axios from "axios";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react"; // ✅ useRef 추가
 import { Loader2 } from "lucide-react";
 import type { Speaker, Artists } from "@/types/inquiry";
 import dynamic from "next/dynamic";
@@ -83,6 +83,14 @@ export default function Edit() {
     toolbar: [[{ header: [1, 2, 3, false] }], ["bold", "italic", "underline", "strike"], [{ color: [] }, { background: [] }], [{ list: "ordered" }, { list: "bullet" }], ["link", "image"], ["clean"]],
   };
 
+  // ✅ StrictMode/의존성 변화로 인한 중복 호출 방지용
+  const fetchedOnce = useRef(false);
+  // ✅ 마지막 요청만 반영하기 위한 시퀀스
+  const reqSeq = useRef(0);
+  // ✅ 이전 요청 취소(원하면 사용)
+  const controllerRef = useRef<AbortController | null>(null);
+
+  // 세션/권한 체크
   useEffect(() => {
     if (status === "loading") return;
 
@@ -97,41 +105,47 @@ export default function Edit() {
     }
   }, [session, status, router]);
 
+  // ✅ typeParam이 준비된 이후, 딱 한 번만 fetch
   useEffect(() => {
-    if (typeParam) {
-      setType(typeParam);
-    }
-  }, [typeParam]);
+    if (status !== "authenticated") return;
+    if (!(session?.user as any)?.manager) return;
+    if (!id) return;
+    if (!typeParam) return;
+    if (fetchedOnce.current) return;
 
-  useEffect(() => {
-    if (id && type && session && (session.user as any).manager) {
-      setIsEditing(true);
-      fetchData();
-    } else if (session && (session.user as any).manager) {
-      setLoading(false);
-    }
-  }, [id, type, session]);
+    fetchedOnce.current = true;
+    setIsEditing(true);
+    setType(typeParam);
+    fetchData(typeParam); // 올바른 타입으로 1회만
+  }, [status, session, id, typeParam]);
 
-  const fetchData = async () => {
-    if (!id || !type) return;
+  // ✅ 가장 마지막 요청만 반영
+  const fetchData = async (t: "artist" | "speaker") => {
+    if (!id) return;
+    const mySeq = ++reqSeq.current;
 
     try {
       setLoading(true);
-      console.log(`API 호출: /api/manager/detail?id=${id}&type=${type}`);
 
-      // 캐시 방지를 위해 timestamp 추가
-      const timestamp = new Date().getTime();
-      const res = await axios.get(`/api/manager/detail?id=${id}&type=${type}&_t=${timestamp}`, {
+      // 이전 요청 취소(선택)
+      if (controllerRef.current) controllerRef.current.abort();
+      const controller = new AbortController();
+      controllerRef.current = controller;
+
+      const timestamp = Date.now();
+      const res = await axios.get(`/api/manager/detail?id=${id}&type=${t}&_t=${timestamp}`, {
         headers: {
           "Cache-Control": "no-cache",
           Pragma: "no-cache",
           Expires: "0",
         },
+        signal: controller.signal as any,
       });
-      const data = res.data;
 
-      console.log("받은 데이터:", data);
-      console.log("full_desc 내용:", data.full_desc); // 디버깅 추가
+      // 뒤늦게 도착한 응답이면 무시
+      if (mySeq !== reqSeq.current) return;
+
+      const data = res.data;
 
       setForm({
         ...initialForm,
@@ -141,7 +155,6 @@ export default function Edit() {
         intro_book: Array.isArray(data.intro_book) ? data.intro_book.join(", ") : data.intro_book || "",
         is_recommended: data.is_recommended || [],
         pay: data.pay || "",
-        // full_desc는 그대로 유지 (HTML 문자열)
         full_desc: data.full_desc || "",
         gallery_images: null,
         profile_image: null,
@@ -149,11 +162,14 @@ export default function Edit() {
 
       setExistingGalleryImages(Array.isArray(data.gallery_images) ? data.gallery_images : []);
       setExistingProfileImage(data.profile_image || "");
-    } catch (err) {
+    } catch (err: any) {
+      if (axios.isCancel?.(err) || err?.name === "CanceledError") return; // 취소된 요청은 무시
+      // 뒤늦게 온 에러면 무시
+      if (mySeq !== reqSeq.current) return;
       console.error("데이터 로드 실패", err);
       alert("데이터를 불러오는데 실패했습니다. 다시 시도해주세요.");
     } finally {
-      setLoading(false);
+      if (mySeq === reqSeq.current) setLoading(false);
     }
   };
 
@@ -257,11 +273,7 @@ export default function Edit() {
           .map((book) => book.trim())
           .filter((book) => book),
         is_recommended: form.is_recommended,
-        // full_desc는 그대로 전송 (HTML 문자열)
       };
-
-      console.log("전송할 데이터:", payload);
-      console.log("전송할 full_desc:", payload.full_desc); // 디버깅 추가
 
       const method = isEditing ? "PUT" : "POST";
       const res = await fetch("/api/manager/post", {
@@ -274,17 +286,9 @@ export default function Edit() {
 
       if (res.ok && result.success) {
         alert(isEditing ? "수정이 완료되었습니다!" : "등록이 완료되었습니다!");
+        // ✅ 네비게이션은 한 번만 (쿼리버스터 포함)
+        router.replace(`/manager?ts=${Date.now()}`);
 
-        // 수정 후 같은 페이지를 다시 로드할 경우를 위해 강제 새로고침
-        if (isEditing) {
-          router.refresh();
-          // 약간의 딜레이 후 데이터 다시 로드
-          setTimeout(() => {
-            fetchData();
-          }, 100);
-        }
-
-        router.push("/manager");
         if (!isEditing) {
           setForm(initialForm);
           setExistingGalleryImages([]);

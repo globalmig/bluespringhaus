@@ -1,10 +1,12 @@
+// app/manager/page.tsx
 "use client";
+
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import axios from "axios";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Search, Plus, Edit, Trash2, User, Music, Loader2 } from "lucide-react";
 import type { Speaker, Artists } from "@/types/inquiry";
 
@@ -16,6 +18,8 @@ interface CombinedItem extends Partial<Speaker & Artists> {
 export default function Manager() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const ts = searchParams?.get("ts"); // ✅ 쿼리버스터
 
   const normalizeImageSrc = (src?: string) => {
     if (!src) return "/default.jpg";
@@ -78,18 +82,25 @@ export default function Manager() {
 
   const isLoading = loadingSpeakers || loadingArtists;
 
-  // 데이터 페칭
+  // 데이터 페칭 - 캐싱 방지
   useEffect(() => {
     if (session && (session.user as any).manager) {
       fetchSpeakers();
       fetchArtists();
     }
-  }, [session]);
+  }, [session, ts]);
 
   const fetchSpeakers = async () => {
     try {
       setLoadingSpeakers(true);
-      const res = await axios.get<Speaker[]>("/api/speakers");
+      const timestamp = new Date().getTime();
+      const res = await axios.get<Speaker[]>(`/api/speakers?_t=${timestamp}`, {
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      });
       setSpeakers(res.data);
     } catch (error) {
       console.error("연사 데이터 로드 실패:", error);
@@ -101,7 +112,14 @@ export default function Manager() {
   const fetchArtists = async () => {
     try {
       setLoadingArtists(true);
-      const res = await axios.get<Artists[]>("/api/artists");
+      const timestamp = new Date().getTime();
+      const res = await axios.get<Artists[]>(`/api/artists?_t=${timestamp}`, {
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      });
       setArtists(res.data);
     } catch (error) {
       console.error("아티스트 데이터 로드 실패:", error);

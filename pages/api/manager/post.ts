@@ -1,5 +1,15 @@
+// pages/api/manager/post.ts (또는 현재 파일 경로 그대로)
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createPagesServerClient } from "@supabase/auth-helpers-nextjs";
+
+async function revalidateManager(res: NextApiResponse) {
+  try {
+    // 목록 페이지 최신화
+    await res.revalidate("/manager");
+  } catch (e) {
+    console.warn("revalidate('/manager') 실패(무시 가능):", e);
+  }
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const supabase = createPagesServerClient({ req, res });
@@ -23,14 +33,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       id, // PUT 요청 시 업데이트할 항목의 ID
     } = req.body;
 
-    console.log("👉 받은 데이터:", req.body);
-    console.log("👉 요청 메서드:", req.method);
-
     // 유효성 검사
     if (!type || !["artist", "speaker"].includes(type)) {
       return res.status(400).json({ success: false, error: "유효하지 않은 type 값입니다." });
     }
-
     if (!name || !email || !short_desc) {
       return res.status(400).json({ success: false, error: "필수 정보가 누락되었습니다." });
     }
@@ -41,7 +47,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       short_desc,
       full_desc,
       pay,
-      intro_video: typeof intro_video === "string" ? intro_video.split(",").map((v: string) => v.trim()) : Array.isArray(intro_video) ? intro_video : [],
+      intro_video:
+        typeof intro_video === "string"
+          ? intro_video
+              .split(",")
+              .map((v: string) => v.trim())
+              .filter((v: string) => v !== "")
+          : Array.isArray(intro_video)
+          ? intro_video
+          : [],
       intro_book:
         typeof intro_book === "string"
           ? intro_book
@@ -50,42 +64,56 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               .filter((b: string) => b !== "")
           : Array.isArray(intro_book)
           ? intro_book
-          : [], // ✅ 추가
+          : [],
       career,
-      tags: typeof tags === "string" ? tags.split(",").map((tag: string) => tag.trim()) : Array.isArray(tags) ? tags : [],
+      tags:
+        typeof tags === "string"
+          ? tags
+              .split(",")
+              .map((tag: string) => tag.trim())
+              .filter((t: string) => t !== "")
+          : Array.isArray(tags)
+          ? tags
+          : [],
       email,
       profile_image: typeof profile_image === "string" ? profile_image : "",
-      is_recommended: typeof is_recommended === "string" ? is_recommended.split(",").map((v: string) => v.trim()) : Array.isArray(is_recommended) ? is_recommended : [],
+      is_recommended:
+        typeof is_recommended === "string"
+          ? is_recommended
+              .split(",")
+              .map((v: string) => v.trim())
+              .filter((v: string) => v !== "")
+          : Array.isArray(is_recommended)
+          ? is_recommended
+          : [],
     };
-
-    console.log("👉 최종 payload:", payload);
 
     const tableName = type === "speaker" ? "speakers" : "artists";
 
-    // PUT 요청인 경우 업데이트
+    // PUT 요청: 업데이트
     if (req.method === "PUT") {
       if (!id) {
         return res.status(400).json({ success: false, error: "업데이트할 항목의 ID가 필요합니다." });
       }
 
       const { data, error } = await supabase.from(tableName).update(payload).eq("id", id).select();
-
       if (error) {
         console.error("❌ Supabase 업데이트 에러:", error);
         return res.status(500).json({ success: false, error: error.message });
       }
 
+      await revalidateManager(res); // ✅ 추가
       return res.status(200).json({ success: true, data });
     }
 
-    // POST 요청인 경우 삽입
+    // POST 요청: 삽입
     const { data, error } = await supabase.from(tableName).insert([payload]).select();
-
     if (error) {
       console.error("❌ Supabase 삽입 에러:", error);
       return res.status(500).json({ success: false, error: error.message });
     }
 
+    await revalidateManager(res); // ✅ 추가
     return res.status(200).json({ success: true, data });
   }
 
@@ -97,8 +125,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ success: false, error: "유효하지 않은 type 값입니다." });
     }
 
-    const tableName = type === "speaker" ? "speakers" : "artists";
+    // ✅ 즉시 반영 보장: 브라우저/프록시 캐시 비활성화
+    res.setHeader("Cache-Control", "no-store, max-age=0, must-revalidate");
 
+    const tableName = (type === "speaker" ? "speakers" : "artists") as "speakers" | "artists";
     const { data, error } = await supabase.from(tableName).select("*").order("created_at", { ascending: false });
 
     if (error) {
@@ -118,7 +148,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const tableName = type === "speaker" ? "speakers" : "artists";
-
     const { error } = await supabase.from(tableName).delete().eq("id", id);
 
     if (error) {
@@ -126,6 +155,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ success: false, error: error.message });
     }
 
+    await revalidateManager(res); // ✅ 추가
     return res.status(200).json({ success: true });
   }
 
