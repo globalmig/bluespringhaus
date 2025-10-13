@@ -83,7 +83,6 @@ export default function Edit() {
     toolbar: [[{ header: [1, 2, 3, false] }], ["bold", "italic", "underline", "strike"], [{ color: [] }, { background: [] }], [{ list: "ordered" }, { list: "bullet" }], ["link", "image"], ["clean"]],
   };
 
-  // 세션 체크
   useEffect(() => {
     if (status === "loading") return;
 
@@ -98,14 +97,12 @@ export default function Edit() {
     }
   }, [session, status, router]);
 
-  // 타입 설정
   useEffect(() => {
     if (typeParam) {
       setType(typeParam);
     }
   }, [typeParam]);
 
-  // 데이터 로딩
   useEffect(() => {
     if (id && type && session && (session.user as any).manager) {
       setIsEditing(true);
@@ -122,10 +119,19 @@ export default function Edit() {
       setLoading(true);
       console.log(`API 호출: /api/manager/detail?id=${id}&type=${type}`);
 
-      const res = await axios.get(`/api/manager/detail?id=${id}&type=${type}`);
+      // 캐시 방지를 위해 timestamp 추가
+      const timestamp = new Date().getTime();
+      const res = await axios.get(`/api/manager/detail?id=${id}&type=${type}&_t=${timestamp}`, {
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+      });
       const data = res.data;
 
       console.log("받은 데이터:", data);
+      console.log("full_desc 내용:", data.full_desc); // 디버깅 추가
 
       setForm({
         ...initialForm,
@@ -135,6 +141,8 @@ export default function Edit() {
         intro_book: Array.isArray(data.intro_book) ? data.intro_book.join(", ") : data.intro_book || "",
         is_recommended: data.is_recommended || [],
         pay: data.pay || "",
+        // full_desc는 그대로 유지 (HTML 문자열)
+        full_desc: data.full_desc || "",
         gallery_images: null,
         profile_image: null,
       });
@@ -191,7 +199,6 @@ export default function Edit() {
     const uploadFolder = `gallery/${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
 
     try {
-      // 새로운 갤러리 이미지 업로드
       if (form.gallery_images && form.gallery_images.length > 0) {
         const files = Array.from(form.gallery_images);
         const newGalleryUrls: string[] = [];
@@ -215,7 +222,6 @@ export default function Edit() {
         galleryUrls = isEditing ? [...galleryUrls, ...newGalleryUrls] : newGalleryUrls;
       }
 
-      // 새로운 프로필 이미지 업로드
       if (form.profile_image && form.profile_image[0]) {
         const file = form.profile_image[0];
         const ext = file.name.split(".").pop();
@@ -251,9 +257,11 @@ export default function Edit() {
           .map((book) => book.trim())
           .filter((book) => book),
         is_recommended: form.is_recommended,
+        // full_desc는 그대로 전송 (HTML 문자열)
       };
 
       console.log("전송할 데이터:", payload);
+      console.log("전송할 full_desc:", payload.full_desc); // 디버깅 추가
 
       const method = isEditing ? "PUT" : "POST";
       const res = await fetch("/api/manager/post", {
@@ -266,6 +274,16 @@ export default function Edit() {
 
       if (res.ok && result.success) {
         alert(isEditing ? "수정이 완료되었습니다!" : "등록이 완료되었습니다!");
+
+        // 수정 후 같은 페이지를 다시 로드할 경우를 위해 강제 새로고침
+        if (isEditing) {
+          router.refresh();
+          // 약간의 딜레이 후 데이터 다시 로드
+          setTimeout(() => {
+            fetchData();
+          }, 100);
+        }
+
         router.push("/manager");
         if (!isEditing) {
           setForm(initialForm);
@@ -281,7 +299,6 @@ export default function Edit() {
     }
   };
 
-  // 로딩 중
   if (status === "loading" || loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -290,7 +307,6 @@ export default function Edit() {
     );
   }
 
-  // 권한 없음
   if (!session || !(session.user as any).manager) {
     return null;
   }
