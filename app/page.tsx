@@ -69,14 +69,14 @@ export default function Home() {
             modules={[Autoplay, Pagination]}
             className={`mySwiper mt-4 `}
           >
-            {/* <SwiperSlide>
-              <Image src="/image/banner1.jpg" alt="세일할인배너" fill className="object-contain" />
-            </SwiperSlide> */}
             <SwiperSlide>
-              <Image src="/image/banner1.jpg" alt="세일할인배너" fill className="object-contain" />
+              <Image src="/image/banner1.jpg" alt="국내 최고의 전문성과 경험" fill className="object-contain" />
             </SwiperSlide>
             <SwiperSlide>
-              <Image src="/image/banner2.jpg" alt="세일할인배너" fill className="object-contain" />
+              <Image src="/image/banner2.jpg" alt="국내 최초 강연 문화 섭외기업" fill className="object-contain" />
+            </SwiperSlide>
+            <SwiperSlide>
+              <Image src="/image/banner3.jpg" alt="최고의 섭외력" fill className="object-contain" />
             </SwiperSlide>
           </Swiper>
         </div>
