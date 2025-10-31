@@ -225,10 +225,9 @@ export default function BookPage() {
           <input
             id="requested_time"
             name="requested_time"
-            type="time"
             required
             disabled={isSubmitting}
-            placeholder="진행시간을 입력해주세요."
+            placeholder="진행시간을 입력해주세요. 예) 오후 2시, 오전 5시"
             className="py-4 px-4 rounded-xl border border-gray-300 disabled:opacity-50"
           />
         </div>
