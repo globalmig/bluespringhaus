@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     template: "%s | 마이크임팩트",
   },
   description: "국내 최고 수준의 스피커/아티스트 섭외 플랫폼. 강연, 공연, 이벤트를 한 곳에서 진행해보세요!",
-  // icons: { icon: "/icon.png" },
+  icons: { icon: "/favicon.ico" },
   keywords: ["마이크임팩트", "강연", "스피커", "아티스트", "섭외", "이벤트"],
   alternates: { canonical: "/" },
   openGraph: {
