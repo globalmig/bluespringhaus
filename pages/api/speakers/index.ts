@@ -8,7 +8,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const { location, category, budget } = req.query;
 
-  // ✅ 상위 카테고리를 하위 키워드로 확장
   const categoryMap: Record<string, string[]> = {
     economy: ["경제", "투자", "주식", "창업", "기업가정신", "협상", "재테크"],
     humanities: ["인문학", "철학", "심리학", "문학", "과학", "역사", "종교"],
@@ -22,35 +21,47 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   let query = supabase.from("speakers").select("*");
 
-  // location이 있으면 name, short_desc, full_desc에 ilike로 검색
-  if (location && typeof location === "string") {
-    query = query.or(`name.ilike.%${location}%,short_desc.ilike.%${location}%,full_desc.ilike.%${location}%`);
-  }
+  // ✅ location 필터는 Supabase 단계에서 제거 (JavaScript에서 처리)
 
-  // ✅ category 검색 로직 수정
-  if (category && typeof category === "string") {
-    // 상위 카테고리인 경우 하위 항목들로 확장해서 검색
+  // category 검색
+  if (category && typeof category === "string" && category.trim() !== "") {
     if (categoryMap[category]) {
       const keywords = categoryMap[category];
-      // tags 배열에 키워드 중 하나라도 포함되면 검색
       const orConditions = keywords.map((keyword) => `tags.cs.{${keyword}}`).join(",");
       query = query.or(orConditions);
     } else {
-      // 하위 카테고리를 직접 선택한 경우
       query = query.contains("tags", [category]);
     }
   }
 
-  // budget이 있으면 pay 컬럼과 비교
-  if (budget && typeof budget === "string") {
+  // budget 검색
+  if (budget && typeof budget === "string" && budget.trim() !== "") {
     query = query.eq("pay", budget);
   }
 
-  // ✅ 최신순 정렬 + 넉넉한 개수(예: 50개)
-  query = query.order("created_at", { ascending: false }).limit(50);
+  query = query.order("created_at", { ascending: false }).limit(200); // ✅ limit 늘림
 
   const { data, error } = await query;
 
   if (error) return res.status(500).json({ error: error.message });
-  return res.status(200).json(data);
+
+  // ✅ location 필터링을 JavaScript에서 처리
+  let filteredData = data || [];
+  if (location && typeof location === "string" && location.trim() !== "") {
+    const locationLower = location.toLowerCase();
+
+    filteredData = filteredData.filter((speaker) => {
+      const matchesName = speaker.name?.toLowerCase().includes(locationLower);
+      const matchesShortDesc = speaker.short_desc?.toLowerCase().includes(locationLower);
+      const matchesFullDesc = speaker.full_desc?.toLowerCase().includes(locationLower);
+      const matchesTags = speaker.tags?.some((tag: string) => tag.toLowerCase().includes(locationLower));
+
+      return matchesName || matchesShortDesc || matchesFullDesc || matchesTags;
+    });
+  }
+
+  // 최종 결과를 50개로 제한
+  const finalData = filteredData.slice(0, 50);
+
+  return res.status(200).json(finalData);
 }
