@@ -102,7 +102,7 @@ export default function InformationTab({ reviews }: ReviewItemProps) {
         {speaker?.intro_book && speaker.intro_book.length > 0 ? (
           <section className="flex flex-col py-6 px-4 md:p-10 border bg-white rounded-lg">
             <h2 className="font-bold text-xl md:text-2xl">책</h2>
-            <p className="mb-4">지필한 책을 확인해보세요</p>
+            <p className="mb-4">집필한 책을 확인해보세요</p>
             <div className="md:block hidden">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
                 {(showAllBooks ? speaker.intro_book : speaker.intro_book.slice(0, 3)).map((item, index) => (
