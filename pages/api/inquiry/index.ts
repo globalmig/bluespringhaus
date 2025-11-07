@@ -11,6 +11,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: "GET only" });
   }
 
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+
   // 0) ENV 가드
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
     return res.status(500).json({ error: "Server env missing (SUPABASE_URL or SERVICE_ROLE_KEY)" });
