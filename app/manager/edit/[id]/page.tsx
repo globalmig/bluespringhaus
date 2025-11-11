@@ -6,7 +6,7 @@ import axios from "axios";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import React, { Suspense, useEffect, useRef, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, X, Plus } from "lucide-react";
 import type { Speaker, Artists } from "@/types/inquiry";
 import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
@@ -74,6 +74,10 @@ function EditInner() {
   const [existingGalleryImages, setExistingGalleryImages] = useState<string[]>([]);
   const [existingProfileImage, setExistingProfileImage] = useState<string>("");
 
+  // 새로 추가된 미리보기 상태
+  const [galleryPreviews, setGalleryPreviews] = useState<{ url: string; file?: File; isExisting?: boolean }[]>([]);
+  const [profilePreview, setProfilePreview] = useState<string>("");
+
   const params = useParams();
   const searchParams = useSearchParams();
 
@@ -84,12 +88,12 @@ function EditInner() {
     toolbar: [[{ header: [1, 2, 3, false] }], ["bold", "italic", "underline", "strike"], [{ color: [] }, { background: [] }], [{ list: "ordered" }, { list: "bullet" }], ["link", "image"], ["clean"]],
   };
 
-  // 중복 호출/경쟁 상태 방지
   const fetchedOnce = useRef(false);
   const reqSeq = useRef(0);
   const controllerRef = useRef<AbortController | null>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const profileInputRef = useRef<HTMLInputElement>(null);
 
-  // 세션/권한 체크
   useEffect(() => {
     if (status === "loading") return;
 
@@ -104,7 +108,6 @@ function EditInner() {
     }
   }, [session, status, router]);
 
-  // typeParam 준비 후 단 1회 fetch
   useEffect(() => {
     if (status !== "authenticated") return;
     if (!(session?.user as any)?.manager) return;
@@ -118,7 +121,6 @@ function EditInner() {
     fetchData(typeParam);
   }, [status, session, id, typeParam]);
 
-  // 가장 마지막 요청만 반영
   const fetchData = async (t: "artist" | "speaker") => {
     if (!id) return;
     const mySeq = ++reqSeq.current;
@@ -140,7 +142,7 @@ function EditInner() {
         signal: controller.signal as any,
       });
 
-      if (mySeq !== reqSeq.current) return; // 늦은 응답 무시
+      if (mySeq !== reqSeq.current) return;
 
       const data = res.data;
 
@@ -157,11 +159,16 @@ function EditInner() {
         profile_image: null,
       });
 
-      setExistingGalleryImages(Array.isArray(data.gallery_images) ? data.gallery_images : []);
-      setExistingProfileImage(data.profile_image || "");
+      const existingGallery = Array.isArray(data.gallery_images) ? data.gallery_images : [];
+      setExistingGalleryImages(existingGallery);
+      setGalleryPreviews(existingGallery.map((url: string) => ({ url, isExisting: true })));
+
+      const existingProfile = data.profile_image || "";
+      setExistingProfileImage(existingProfile);
+      setProfilePreview(existingProfile);
     } catch (err: any) {
       if (axios.isCancel?.(err) || err?.name === "CanceledError") return;
-      if (mySeq !== reqSeq.current) return; // 늦은 에러 무시
+      if (mySeq !== reqSeq.current) return;
       console.error("데이터 로드 실패", err);
       alert("데이터를 불러오는데 실패했습니다. 다시 시도해주세요.");
     } finally {
@@ -183,12 +190,7 @@ function EditInner() {
     const target = e.target;
     const { name, type } = target;
 
-    if (type === "file") {
-      setForm((prev) => ({
-        ...prev,
-        [name]: (target as HTMLInputElement).files,
-      }));
-    } else if (type === "checkbox") {
+    if (type === "checkbox") {
       const checked = (target as HTMLInputElement).checked;
       setForm((prev) => ({
         ...prev,
@@ -203,10 +205,102 @@ function EditInner() {
     }
   };
 
+  // 갤러리 이미지 추가
+  const handleGalleryAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newPreviews = Array.from(files).map((file) => ({
+      url: URL.createObjectURL(file),
+      file,
+      isExisting: false,
+    }));
+
+    setGalleryPreviews((prev) => [...prev, ...newPreviews]);
+
+    // 기존 파일과 새 파일 합치기
+    const existingFiles = form.gallery_images ? Array.from(form.gallery_images) : [];
+    const dataTransfer = new DataTransfer();
+    [...existingFiles, ...Array.from(files)].forEach((file) => dataTransfer.items.add(file));
+
+    setForm((prev) => ({
+      ...prev,
+      gallery_images: dataTransfer.files,
+    }));
+
+    // 파일 입력 초기화
+    if (galleryInputRef.current) {
+      galleryInputRef.current.value = "";
+    }
+  };
+
+  // 갤러리 이미지 삭제
+  const handleGalleryRemove = (index: number) => {
+    const preview = galleryPreviews[index];
+
+    if (preview.isExisting) {
+      // 기존 이미지 삭제
+      setExistingGalleryImages((prev) => prev.filter((_, i) => i !== index));
+      setGalleryPreviews((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      // 새로 추가한 이미지 삭제
+      const newPreviews = galleryPreviews.filter((_, i) => i !== index);
+      setGalleryPreviews(newPreviews);
+
+      // FileList 재구성
+      const remainingFiles = newPreviews.filter((p) => p.file).map((p) => p.file!);
+      const dataTransfer = new DataTransfer();
+      remainingFiles.forEach((file) => dataTransfer.items.add(file));
+
+      setForm((prev) => ({
+        ...prev,
+        gallery_images: dataTransfer.files.length > 0 ? dataTransfer.files : null,
+      }));
+
+      // URL 정리
+      URL.revokeObjectURL(preview.url);
+    }
+  };
+
+  // 프로필 이미지 변경
+  const handleProfileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 이전 미리보기 URL 정리
+    if (profilePreview && !profilePreview.startsWith("http")) {
+      URL.revokeObjectURL(profilePreview);
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setProfilePreview(previewUrl);
+    setForm((prev) => ({
+      ...prev,
+      profile_image: e.target.files,
+    }));
+  };
+
+  // 프로필 이미지 삭제
+  const handleProfileRemove = () => {
+    if (profilePreview && !profilePreview.startsWith("http")) {
+      URL.revokeObjectURL(profilePreview);
+    }
+    setProfilePreview("");
+    setExistingProfileImage("");
+    setForm((prev) => ({
+      ...prev,
+      profile_image: null,
+    }));
+    if (profileInputRef.current) {
+      profileInputRef.current.value = "";
+    }
+  };
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    let galleryUrls: string[] = [...existingGalleryImages];
+    // 현재 상태의 기존 이미지들만 사용
+    let galleryUrls: string[] = galleryPreviews.filter((p) => p.isExisting).map((p) => p.url);
     let profileImageUrl = existingProfileImage;
     const uploadFolder = `gallery/${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
 
@@ -231,7 +325,7 @@ function EditInner() {
           newGalleryUrls.push(url);
         }
 
-        galleryUrls = isEditing ? [...galleryUrls, ...newGalleryUrls] : newGalleryUrls;
+        galleryUrls = [...galleryUrls, ...newGalleryUrls];
       }
 
       if (form.profile_image && form.profile_image[0]) {
@@ -282,13 +376,14 @@ function EditInner() {
 
       if (res.ok && result.success) {
         alert(isEditing ? "수정이 완료되었습니다!" : "등록이 완료되었습니다!");
-        // 네비게이션은 한 번만 (쿼리버스터 포함)
         router.replace(`/manager?ts=${Date.now()}`);
 
         if (!isEditing) {
           setForm(initialForm);
           setExistingGalleryImages([]);
           setExistingProfileImage("");
+          setGalleryPreviews([]);
+          setProfilePreview("");
         }
       } else {
         alert(result.error || (isEditing ? "수정에 실패했습니다." : "등록에 실패했습니다."));
@@ -298,6 +393,20 @@ function EditInner() {
       alert("서버 오류가 발생했습니다. 다시 시도해주세요.");
     }
   };
+
+  // 컴포넌트 언마운트 시 메모리 정리
+  useEffect(() => {
+    return () => {
+      galleryPreviews.forEach((preview) => {
+        if (!preview.isExisting && preview.url) {
+          URL.revokeObjectURL(preview.url);
+        }
+      });
+      if (profilePreview && !profilePreview.startsWith("http")) {
+        URL.revokeObjectURL(profilePreview);
+      }
+    };
+  }, []);
 
   if (status === "loading" || loading) {
     return (
@@ -354,21 +463,39 @@ function EditInner() {
             <input name="name" value={form.name} onChange={handleChange} className="border p-2 rounded w-full" required />
           </label>
 
-          <label className="flex flex-col gap-1">
-            <span className="font-medium">
-              갤러리 이미지
-              {isEditing && existingGalleryImages.length > 0 && <span className="text-sm text-gray-600">{` (현재 ${existingGalleryImages.length}개 이미지)`}</span>}
-            </span>
-            <input
-              name="gallery_images"
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={(e) => setForm((prev) => ({ ...prev, gallery_images: e.target.files }))}
-              className="border p-2 rounded w-full"
-            />
-            {isEditing && existingGalleryImages.length > 0 && <div className="text-sm text-gray-600">새 이미지를 선택하면 기존 이미지에 추가됩니다.</div>}
-          </label>
+          {/* 갤러리 이미지 섹션 */}
+          <div className="flex flex-col gap-2">
+            <span className="font-medium">갤러리 이미지</span>
+
+            {/* 미리보기 그리드 */}
+            {galleryPreviews.length > 0 && (
+              <div className="grid grid-cols-3 gap-3 mb-3">
+                {galleryPreviews.map((preview, index) => (
+                  <div key={index} className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 group">
+                    <img src={preview.url} alt={`갤러리 ${index + 1}`} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => handleGalleryRemove(index)}
+                      className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    {preview.isExisting && <span className="absolute bottom-1 left-1 bg-blue-500 text-white text-xs px-2 py-0.5 rounded">기존</span>}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* 이미지 추가 버튼 */}
+            <div className="flex items-center gap-2">
+              <input ref={galleryInputRef} type="file" multiple accept="image/*" onChange={handleGalleryAdd} className="hidden" id="gallery-upload" />
+              <label htmlFor="gallery-upload" className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
+                <Plus className="w-5 h-5" />
+                <span>이미지 추가</span>
+              </label>
+              <span className="text-sm text-gray-600">{galleryPreviews.length}개 이미지</span>
+            </div>
+          </div>
 
           <label className="flex flex-col gap-1">
             <span className="font-medium">한 줄 소개</span>
@@ -407,13 +534,29 @@ function EditInner() {
             <input type="email" name="email" value={form.email} onChange={handleChange} className="border p-2 rounded w-full" />
           </label>
 
-          <label className="flex flex-col gap-1">
-            <span className="font-medium">
-              프로필 이미지
-              {isEditing && existingProfileImage && <span className="text-sm text-gray-600"> (현재 이미지 있음)</span>}
-            </span>
-            <input name="profile_image" type="file" accept="image/*" onChange={handleChange} className="border p-2 rounded w-full" />
-          </label>
+          {/* 프로필 이미지 섹션 */}
+          <div className="flex flex-col gap-2">
+            <span className="font-medium">프로필 이미지</span>
+
+            {/* 프로필 미리보기 */}
+            {profilePreview && (
+              <div className="relative w-40 h-40 rounded-lg overflow-hidden border-2 border-gray-200 group mb-2">
+                <img src={profilePreview} alt="프로필" className="w-full h-full object-cover" />
+                <button type="button" onClick={handleProfileRemove} className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {/* 프로필 이미지 업로드 */}
+            <div className="flex items-center gap-2">
+              <input ref={profileInputRef} type="file" accept="image/*" onChange={handleProfileChange} className="hidden" id="profile-upload" />
+              <label htmlFor="profile-upload" className="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-gray-400 transition-colors">
+                <Plus className="w-5 h-5" />
+                <span>{profilePreview ? "프로필 이미지 변경" : "프로필 이미지 선택"}</span>
+              </label>
+            </div>
+          </div>
 
           <label className="block">
             <span className="font-medium">섭외비용</span>
@@ -435,7 +578,6 @@ function EditInner() {
   );
 }
 
-// 기본 export: Suspense 경계로 감싸기 (useSearchParams 안전)
 export default function EditPage() {
   return (
     <Suspense

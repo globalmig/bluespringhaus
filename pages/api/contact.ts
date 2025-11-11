@@ -150,7 +150,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // 6) 스피커 이메일 조회
-    const { data: speaker, error: spErr } = await admin.from("speakers").select("email").eq("id", id).maybeSingle();
+    const { data: speaker, error: spErr } = await admin.from("speakers").select("email,name").eq("id", id).maybeSingle();
     if (spErr || !speaker?.email) {
       console.error("강연자 이메일 조회 실패:", spErr);
       return res.status(404).json({ success: false, error: "강연자 정보를 찾을 수 없습니다." });
@@ -184,6 +184,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           <p>아래와 같이 섭외 요청드립니다.</p>
           <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
             <tbody>
+        
               <tr><td style="font-weight: bold; width: 160px;">개최</td><td>${host ?? ""}</td></tr>
               <tr><td style="font-weight: bold;">담당자 이름</td><td>${manager_name ?? ""}</td></tr>
               <tr><td style="font-weight: bold;">전화번호</td><td>${manager_phone ?? ""}</td></tr>
