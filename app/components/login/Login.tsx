@@ -36,6 +36,8 @@ export default function Login({ onClose }: { onClose: () => void }) {
       syncing.current = true;
       try {
         await axios.post("/api/profile/update", {});
+        // 여기
+
         syncedOnce.current = true;
 
         onClose?.();
@@ -82,6 +84,7 @@ export default function Login({ onClose }: { onClose: () => void }) {
 
       if (result?.ok) {
         // ✅ 이메일 로그인 성공 시에도 프로필 동기화
+
         try {
           await axios.post("/api/profile/update", {});
         } catch (syncError) {

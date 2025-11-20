@@ -130,6 +130,16 @@ export default function BookPage() {
 
       if (res.status === 200 && res.data.success) {
         alert("섭외가 성공적으로 전송되었습니다!");
+        if (typeof window !== 'undefined' && window.wcs) {
+                if (!window.wcs_add) window.wcs_add = {};
+                window.wcs_add['wa'] = 's_2e8b6cd72ee3';
+                const _conv = { type: 'lead' };
+                window.wcs.trans?.(_conv);
+            }
+
+            if (typeof window !== 'undefined' && window.wsa) {
+                window.wsa.cnv('4', 1, 'UgUEoFC');
+            }
         form.reset();
         router.push(`/speakers/${id}`);
       } else {
