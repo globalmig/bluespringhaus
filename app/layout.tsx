@@ -6,6 +6,7 @@ import Providers from "./providers"; // ← 이게 클라이언트라면 유지
 import "react-quill/dist/quill.snow.css";
 import ChannelProvider from "./components/common/ChannelProvider";
 import AuthSessionProvider from "./components/auth/AuthSessionProvider";
+import Script from "next/script";
 // ✅ 추가 (클라 래퍼)
 
 export const metadata: Metadata = {
@@ -53,6 +54,42 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           </Providers>
         </AuthSessionProvider>
+        <Script
+         type="text/javascript"
+          src="//wcs.naver.net/wcslog.js"
+           strategy="beforeInteractive"
+        />
+        <Script
+        id="wcs-analytics"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              function initWcs() {
+                // @ts-ignore
+                if (!window.wcs_add) window.wcs_add = {};
+                // @ts-ignore
+                window.wcs_add["wa"] = "s_2e8b6cd72ee3";
+                // @ts-ignore
+                if (!window._nasa) window._nasa = {};
+                // @ts-ignore
+                if (window.wcs) {
+                  // @ts-ignore
+                  wcs.inflow();
+                  // @ts-ignore
+                  wcs_do();
+                }
+              }
+
+              if (document.readyState === "complete" || document.readyState === "interactive") {
+                initWcs();
+              } else {
+                document.addEventListener("DOMContentLoaded", initWcs);
+              }
+            })();
+          `,
+        }}
+      />
       </body>
     </html>
   );

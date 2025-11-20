@@ -52,25 +52,6 @@ export default function Footer() {
           `
         }}
       />
-      <Script
-        src="//wcs.naver.net/wcslog.js"
-        type="text/javascript"
-        strategy="beforeInteractive"
-      />
-      <Script
-        id="wcs-init"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{
-          __html: `
-           if (!wcs_add) var wcs_add={ };
-        wcs_add["wa"] = "s_2e8b6cd72ee3";
-        if (!_nasa) var _nasa={ };
-        if(window.wcs){
-          wcs.inflow();
-        wcs_do();
-          `
-        }}
-      />
     </>
   );
 }
