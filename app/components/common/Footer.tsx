@@ -28,6 +28,8 @@ export default function Footer() {
           </Link>
           <div className="text-sm font-light text-zinc-500">
             <p>대표자: 김수정 | 사업자등록: 219-86-01868</p>
+            <p>전화: 050-7141-60749</p>
+            <p>이메일: micimpact.info@gmail.com</p>
             {/* <p>전화번호: 000-000-000</p> */}
             <p>주소: 제주특별자치도 제주시 고마로 105, 5층 501호(일도이동)</p>
             <p className="mt-4">© 2025 마이크임팩트. All rights reserved. </p>
@@ -37,11 +39,7 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      <Script
-        src="//wsa.mig-log.com/wsalog.js"
-        type="text/javascript"
-        strategy="beforeInteractive"
-      />
+      <Script src="//wsa.mig-log.com/wsalog.js" type="text/javascript" strategy="beforeInteractive" />
       <Script
         id="wsa-init"
         strategy="afterInteractive"
@@ -49,7 +47,7 @@ export default function Footer() {
           __html: `
             wsa.inflow("www.micimpact.net");
             wsa_do(wsa);
-          `
+          `,
         }}
       />
     </>
