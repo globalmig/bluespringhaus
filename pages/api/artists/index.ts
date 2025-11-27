@@ -8,16 +8,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const { location, category, budget } = req.query;
 
+  // ✅ 아티스트용 categoryMap 추가
+  const categoryMap: Record<string, string[]> = {
+    indie: ["인디"],
+    ballad: ["발라드"],
+    hiphop: ["힙합"],
+    rnb: ["R&B"],
+    trot: ["트로트"],
+    rock_band: ["락/밴드"],
+    jazz: ["재즈"],
+    edm: ["EDM"],
+    classical: ["클래식"],
+    acoustic: ["어쿠스틱"],
+    idol: ["아이돌"],
+    dance: ["댄스"],
+    broadcaster: ["방송인"],
+    mc: ["MC"],
+    announcer: ["아나운서"],
+    voice_actor: ["성우"],
+    youtuber: ["유튜버"],
+    tiktoker: ["틱톡커"],
+    influencer: ["인플루언서"],
+  };
+
   let query = supabase.from("artists").select("*");
 
-  // ✅ location 필터는 JavaScript에서 처리
-
-  // category가 있으면 tags 배열에 category가 포함되는지 검사
+  // ✅ 스피커와 동일한 로직 적용
   if (category && typeof category === "string" && category.trim() !== "") {
-    query = query.contains("tags", [category]);
+    if (categoryMap[category]) {
+      const keywords = categoryMap[category];
+      const orConditions = keywords.map((keyword) => `tags.cs.{${keyword}}`).join(",");
+      query = query.or(orConditions);
+    } else {
+      // 직접 입력된 태그는 그대로 검색
+      query = query.contains("tags", [category]);
+    }
   }
 
-  // budget이 있으면 pay와 비교
+  // budget 검색
   if (budget && typeof budget === "string" && budget.trim() !== "") {
     query = query.eq("pay", budget);
   }
@@ -28,7 +56,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (error) return res.status(500).json({ error: error.message });
 
-  // ✅ location 필터링을 JavaScript에서 처리
+  // location 필터링
   let filteredData = data || [];
   if (location && typeof location === "string" && location.trim() !== "") {
     const locationLower = location.toLowerCase();
@@ -43,7 +71,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   }
 
-  // 최종 결과를 100개로 제한
   const finalData = filteredData.slice(0, 100);
 
   return res.status(200).json(finalData);
