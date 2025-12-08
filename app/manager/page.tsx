@@ -177,11 +177,15 @@ function ManagerInner() {
               <h1 className="text-2xl font-bold text-gray-900">관리자 대시보드</h1>
               <p className="text-gray-600 mt-1">연사 및 아티스트 관리</p>
             </div>
-
-            <Link href="/manager/write" className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium">
-              <Plus className="w-4 h-4 mr-2" />
-              새로 등록
-            </Link>
+            <div className="flex gap-4">
+              <Link href="/manager/write" className="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium">
+                <Plus className="w-4 h-4 mr-2" />
+                새로 등록
+              </Link>
+              <Link href="/manager/list" className="inline-flex items-center px-4 py-2  text-black hover:text-white border-2 rounded-lg hover:bg-gray-800 transition-colors font-medium">
+                진행 리스트
+              </Link>
+            </div>
           </div>
         </div>
       </header>
