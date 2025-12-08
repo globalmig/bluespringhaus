@@ -14,6 +14,7 @@ export interface Speaker {
   is_recommended: string[];
   pay: string;
   created_at: string;
+  
 }
 
 export interface Artists {

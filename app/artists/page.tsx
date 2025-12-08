@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Search from "../components/common/Search";
 import CardList_artist from "../components/common/CardList_artist";
-import type { Speaker } from "@/types/inquiry";
+import type { Artists } from "@/types/inquiry"; // ✅ Speaker → Artists 로 변경
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
 import Image from "next/image";
@@ -14,15 +14,32 @@ import "swiper/css/pagination";
 
 import "./styles.css";
 
+// ✅ 페이지네이션 응답 타입 (speakers 페이지랑 통일)
+type PagedResponse<T> = {
+  items: T[];
+  hasMore: boolean;
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
 export default function Home() {
-  const [isSpeakers, setSpeakers] = useState<Speaker[]>([]);
+  // ✅ 상태도 Artists 배열로
+  const [artists, setArtists] = useState<Artists[]>([]);
   const [isMoOpen, setMoOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    const fetchSpeakers = async () => {
+    const fetchArtists = async () => {
       try {
-        const res = await axios.get<Speaker[]>("/api/artists");
-        setSpeakers(res.data);
+        const res = await axios.get<PagedResponse<Artists>>("/api/artists", {
+          params: {
+            page: 1,
+            pageSize: 200, // 한 번에 넉넉하게 가져오기
+          },
+        });
+        // ✅ 배열만 상태에 넣기
+        setArtists(res.data.items);
       } catch (error) {
         console.error("API 호출 실패!", error);
       } finally {
@@ -30,7 +47,7 @@ export default function Home() {
       }
     };
 
-    fetchSpeakers();
+    fetchArtists();
   }, []);
 
   // 추천 태그 목록 정의
@@ -90,7 +107,8 @@ export default function Home() {
       ) : (
         <div className={`${isMoOpen ? "md:block hidden" : "block"} mt-28`}>
           {speakerCategories.map(({ key, title }) => {
-            const filtered = isSpeakers.filter((spk) => spk.is_recommended?.includes(key));
+            // ✅ artists 배열에서 추천 태그 기준 필터
+            const filtered = artists.filter((artist) => artist.is_recommended?.includes(key));
             if (filtered.length === 0) return null;
 
             return (

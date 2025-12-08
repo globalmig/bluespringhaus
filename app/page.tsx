@@ -14,6 +14,14 @@ import "swiper/css/pagination";
 
 import "./styles.css";
 
+type PagedResponse<T> = {
+  items: T[];
+  hasMore: boolean;
+  total: number;
+  page: number;
+  pageSize: number;
+};
+
 export default function Home() {
   const [isSpeakers, setSpeakers] = useState<Speaker[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,8 +30,14 @@ export default function Home() {
   useEffect(() => {
     const fetchSpeakers = async () => {
       try {
-        const res = await axios.get<Speaker[]>("/api/speakers");
-        setSpeakers(res.data);
+        const res = await axios.get<PagedResponse<Speaker>>("/api/speakers", {
+          params: {
+            page: 1,
+            pageSize: 200, // 한 번에 충분히 많이 가져오기
+          },
+        });
+        // ✅ 배열만 상태에 넣기
+        setSpeakers(res.data.items);
       } catch (error) {
         console.error("API 호출 실패!", error);
       } finally {
