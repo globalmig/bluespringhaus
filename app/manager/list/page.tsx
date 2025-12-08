@@ -77,8 +77,8 @@ export default function AdminMypage() {
         searchTerm === "" ||
         inq.profiles?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         inq.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        inq.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        inq.contact?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        inq.manager_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        inq.manager_phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         getProfileName(inq)?.toLowerCase().includes(searchTerm.toLowerCase());
 
       return statusMatch && typeMatch && searchMatch;
@@ -228,8 +228,8 @@ export default function AdminMypage() {
                         <p className="text-sm text-gray-500">{inq.profiles?.email || "-"}</p>
                       </div>
                     </td>
-                    <td className="px-4 py-4 text-gray-700">{inq.company_name || "-"}</td>
-                    <td className="px-4 py-4 text-gray-700">{inq.contact || "-"}</td>
+                    <td className="px-4 py-4 text-gray-700">{inq.manager_name || "-"}</td>
+                    <td className="px-4 py-4 text-gray-700">{inq.manager_phone || "-"}</td>
                     <td className="px-4 py-4 text-sm text-gray-500">{new Date(inq.created_at).toLocaleDateString("ko-KR")}</td>
                   </tr>
                 ))

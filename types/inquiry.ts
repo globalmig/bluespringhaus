@@ -46,6 +46,8 @@ export interface Inquiry {
   speakers: Speaker;
   reason: string;
   pay: string;
+  manager_name: string;
+  manager_phone: string;
 
   //     host: string;
   //     manager_name: string;
