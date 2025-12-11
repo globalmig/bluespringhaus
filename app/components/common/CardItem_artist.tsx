@@ -58,8 +58,8 @@ export default function CardItem_artist({ slides, title }: CardItemProps) {
                     <p className="font-bold">{artist.name}</p>
                     <p className="text-gray-600">{artist.short_desc}</p>
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {(artist.tags ?? []).map((t) => (
-                        <span key={t} className="bg-black text-white rounded-full px-3 py-1 text-sm">
+                      {(artist.tags ?? []).map((t, index) => (
+                        <span key={`${artist.name}-tag-${index}`} className="bg-black text-white rounded-full px-3 py-1 text-sm">
                           #{t}
                         </span>
                       ))}

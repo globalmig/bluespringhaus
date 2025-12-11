@@ -7,6 +7,7 @@ import "react-quill/dist/quill.snow.css";
 import ChannelProvider from "./components/common/ChannelProvider";
 import AuthSessionProvider from "./components/auth/AuthSessionProvider";
 import Script from "next/script";
+import KakaoTalk from "./components/KakaoTalk";
 // ✅ 추가 (클라 래퍼)
 
 export const metadata: Metadata = {
@@ -48,22 +49,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Gnb /> {/* ✅ Gnb는 "use client"여야 하고 여기 내부에서 렌더 */}
               <main className="flex-grow w-full mx-auto min-h-screen">
                 {children}
-                <ChannelProvider />
+                {/* <ChannelProvider /> */}
+                <KakaoTalk />
               </main>
               <Footer />
             </div>
           </Providers>
         </AuthSessionProvider>
+        <Script type="text/javascript" src="//wcs.naver.net/wcslog.js" strategy="beforeInteractive" />
         <Script
-         type="text/javascript"
-          src="//wcs.naver.net/wcslog.js"
-           strategy="beforeInteractive"
-        />
-        <Script
-        id="wcs-analytics"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{
-          __html: `
+          id="wcs-analytics"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
             (function() {
               function initWcs() {
                 // @ts-ignore
@@ -88,8 +86,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               }
             })();
           `,
-        }}
-      />
+          }}
+        />
       </body>
     </html>
   );

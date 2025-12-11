@@ -56,8 +56,8 @@ export default function CardItem({ slides, title, target }: CardItemProps) {
                 <p className="font-bold">{speaker.name}</p>
                 <p className="h-12 text-sm">{speaker.short_desc.length > 30 ? speaker.short_desc.slice(0, 25) + "..." : speaker.short_desc}</p>
                 <div className="flex flex-wrap md:gap-2 gap-1 mt-2 max-h-[64px] overflow-hidden">
-                  {(speaker.tags ?? []).map((t) => (
-                    <span key={t} className="text-zinc-600 bg-slate-200 rounded-full px-2 md:px-3 py-1 md:text-sm text-xs md:block hidden">
+                  {(speaker.tags ?? []).map((t, index) => (
+                    <span key={`${speaker.name}-tag-${index}`} className="text-zinc-600 bg-slate-200 rounded-full px-2 md:px-3 py-1 md:text-sm text-xs md:block hidden">
                       {t}
                     </span>
                   ))}

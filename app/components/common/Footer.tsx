@@ -29,6 +29,7 @@ export default function Footer() {
           <div className="text-sm font-light text-zinc-500">
             <p>대표자: 김수정 | 사업자등록: 219-86-01868</p>
             <p>전화: 050-7141-60749</p>
+
             <p>이메일: micimpact.info@gmail.com</p>
             {/* <p>전화번호: 000-000-000</p> */}
             <p>주소: 제주특별자치도 제주시 고마로 105, 5층 501호(일도이동)</p>
