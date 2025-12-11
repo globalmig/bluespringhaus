@@ -28,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!rating || !comment) {
       return res.status(400).json({ success: false, error: "별점과 리뷰 내용을 모두 입력해주세요." });
     }
-    console.log("🟡 리뷰 수정 요청 도착:", { id, rating, comment, user_id: user.id });
+    // console.log("🟡 리뷰 수정 요청 도착:", { id, rating, comment, user_id: user.id });
     const { error: updateError, data: updateResult } = await supabase
       .from("reviews_artist")
       .update({
@@ -40,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .eq("user_id", user.id)
       .select();
 
-    console.log("🟢 Supabase 수정 결과:", { updateResult, updateError });
+    // console.log("🟢 Supabase 수정 결과:", { updateResult, updateError });
 
     if (updateError) return res.status(500).json({ success: false, error: "리뷰 수정 실패" });
 

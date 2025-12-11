@@ -67,11 +67,11 @@ export default function InformationTab({ reviews }: ReviewItemProps) {
       const { data, error } = await supabase.from("speakers").select("*").eq("id", id).single();
 
       if (error) {
-        console.error("Supabase fetch error:", error);
+        // console.error("Supabase fetch error:", error);
         return;
       }
 
-      console.log("받아온 데이터:", data);
+      // console.log("받아온 데이터:", data);
       setSpeaker(data as Speaker);
     };
 

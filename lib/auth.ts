@@ -30,12 +30,12 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (error || !data.user) {
-            console.error("❌ 이메일 로그인 실패:", error);
+            // console.error("❌ 이메일 로그인 실패:", error);
             return null;
           }
 
           // 로그인 성공
-          console.log("✅ 이메일 로그인 성공:", data.user.email);
+          // console.log("✅ 이메일 로그인 성공:", data.user.email);
 
           return {
             id: data.user.id,
@@ -44,7 +44,7 @@ export const authOptions: NextAuthOptions = {
             image: data.user.user_metadata?.avatar_url || null,
           };
         } catch (err) {
-          console.error("❌ 로그인 예외:", err);
+          // console.error("❌ 로그인 예외:", err);
           return null;
         }
       },
@@ -115,12 +115,12 @@ export const authOptions: NextAuthOptions = {
         const avatar_url = p?.properties?.profile_image || p?.kakao_account?.profile?.profile_image_url || null;
         const email = p?.kakao_account?.email || null;
 
-        console.log(`✅ 카카오 로그인 성공: ${email} (ID: ${kakaoId})`);
+        // console.log(`✅ 카카오 로그인 성공: ${email} (ID: ${kakaoId})`);
       }
 
       // 이메일 로그인
       if (account?.provider === "credentials" && user) {
-        console.log(`✅ 이메일 로그인 성공: ${user.email}`);
+        // console.log(`✅ 이메일 로그인 성공: ${user.email}`);
       }
 
       return true;

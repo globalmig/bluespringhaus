@@ -45,8 +45,9 @@ export default function Gnb() {
       <div className="w-full max-w-[1440px] h-16 md:h-24 mx-auto flex items-center justify-between px-4">
         {/* 로고 */}
         <Link href="/" className="font-bold text-lg md:text-xl flex md:items-center md:gap-2 text-sky-700 " onClick={() => handleSelected("")}>
-          <Image src={"/micimpact_logo.png"} alt="마이크임팩트 로고" width={140} height={180} className="hidden md:flex" />
-          <Image src={"/icon/micimpact_logo_m.png"} alt="마이크임팩트 로고" width={32} height={40} className="md:hidden flex" />
+          <Image src={"/micimpact_logo.png"} alt="마이크임팩트 로고" width={140} height={180} className="hidden md:flex w-auto h-auto max-w-40" />
+
+          <Image src={"/icon/micimpact_logo_m.png"} alt="마이크임팩트 로고" width={32} height={40} className="md:hidden flex w-auto h-auto" />
         </Link>
 
         {/* 내비게이션 */}
@@ -58,8 +59,8 @@ export default function Gnb() {
             }`}
             onClick={() => handleSelected("SPEAKERS")}
           >
-            <Image src="/icon/speaker_icon.png" alt="스피커 아이콘" width={40} height={40} className="m-0 md:mr-3 hidden md:block" />
-            <Image src="/icon/speaker_icon.png" alt="스피커 아이콘" width={30} height={30} className="m-0 md:mr-2 md:hidden block" />
+            <Image src="/icon/speaker_icon.png" alt="스피커 아이콘" width={40} height={40} className="m-0 md:mr-3 hidden md:block w-auto h-auto" />
+            <Image src="/icon/speaker_icon.png" alt="스피커 아이콘" width={30} height={30} className="m-0 md:mr-2 md:hidden block w-auto h-auto" />
             Speaker
           </Link>
 
@@ -68,8 +69,8 @@ export default function Gnb() {
             className={`flex flex-col w-full md:flex-row items-center px-2 font-semibold ${isSelected === "ARTIST" ? "text-sky-600 font-bold border-b-2 border-sky-600 pb-2" : "text-gray-700"}`}
             onClick={() => handleSelected("ARTIST")}
           >
-            <Image src="/icon/artist_icon.png" alt="아티스트 아이콘" width={40} height={40} className="mr-3 hidden md:block" />
-            <Image src="/icon/artist_icon.png" alt="스피커 아이콘" width={30} height={30} className="mr-2 md:hidden block" />
+            <Image src="/icon/artist_icon.png" alt="아티스트 아이콘" width={40} height={40} className="mr-3 hidden md:block w-auto h-auto" />
+            <Image src="/icon/artist_icon.png" alt="스피커 아이콘" width={30} height={30} className="mr-2 md:hidden block w-auto h-auto" />
             Artist
           </Link>
         </nav>

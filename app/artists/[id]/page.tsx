@@ -62,8 +62,8 @@ export default function artistsDetail() {
               <ShareBar url={`https://micimpact.net/artists/${artists?.id}`} title="공유하기" />
             </div>
             <div className="flex flex-wrap gap-2 mt-10 px-4">
-              {artists?.tags.map((t) => (
-                <span key={t} className="border text-black/70 rounded-full px-3 py-1 text-sm">
+              {artists?.tags.map((t,index) => (
+                <span key={index} className="border text-black/70 rounded-full px-3 py-1 text-sm">
                   #{t}
                 </span>
               ))}

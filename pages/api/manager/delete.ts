@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  console.log("삭제 API 호출됨:", req.method, req.query);
+  // console.log("삭제 API 호출됨:", req.method, req.query);
 
   if (req.method !== "DELETE") {
     return res.status(405).json({ error: "DELETE 메서드만 허용됩니다." });
@@ -22,7 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const table = type === "speaker" ? "speakers" : "artists";
 
-    console.log(`${table} 테이블에서 ID ${id} 삭제 시도`);
+    // console.log(`${table} 테이블에서 ID ${id} 삭제 시도`);
 
     // 삭제 실행
     const { data, error } = await supabase.from(table).delete().eq("id", id).select(); // 삭제된 데이터 반환
@@ -32,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: error.message });
     }
 
-    console.log("삭제 성공:", data);
+    // console.log("삭제 성공:", data);
 
     return res.status(200).json({
       success: true,

@@ -53,7 +53,7 @@ export default function CardItem_artist({ slides, title }: CardItemProps) {
             <SwiperSlide key={artist.id}>
               <div className="relative max-w-[354px]">
                 <Link href={`/artists/${artist.id}`} className="no-underline">
-                  <Image src={artist.profile_image || "/default.png"} alt={artist.name} width={354} height={300} className="w-full rounded-2xl bg-black object-cover" />
+                  <Image src={artist.profile_image || "/default.png"} alt={artist.name} width={354} height={300} className="w-full rounded-2xl bg-black object-cover h-auto" />
                   <div className="w-full px-2 flex flex-col gap-1 mt-2">
                     <p className="font-bold">{artist.name}</p>
                     <p className="text-gray-600">{artist.short_desc}</p>

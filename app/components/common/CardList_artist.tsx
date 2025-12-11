@@ -46,14 +46,15 @@ export default function CardList_artist({ slides, title }: CardItemProps) {
       {/* 슬라이더 */}
       <Swiper
         onSwiper={(s) => (swiperRef.current = s)}
+        slidesPerView={2.1} // ✅ 모바일 기본값
+        spaceBetween={10}
         breakpoints={{
-          320: { slidesPerView: 3.2, slidesPerGroup: 1, spaceBetween: 10 },
-          640: { slidesPerView: 4.5, slidesPerGroup: 2, spaceBetween: 15 },
-          1024: { slidesPerView: 7, slidesPerGroup: 4, spaceBetween: 20 },
+          640: { slidesPerView: 3.5, spaceBetween: 15 },
+          1024: { slidesPerView: 6, spaceBetween: 20 },
         }}
         speed={100}
         modules={[Navigation]}
-        className="mySwiper  "
+        className="mySwiper"
       >
         {slides.map((artist) => {
           const isLiked = liked.has(artist.id);
@@ -67,6 +68,7 @@ export default function CardList_artist({ slides, title }: CardItemProps) {
                       src={artist.profile_image && (artist.profile_image.startsWith("http") || artist.profile_image.startsWith("/")) ? artist.profile_image : "/default.png"}
                       alt={artist.name}
                       fill
+                      sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 12vw"
                       className="object-cover"
                     />
                   </div>
@@ -75,8 +77,8 @@ export default function CardList_artist({ slides, title }: CardItemProps) {
                     <p className="font-bold">{artist.name}</p>
                     <p className="h-12 text-sm">{artist.short_desc.length > 30 ? artist.short_desc.slice(0, 25) + "..." : artist.short_desc}</p>
                     <div className="hidden md:flex flex-wrap md:gap-2 gap-1 mt-2 max-h-[64px] overflow-hidden">
-                      {(artist.tags ?? []).map((t) => (
-                        <span key={t} className=" text-zinc-600 bg-slate-200 rounded-full px-2 md:px-3 py-1 md:text-sm text-xs">
+                      {(artist.tags ?? []).map((t, index) => (
+                        <span key={index} className=" text-zinc-600 bg-slate-200 rounded-full px-2 md:px-3 py-1 md:text-sm text-xs">
                           {t}
                         </span>
                       ))}

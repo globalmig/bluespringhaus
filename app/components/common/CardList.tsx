@@ -52,10 +52,11 @@ export default function CardList({ slides, title, type }: CardItemProps) {
 
       <Swiper
         onSwiper={(s) => (swiperRef.current = s)}
+        slidesPerView={2.1} // ✅ 모바일 기본값
+        spaceBetween={10}
         breakpoints={{
-          320: { slidesPerView: 3.2, slidesPerGroup: 1, spaceBetween: 10 },
-          640: { slidesPerView: 4.5, slidesPerGroup: 2, spaceBetween: 15 },
-          1024: { slidesPerView: 7, slidesPerGroup: 4, spaceBetween: 20 },
+          640: { slidesPerView: 3.5, spaceBetween: 15 },
+          1024: { slidesPerView: 6, spaceBetween: 20 },
         }}
         speed={100}
         modules={[Navigation]}
@@ -70,14 +71,14 @@ export default function CardList({ slides, title, type }: CardItemProps) {
               <div className="relative max-w-[354px]">
                 <Link href={href} className="no-underline">
                   <div className="aspect-[3/4] w-full relative rounded-2xl overflow-hidden">
-                    <Image src={img} alt={item.name} fill className="object-cover" />
+                    <Image src={img} alt={item.name} fill sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 12vw" className="object-cover" />
                   </div>
                   <div className="w-full px-2 flex flex-col gap-1 mt-2">
                     <p className="font-bold">{item.name}</p>
                     <p className="h-12 text-sm">{item.short_desc?.length > 30 ? item.short_desc.slice(0, 25) + "..." : item.short_desc}</p>
                     <div className="flex flex-wrap md:gap-2 gap-1 mt-2 max-h-[64px] overflow-hidden">
-                      {(item.tags ?? []).map((t) => (
-                        <span key={`${item.id}-${t}`} className="text-zinc-600 bg-slate-200 rounded-full px-2 md:px-3 py-1 md:text-sm text-xs hidden md:block">
+                      {(item.tags ?? []).map((t, index) => (
+                        <span key={`${item.id}-${t}-${index}`} className="text-zinc-600 bg-slate-200 rounded-full px-2 md:px-3 py-1 md:text-sm text-xs hidden md:block">
                           {t}
                         </span>
                       ))}

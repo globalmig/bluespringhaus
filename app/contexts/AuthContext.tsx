@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("🔄 Auth 상태 변경:", event, session);
+      // console.log("🔄 Auth 상태 변경:", event, session);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -70,11 +70,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      console.log("🚪 로그아웃 완료");
+      // console.log("🚪 로그아웃 완료");
       setUser(null);
       setSession(null);
     } catch (err) {
-      console.error("❌ 로그아웃 에러:", err);
+      // console.error("❌ 로그아웃 에러:", err);
     }
   };
 

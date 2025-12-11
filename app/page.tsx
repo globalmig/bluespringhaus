@@ -39,7 +39,7 @@ export default function Home() {
         // ✅ 배열만 상태에 넣기
         setSpeakers(res.data.items);
       } catch (error) {
-        console.error("API 호출 실패!", error);
+        // console.error("API 호출 실패!", error);
       } finally {
         setLoading(false);
       }

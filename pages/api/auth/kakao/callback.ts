@@ -104,6 +104,6 @@ async function processUserLogin(userInfo: KakaoUserInfo, tokenInfo: KakaoTokenRe
     refresh_token: tokenInfo.refresh_token,
   };
 
-  console.log("로그인 사용자:", user);
+  // console.log("로그인 사용자:", user);
   return user;
 }

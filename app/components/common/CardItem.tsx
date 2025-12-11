@@ -48,6 +48,7 @@ export default function CardItem({ slides, title, target }: CardItemProps) {
                   src={speaker.profile_image && (speaker.profile_image.startsWith("http") || speaker.profile_image.startsWith("/")) ? speaker.profile_image : "/default.png"}
                   alt={speaker.name}
                   fill
+                  sizes="(max-width: 768px) 100vw, 33vw"
                   className="object-cover"
                 />
               </div>
